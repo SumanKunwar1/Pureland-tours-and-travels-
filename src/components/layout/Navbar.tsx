@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronDown, 
-  Mail, 
+  Phone, 
   Menu, 
   X, 
   Users, 
@@ -14,7 +14,8 @@ import {
   Compass, 
   Sparkles, 
   Globe,
-  Info
+  Info,
+  Luggage
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -48,20 +49,20 @@ const navItems: NavItem[] = [
     label: "Travel Styles",
     icon: <MapPin className="w-4 h-4" />,
     children: [
-      { label: "Pilgrimage Trips", href: "/style/pilgrimage" },
+      { label: "Pilgrimage Trips", href: "/trips/pilgrimage" },
       { label: "Solo Trips", href: "/style/solo" },
-      { label: "Group Trips", href: "/style/group" },
-      { label: "Weekend Trips", href: "/style/weekend" },
+      { label: "Group Trips", href: "/trips/group" },
+      { label: "Weekend Trips", href: "/trips/weekend" },
       { label: "Adventure Trips", href: "/style/adventure" },
     ],
   },
   {
     label: "Upcoming Group Trips",
     href: "/trips/upcoming",
-    icon: <Calendar className="w-4 h-4" />,
+    icon: <Luggage className="w-4 h-4" />,
   },
   {
-    label: "Weekend Trips",
+    label: "Weekend Trip",
     href: "/trips/weekend",
     icon: <Car className="w-4 h-4" />,
   },
@@ -87,7 +88,7 @@ const navItems: NavItem[] = [
     icon: <Globe className="w-4 h-4" />,
   },
   {
-    label: "More About Us",
+    label: "More about us",
     icon: <Info className="w-4 h-4" />,
     children: [
       { label: "About Us", href: "/about" },
@@ -122,102 +123,103 @@ export function Navbar() {
     >
       {/* Top announcement bar */}
       <div className="bg-primary text-primary-foreground py-2 text-center text-sm">
-        <span className="font-medium">Ladakh Early Bird Sale – Save up to ₹3,000 🎉</span>
+        <span className="font-medium">Ladakh Spiti Early Bird – Save up to ₹3,000 🎉</span>
       </div>
 
       <nav className="container-custom">
-        <div className="flex items-center justify-between h-16 lg:h-20">
+        {/* Top row: Logo + Phone + CTA */}
+        <div className="flex items-center justify-between h-16 border-b border-border">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl lg:text-2xl font-display font-bold text-primary">
+          <Link to="/" className="flex items-baseline gap-1">
+            <span className="text-2xl font-display font-medium text-primary tracking-tight" style={{ fontStyle: 'italic' }}>
               Padmasambhava
             </span>
-            <span className="text-xl lg:text-2xl font-display font-light text-foreground">
+            <span className="text-2xl font-display font-light text-foreground">
               Trip
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden xl:flex items-center gap-1">
-            {navItems.map((item) => (
-              <div
-                key={item.label}
-                className="relative"
-                onMouseEnter={() => item.children && setActiveDropdown(item.label)}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                {item.href ? (
-                  <Link
-                    to={item.href}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      item.highlighted
-                        ? "bg-primary text-primary-foreground hover:bg-primary-hover"
-                        : "text-foreground hover:bg-muted"
-                    )}
-                  >
-                    {item.icon}
-                    <span className="hidden 2xl:inline">{item.label}</span>
-                  </Link>
-                ) : (
-                  <button
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      "text-foreground hover:bg-muted"
-                    )}
-                  >
-                    {item.icon}
-                    <span className="hidden 2xl:inline">{item.label}</span>
-                    <ChevronDown className="w-3 h-3" />
-                  </button>
-                )}
-
-                {/* Dropdown */}
-                <AnimatePresence>
-                  {item.children && activeDropdown === item.label && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full left-0 mt-1 w-56 bg-popover border border-border rounded-xl shadow-lg overflow-hidden z-50"
-                    >
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.label}
-                          to={child.href}
-                          className="block px-4 py-3 text-sm text-popover-foreground hover:bg-muted transition-colors"
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
-          </div>
-
-          {/* Right side */}
+          {/* Right side: Phone + CTA */}
           <div className="flex items-center gap-4">
             <a
-              href="mailto:info@padmasambhavatrip.com"
-              className="hidden lg:flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              href="tel:+918287636079"
+              className="hidden sm:flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors"
             >
-              <Mail className="w-4 h-4" />
-              <span className="hidden xl:inline">info@padmasambhavatrip.com</span>
+              <Phone className="w-4 h-4" />
+              <span className="font-medium">(+91) 8287636079</span>
             </a>
-            <Button className="hidden sm:inline-flex">
+            <Button className="hidden sm:inline-flex rounded-full px-6" size="sm">
               Plan Your Trip
             </Button>
 
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="xl:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+              className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors"
             >
               {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
+        </div>
+
+        {/* Bottom row: Navigation items */}
+        <div className="hidden lg:flex items-center justify-center h-12 gap-1">
+          {navItems.map((item) => (
+            <div
+              key={item.label}
+              className="relative"
+              onMouseEnter={() => item.children && setActiveDropdown(item.label)}
+              onMouseLeave={() => setActiveDropdown(null)}
+            >
+              {item.href ? (
+                <Link
+                  to={item.href}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    item.highlighted
+                      ? "text-primary font-semibold"
+                      : "text-foreground hover:text-primary"
+                  )}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              ) : (
+                <button
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "text-foreground hover:text-primary"
+                  )}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+              )}
+
+              {/* Dropdown */}
+              <AnimatePresence>
+                {item.children && activeDropdown === item.label && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full left-0 mt-1 w-56 bg-popover border border-border rounded-xl shadow-lg overflow-hidden z-50"
+                  >
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.label}
+                        to={child.href}
+                        className="block px-4 py-3 text-sm text-popover-foreground hover:bg-muted transition-colors"
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
         </div>
 
         {/* Mobile Navigation */}
@@ -227,7 +229,7 @@ export function Navbar() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="xl:hidden border-t border-border overflow-hidden"
+              className="lg:hidden border-t border-border overflow-hidden"
             >
               <div className="py-4 space-y-2">
                 {navItems.map((item) => (
@@ -239,7 +241,7 @@ export function Navbar() {
                         className={cn(
                           "flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors",
                           item.highlighted
-                            ? "bg-primary text-primary-foreground"
+                            ? "text-primary"
                             : "hover:bg-muted"
                         )}
                       >
@@ -266,7 +268,14 @@ export function Navbar() {
                     )}
                   </div>
                 ))}
-                <div className="pt-4 px-4">
+                <div className="pt-4 px-4 space-y-3">
+                  <a
+                    href="tel:+918287636079"
+                    className="flex items-center gap-2 text-sm text-foreground"
+                  >
+                    <Phone className="w-4 h-4" />
+                    <span>(+91) 8287636079</span>
+                  </a>
                   <Button className="w-full">Plan Your Trip</Button>
                 </div>
               </div>

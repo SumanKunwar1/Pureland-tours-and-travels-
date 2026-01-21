@@ -1,4 +1,4 @@
-import TripListingPage from "@/components/trips/TripListingPage";
+import TripListingPage, { internationalTrips } from "@/components/trips/TripListingPage";
 import destBali from "@/assets/dest-bali.jpg";
 
 const destinations = [
@@ -10,11 +10,12 @@ const InternationalTrips = () => {
   return (
     <TripListingPage
       title="Explore all International Tour Packages"
-      tagline="Life's too short for one place"
-      subtitle="Trips so good, your camera roll will never recover."
-      description="Caught up in the hustling culture and trying to catch a break? You should! And everyone else, too, should plan for a little runaway. Now is the time to put your plan into action, because Padmasambhava Trip has got you all covered. Whether you're dreaming of..."
+      tagline="Explore the World"
+      subtitle="Your passport to unforgettable experiences across the globe."
+      description="Discover the magic of international travel with our carefully curated packages. From the ancient temples of Japan to the vibrant streets of Thailand, the pristine beaches of Bali to the winter wonderlands of Georgia - we bring you the best of the world at your doorstep."
       heroImage={destBali}
       filterDestinations={destinations}
+      trips={internationalTrips}
     />
   );
 };

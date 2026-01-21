@@ -1,4 +1,4 @@
-import TripListingPage from "@/components/trips/TripListingPage";
+import TripListingPage, { weekendTrips } from "@/components/trips/TripListingPage";
 import destSpiti from "@/assets/dest-spiti.jpg";
 
 const destinations = [
@@ -12,9 +12,10 @@ const WeekendTrips = () => {
       title="Explore all Weekend Getaways"
       tagline="Escape the Ordinary"
       subtitle="Short trips, big memories. Because weekends are made for adventures."
-      description="Need a quick escape from the daily grind? Our weekend trips are perfect for those who want to maximize their free time with unforgettable experiences. Just pack your bags and let us handle the rest. From mountain retreats to peaceful valleys..."
+      description="Need a quick escape from the daily grind? Our weekend trips are perfect for those who want to maximize their free time with unforgettable experiences. Just pack your bags and let us handle the rest. From mountain retreats to peaceful valleys, find your perfect 2-3 day escape."
       heroImage={destSpiti}
       filterDestinations={destinations}
+      trips={weekendTrips}
     />
   );
 };

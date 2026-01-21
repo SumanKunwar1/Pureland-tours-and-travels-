@@ -24,7 +24,7 @@ import destGeorgia from "@/assets/dest-georgia.jpg";
 interface ItineraryDay {
   day: number;
   title: string;
-  description: string;
+  highlights: string[];
 }
 
 const tripData = {
@@ -45,42 +45,89 @@ const tripData = {
     {
       day: 0,
       title: "Arrival at Tbilisi International Airport | Transfer to Hotel | Free Time",
-      description: "Welcome to Georgia! Upon arrival at Tbilisi International Airport, our representative will meet you and transfer you to your hotel. After check-in, take some time to relax and freshen up. In the evening, explore the vibrant nightlife of Tbilisi or simply enjoy a leisurely walk around the hotel area."
+      highlights: [
+        "Welcome to Georgia! Our representative will meet you at Tbilisi International Airport",
+        "Transfer to your hotel and check-in",
+        "Take some time to relax and freshen up",
+        "In the evening, explore the vibrant nightlife of Tbilisi",
+        "Enjoy a leisurely walk around the hotel area"
+      ]
     },
     {
       day: 1,
       title: "Tbilisi City Tour | Old Town Exploration | Cable Car Ride",
-      description: "After breakfast, embark on a comprehensive tour of Tbilisi. Visit the iconic Holy Trinity Cathedral, explore the charming Old Town with its colorful balconies and narrow streets. Take a cable car ride to Narikala Fortress for panoramic views of the city. End the day with a traditional Georgian dinner featuring local wine and live folk music."
+      highlights: [
+        "After breakfast, embark on a comprehensive tour of Tbilisi",
+        "Visit the iconic Holy Trinity Cathedral",
+        "Explore the charming Old Town with colorful balconies and narrow streets",
+        "Take a cable car ride to Narikala Fortress for panoramic views",
+        "Traditional Georgian dinner with local wine and live folk music"
+      ]
     },
     {
       day: 2,
       title: "Drive to Kazbegi | Gergeti Trinity Church | Mountain Views",
-      description: "Today we drive along the stunning Georgian Military Highway to Kazbegi. Stop at Ananuri Fortress and the Russia-Georgia Friendship Monument. Upon arrival, take a jeep ride to the famous Gergeti Trinity Church, perched at 2,170 meters with Mount Kazbek as a backdrop. Overnight stay in Kazbegi."
+      highlights: [
+        "Scenic drive along the stunning Georgian Military Highway to Kazbegi",
+        "Stop at Ananuri Fortress for photos",
+        "Visit the Russia-Georgia Friendship Monument",
+        "Jeep ride to the famous Gergeti Trinity Church at 2,170 meters",
+        "Breathtaking views of Mount Kazbek as a backdrop",
+        "Overnight stay in Kazbegi"
+      ]
     },
     {
       day: 3,
       title: "Skiing in Gudauri | Winter Sports Activities",
-      description: "Head to Gudauri, Georgia's premier ski resort. Whether you're a beginner or experienced skier, enjoy a full day on the slopes. Ski equipment rental and lessons are available. Non-skiers can enjoy tubing, paragliding, or simply soak in the stunning mountain scenery from cozy cafes."
+      highlights: [
+        "Head to Gudauri, Georgia's premier ski resort",
+        "Enjoy a full day on the slopes (beginners to experienced)",
+        "Ski equipment rental and lessons available",
+        "Non-skiers can enjoy tubing and paragliding",
+        "Soak in stunning mountain scenery from cozy cafes"
+      ]
     },
     {
       day: 4,
       title: "Kakheti Wine Region | Winery Tours | Wine Tasting",
-      description: "Travel to Kakheti, Georgia's famous wine region. Visit traditional wineries and learn about the 8,000-year-old Georgian winemaking tradition. Enjoy generous wine tastings paired with local cheese and bread. Explore the charming town of Sighnaghi, known as the 'City of Love' for its romantic atmosphere."
+      highlights: [
+        "Travel to Kakheti, Georgia's famous wine region",
+        "Visit traditional wineries and learn about 8,000-year-old winemaking",
+        "Generous wine tastings paired with local cheese and bread",
+        "Explore Sighnaghi, known as the 'City of Love'",
+        "Experience the romantic atmosphere of the town"
+      ]
     },
     {
       day: 5,
       title: "Mtskheta Day Trip | UNESCO Heritage Sites | Jvari Monastery",
-      description: "Visit Mtskheta, Georgia's ancient capital and a UNESCO World Heritage Site. Explore Svetitskhoveli Cathedral, one of the holiest sites in Georgia, and the hilltop Jvari Monastery offering stunning views of the confluence of two rivers. Return to Tbilisi for shopping and leisure time."
+      highlights: [
+        "Visit Mtskheta, Georgia's ancient capital (UNESCO World Heritage Site)",
+        "Explore Svetitskhoveli Cathedral, one of the holiest sites",
+        "Visit the hilltop Jvari Monastery with stunning river views",
+        "Return to Tbilisi for shopping and leisure time"
+      ]
     },
     {
       day: 6,
       title: "Free Day in Tbilisi | Spa & Relaxation | Farewell Dinner",
-      description: "Enjoy a relaxing day in Tbilisi. Visit the famous sulfur baths for a traditional spa experience, explore the trendy Fabrika area, or shop for souvenirs at the Dry Bridge Market. In the evening, gather for a special farewell dinner celebrating our Georgian adventure together."
+      highlights: [
+        "Enjoy a relaxing day in Tbilisi",
+        "Visit the famous sulfur baths for a traditional spa experience",
+        "Explore the trendy Fabrika area",
+        "Shop for souvenirs at the Dry Bridge Market",
+        "Special farewell dinner celebrating our Georgian adventure"
+      ]
     },
     {
       day: 7,
       title: "Departure | Airport Transfer | Goodbye Georgia",
-      description: "After breakfast, check out from the hotel and transfer to Tbilisi International Airport for your departure flight. Bid farewell to Georgia with memories that will last a lifetime. We hope to see you on another adventure soon!"
+      highlights: [
+        "After breakfast, check out from the hotel",
+        "Transfer to Tbilisi International Airport",
+        "Bid farewell to Georgia with memories that will last a lifetime",
+        "We hope to see you on another adventure soon!"
+      ]
     },
   ],
   inclusions: [
@@ -254,9 +301,13 @@ export default function TripDetail() {
                         animate={{ opacity: 1, height: "auto" }}
                         className="px-5 pb-5"
                       >
-                        <p className="text-muted-foreground leading-relaxed pl-16">
-                          {day.description}
-                        </p>
+                        <ul className="list-disc list-inside space-y-2 pl-16 text-muted-foreground">
+                          {day.highlights.map((point, index) => (
+                            <li key={index} className="leading-relaxed">
+                              {point}
+                            </li>
+                          ))}
+                        </ul>
                       </motion.div>
                     )}
                   </div>
