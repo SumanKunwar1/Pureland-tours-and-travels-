@@ -1,14 +1,21 @@
-import TripListingPage from "@/components/trips/TripListingPage";
+import TripListingPage, { allTripsDatabase } from "@/components/trips/TripListingPage";
 import destGeorgia from "@/assets/dest-georgia.jpg";
+
+const destinations = [
+  "All", "Spiti Valley", "Meghalaya", "Himachal Pradesh", "Dubai", "Almaty", 
+  "Bhutan", "Bali", "Vietnam", "Georgia", "Sri Lanka", "Japan", "Thailand"
+];
 
 const GroupTrips = () => {
   return (
     <TripListingPage
       title="Explore all Group Trip Packages"
-      tagline="Life's too short for one place"
-      subtitle="Trips so good, your camera roll will never recover."
-      description="Caught up in the hustling culture and trying to catch a break? You should! And everyone else, too, should plan for a little runaway. Now is the time to put your plan into action, because Padmasambhava Trip has got you all covered. Whether you're dreaming of..."
+      tagline="Adventure Together"
+      subtitle="Meet new friends, create memories, travel the world."
+      description="Join our fixed-departure group trips and travel with like-minded explorers. No solo-travel blues, no planning hassles - just show up and have the time of your life! Our trips are designed for young travelers who want adventure, fun, and unforgettable experiences with new friends."
       heroImage={destGeorgia}
+      filterDestinations={destinations}
+      trips={allTripsDatabase}
     />
   );
 };
