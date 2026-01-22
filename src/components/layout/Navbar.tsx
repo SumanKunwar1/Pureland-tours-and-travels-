@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronDown, 
@@ -26,6 +26,28 @@ interface NavItem {
   highlighted?: boolean;
   children?: { label: string; href: string }[];
 }
+
+// All searchable trips data
+const allTrips = [
+  { name: "Ladakh Adventure", destination: "Ladakh", category: "Adventure", href: "/trip/ladakh-adventure" },
+  { name: "Spiti Valley Expedition", destination: "Spiti", category: "Adventure", href: "/trip/spiti-valley" },
+  { name: "Bali Beach Retreat", destination: "Bali", category: "International", href: "/trip/bali-retreat" },
+  { name: "Dubai Luxury Tour", destination: "Dubai", category: "International", href: "/trip/dubai-tour" },
+  { name: "Thailand Explorer", destination: "Thailand", category: "International", href: "/trip/thailand-explorer" },
+  { name: "Vietnam Discovery", destination: "Vietnam", category: "International", href: "/trip/vietnam-discovery" },
+  { name: "Japan Cultural Tour", destination: "Japan", category: "International", href: "/trip/japan-tour" },
+  { name: "Bhutan Spiritual Journey", destination: "Bhutan", category: "Pilgrimage", href: "/trip/bhutan-spiritual" },
+  { name: "Georgia Adventure", destination: "Georgia", category: "International", href: "/trip/georgia-adventure" },
+  { name: "Char Dham Yatra", destination: "Uttarakhand", category: "Pilgrimage", href: "/trip/char-dham" },
+  { name: "Vaishno Devi Pilgrimage", destination: "Jammu", category: "Pilgrimage", href: "/trip/vaishno-devi" },
+  { name: "Rishikesh Yoga Retreat", destination: "Rishikesh", category: "Retreats", href: "/trip/rishikesh-yoga" },
+  { name: "Kerala Wellness Escape", destination: "Kerala", category: "Retreats", href: "/trip/kerala-wellness" },
+  { name: "Goa Weekend Getaway", destination: "Goa", category: "Weekend", href: "/trip/goa-weekend" },
+  { name: "Manali Snow Trip", destination: "Manali", category: "Weekend", href: "/trip/manali-snow" },
+  { name: "Rajasthan Heritage Tour", destination: "Rajasthan", category: "Domestic", href: "/trip/rajasthan-heritage" },
+  { name: "Kashmir Paradise", destination: "Kashmir", category: "Domestic", href: "/trip/kashmir-paradise" },
+  { name: "Andaman Island Hopping", destination: "Andaman", category: "Domestic", href: "/trip/andaman-islands" },
+];
 
 const navItems: NavItem[] = [
   {
@@ -92,6 +114,8 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -100,6 +124,24 @@ export function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Filter trips based on search query
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const query = searchQuery.toLowerCase();
+    return allTrips.filter(
+      (trip) =>
+        trip.name.toLowerCase().includes(query) ||
+        trip.destination.toLowerCase().includes(query) ||
+        trip.category.toLowerCase().includes(query)
+    ).slice(0, 6); // Limit to 6 results
+  }, [searchQuery]);
+
+  const handleSearchSelect = (href: string) => {
+    setSearchQuery("");
+    setShowSearchResults(false);
+    navigate(href);
+  };
 
   return (
     <header
@@ -117,28 +159,71 @@ export function Navbar() {
 
       <nav className="container-custom">
         {/* Top row: Logo + Search + Phone + CTA */}
-        <div className="flex items-center justify-between h-16 border-b border-border">
-          {/* Logo */}
+        <div className="flex items-center justify-between h-20 border-b border-border">
+          {/* Logo - Made bigger */}
           <Link to="/" className="flex-shrink-0">
             <img 
               src="https://res.cloudinary.com/dihev9qxc/image/upload/v1768991877/453207561_122102729312441160_4787222294410407220_n-removebg-preview_voy795.png" 
               alt="Padmasambhava Trip" 
-              className="h-12 w-auto"
+              className="h-16 w-auto"
             />
           </Link>
 
-          {/* Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-md mx-6">
+          {/* Search Bar with Results Dropdown */}
+          <div className="hidden md:flex flex-1 max-w-md mx-6 relative">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search your trip..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSearchResults(true);
+                }}
+                onFocus={() => setShowSearchResults(true)}
+                onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
                 className="w-full pl-10 pr-4 py-2 rounded-full border-border bg-muted/50 focus:bg-background"
               />
             </div>
+            
+            {/* Search Results Dropdown */}
+            <AnimatePresence>
+              {showSearchResults && searchResults.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-xl shadow-lg overflow-hidden z-50"
+                >
+                  {searchResults.map((trip, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleSearchSelect(trip.href)}
+                      className="w-full text-left px-4 py-3 hover:bg-muted transition-colors flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{trip.name}</p>
+                        <p className="text-xs text-muted-foreground">{trip.destination} • {trip.category}</p>
+                      </div>
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                        {trip.category}
+                      </span>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+              {showSearchResults && searchQuery.trim() && searchResults.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-xl shadow-lg p-4 z-50"
+                >
+                  <p className="text-sm text-muted-foreground text-center">No trips found for "{searchQuery}"</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Right side: Phone + CTA */}
