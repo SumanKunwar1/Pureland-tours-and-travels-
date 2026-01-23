@@ -17,11 +17,11 @@ const Index = () => {
       <Navbar />
       <main>
         <HeroSection />
-        <TrendingDestinations />
         <ExploreDestinations />
         <UpcomingTrips />
         <BookWithConfidence />
         <VibeWithUs />
+        <TrendingDestinations />
         <Testimonials />
         <FAQSection />
         <BlogsSection />
