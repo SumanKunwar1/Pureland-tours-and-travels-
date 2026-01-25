@@ -98,11 +98,9 @@ const navItems: NavItem[] = [
     icon: <Globe className="w-4 h-4 text-teal-500" />,
   },
   {
-    label: "More about us",
+    label: "More about us", href: "/about",
     icon: <Info className="w-4 h-4 text-slate-500" />,
-    children: [
-      { label: "FAQs", href: "/faqs" },
-    ],
+    
   },
 ];
 
