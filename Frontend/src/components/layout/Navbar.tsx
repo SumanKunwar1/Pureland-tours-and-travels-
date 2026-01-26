@@ -85,7 +85,7 @@ const navItems: NavItem[] = [
   },
   {
     label: "Combo Trips",
-    href: "/trips/upcoming",
+    href: "/trips/combo",
     icon: <Luggage className="w-4 h-4 text-sky-500" />,
   },
   {
