@@ -1,104 +1,26 @@
-import { useState } from "react";
+// src/components/sections/UpcomingTrips.tsx
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Calendar, Gift, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import axios from "axios";
 
-import destSpiti from "@/assets/dest-spiti.jpg";
-import destLadakh from "@/assets/dest-ladakh.jpg";
-import destBhutan from "@/assets/dest-bhutan.jpg";
-import destGeorgia from "@/assets/dest-georgia.jpg";
-import destVietnam from "@/assets/dest-vietnam.jpg";
-import destBali from "@/assets/dest-bali.jpg";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 
 interface Trip {
-  id: string;
+  _id: string;
   name: string;
   image: string;
   duration: string;
   price: number;
   originalPrice: number;
   discount: number;
-  dates: string[];
-  category: string;
-  freeGoodies: boolean;
+  dates: Array<{ date: string; price: number }>;
+  destination: string;
+  hasGoodies: boolean;
 }
-
-const trips: Trip[] = [
-  {
-    id: "spiti-holi",
-    name: "Spiti Backpacking with Sangla Holi",
-    image: destSpiti,
-    duration: "6N/7D",
-    price: 22999,
-    originalPrice: 24999,
-    discount: 2000,
-    dates: ["Feb 28", "Mar 7", "Mar 14"],
-    category: "Spiti Valley",
-    freeGoodies: true,
-  },
-  {
-    id: "ladakh-winter",
-    name: "Winter Ladakh Adventure Trip",
-    image: destLadakh,
-    duration: "5N/6D",
-    price: 18999,
-    originalPrice: 20999,
-    discount: 2000,
-    dates: ["Jan 24", "Jan 31", "Feb 7"],
-    category: "Leh",
-    freeGoodies: true,
-  },
-  {
-    id: "bhutan-spiritual",
-    name: "Bhutan Spiritual Pilgrimage",
-    image: destBhutan,
-    duration: "6N/7D",
-    price: 42999,
-    originalPrice: 45999,
-    discount: 3000,
-    dates: ["Feb 15", "Mar 1", "Mar 15"],
-    category: "Bhutan",
-    freeGoodies: true,
-  },
-  {
-    id: "georgia-winter",
-    name: "Georgia Winter Group Trip",
-    image: destGeorgia,
-    duration: "7N/8D",
-    price: 52999,
-    originalPrice: 56999,
-    discount: 4000,
-    dates: ["Jan 20", "Feb 5", "Feb 20"],
-    category: "Georgia",
-    freeGoodies: true,
-  },
-  {
-    id: "vietnam-explorer",
-    name: "Vietnam Explorer Adventure",
-    image: destVietnam,
-    duration: "6N/7D",
-    price: 38999,
-    originalPrice: 41999,
-    discount: 3000,
-    dates: ["Feb 10", "Feb 25", "Mar 10"],
-    category: "Vietnam",
-    freeGoodies: false,
-  },
-  {
-    id: "bali-retreat",
-    name: "Bali Wellness Retreat",
-    image: destBali,
-    duration: "5N/6D",
-    price: 49999,
-    originalPrice: 53999,
-    discount: 4000,
-    dates: ["Mar 1", "Mar 15", "Apr 1"],
-    category: "Bali",
-    freeGoodies: true,
-  },
-];
 
 const categories = [
   "All",
@@ -115,16 +37,47 @@ const categories = [
   "Sri Lanka",
   "Japan",
   "Northern Lights",
-  "Leh",
+  "Ladakh",
   "Thailand",
 ];
 
 export function UpcomingTrips() {
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
 
-  const filteredTrips = trips.filter(
-    (trip) => activeCategory === "All" || trip.category === activeCategory
-  );
+  useEffect(() => {
+    fetchUpcomingTrips();
+  }, []);
+
+  const fetchUpcomingTrips = async () => {
+    try {
+      setLoading(true);
+      // Fetch only 4 active trips, sorted by creation date (newest first)
+      const response = await axios.get(`${API_URL}/trips?limit=4&sort=-createdAt&status=Active`);
+      
+      if (response.data.status === 'success') {
+        setTrips(response.data.data.trips);
+      }
+    } catch (error) {
+      console.error("Error fetching upcoming trips:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredTrips = trips.filter((trip) => {
+    if (activeCategory === "All") return true;
+    
+    // Check if destination or name contains the category
+    return (
+      trip.destination.toLowerCase().includes(activeCategory.toLowerCase()) ||
+      trip.name.toLowerCase().includes(activeCategory.toLowerCase())
+    );
+  });
+
+  // Limit to maximum 4 trips
+  const displayTrips = filteredTrips.slice(0, 4);
 
   return (
     <section className="section-padding bg-muted">
@@ -138,10 +91,12 @@ export function UpcomingTrips() {
           <h2 className="text-3xl sm:text-4xl font-display font-bold">
             Upcoming Group Trips
           </h2>
-          <Button variant="outline" className="self-start sm:self-center">
-            See All
-            <ArrowRight className="ml-2 w-4 h-4" />
-          </Button>
+          <Link to="/group-trips">
+            <Button variant="outline" className="self-start sm:self-center">
+              See All
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Button>
+          </Link>
         </motion.div>
 
         {/* Category Pills */}
@@ -163,66 +118,83 @@ export function UpcomingTrips() {
         </div>
 
         {/* Trip Cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredTrips.map((trip, index) => (
-            <motion.div
-              key={trip.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Link
-                to={`/trip/${trip.id}`}
-                className="block bg-card rounded-2xl overflow-hidden card-hover group"
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        ) : displayTrips.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground text-lg">
+              No upcoming trips available at the moment.
+            </p>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {displayTrips.map((trip, index) => (
+              <motion.div
+                key={trip._id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
               >
-                {/* Image */}
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <img
-                    src={trip.image}
-                    alt={trip.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  {trip.freeGoodies && (
-                    <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-primary text-primary-foreground px-3 py-1.5 rounded-full text-xs font-medium">
-                      <Gift className="w-3 h-3" />
-                      Free Goodies
+                <Link
+                  to={`/trip/${trip._id}`}
+                  className="block bg-card rounded-2xl overflow-hidden card-hover group"
+                >
+                  {/* Image */}
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <img
+                      src={trip.image}
+                      alt={trip.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    {trip.hasGoodies && (
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-primary text-primary-foreground px-3 py-1.5 rounded-full text-xs font-medium">
+                        <Gift className="w-3 h-3" />
+                        Free Goodies
+                      </div>
+                    )}
+                    <div className="absolute bottom-3 left-3 bg-charcoal/80 backdrop-blur-sm text-primary-foreground px-2.5 py-1 rounded-md text-xs font-medium">
+                      🗓 {trip.duration}
                     </div>
-                  )}
-                  <div className="absolute bottom-3 left-3 bg-charcoal/80 backdrop-blur-sm text-primary-foreground px-2.5 py-1 rounded-md text-xs font-medium">
-                    🗓 {trip.duration}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-4">
-                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-3">
-                    {trip.name}
-                  </h3>
-
-                  {/* Price */}
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-xl font-bold text-foreground">
-                      ₹{trip.price.toLocaleString()}
-                    </span>
-                    <span className="price-original">
-                      ₹{trip.originalPrice.toLocaleString()}
-                    </span>
-                    <span className="price-discount">
-                      ₹{trip.discount.toLocaleString()} Off
-                    </span>
                   </div>
 
-                  {/* Dates */}
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="w-4 h-4" />
-                    <span className="line-clamp-1">{trip.dates.join(", ")}</span>
+                  {/* Content */}
+                  <div className="p-4">
+                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-3">
+                      {trip.name}
+                    </h3>
+
+                    {/* Price */}
+                    <div className="flex items-baseline gap-2 mb-3">
+                      <span className="text-xl font-bold text-foreground">
+                        ₹{trip.price.toLocaleString()}
+                      </span>
+                      <span className="price-original">
+                        ₹{trip.originalPrice.toLocaleString()}
+                      </span>
+                      <span className="price-discount">
+                        ₹{trip.discount.toLocaleString()} Off
+                      </span>
+                    </div>
+
+                    {/* Dates */}
+                    {trip.dates && trip.dates.length > 0 && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="w-4 h-4" />
+                        <span className="line-clamp-1">
+                          {trip.dates.slice(0, 3).map(d => d.date).join(", ")}
+                          {trip.dates.length > 3 && " +more"}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
