@@ -1,10 +1,19 @@
-// types/express/index.d.ts
-import { IAdmin } from '../../models/Admin.model';
+// src/types/express/index.d.ts
 
+// Extend Express Request interface to include user property
 declare global {
   namespace Express {
     interface Request {
-      user?: IAdmin;
+      user?: {
+        _id: any;
+        role?: string;
+        email?: string;
+        fullName?: string;
+        isActive?: boolean;
+        [key: string]: any;
+      };
     }
   }
 }
+
+export {};

@@ -12,6 +12,9 @@ import { AppError } from './utils/appError';
 // Import routes
 import authRoutes from './routes/auth.routes';
 import tripRoutes from './routes/trip.routes';
+import visaApplicationRoutes from './routes/visaApplication.routes';
+import documentationRoutes from './routes/documentation.routes';
+import customTripRoutes from './routes/customTrip.routes';
 
 const app: Application = express();
 
@@ -51,12 +54,9 @@ app.get('/health', (_req: Request, res: Response) => {
 // API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/trips', tripRoutes);
-
-// More routes can be added here:
-// app.use('/api/v1/blogs', blogRoutes);
-// app.use('/api/v1/users', userRoutes);
-// app.use('/api/v1/bookings', bookingRoutes);
-// app.use('/api/v1/applications', applicationRoutes);
+app.use('/api/v1/visa-applications', visaApplicationRoutes);
+app.use('/api/v1/documentation', documentationRoutes);
+app.use('/api/v1/custom-trips', customTripRoutes);
 
 // Handle undefined routes
 app.all('*', (req: Request, _res: Response, next: NextFunction) => {

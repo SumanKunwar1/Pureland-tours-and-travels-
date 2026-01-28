@@ -1,40 +1,44 @@
 // middleware/upload.ts
 import multer from 'multer';
-import { Request } from 'express';
 import { AppError } from '../utils/appError';
+import { Request } from 'express';
 
-// Multer configuration for memory storage
+// Configure multer to use memory storage
 const storage = multer.memoryStorage();
 
-// File filter function
-const fileFilter = (
-  req: Request,
-  file: Express.Multer.File,
-  cb: multer.FileFilterCallback
-) => {
-  // Allow only images
-  if (file.mimetype.startsWith('image/')) {
+// File filter to accept only certain file types
+const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  // Accept images and PDFs
+  if (
+    file.mimetype === 'image/jpeg' ||
+    file.mimetype === 'image/jpg' ||
+    file.mimetype === 'image/png' ||
+    file.mimetype === 'application/pdf'
+  ) {
     cb(null, true);
   } else {
-    cb(new AppError('Not an image! Please upload only images.', 400) as any, false);
+    cb(new AppError('Not a valid file type! Please upload only JPG, JPEG, PNG or PDF files.', 400));
   }
 };
 
-// Multer upload configuration
-const upload = multer({
+// Create multer upload instance
+export const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB max file size
+    fileSize: 5 * 1024 * 1024, // 5MB limit
   },
 });
 
-// Export different upload configurations
-export const uploadSingle = upload.single('image');
-export const uploadMultiple = upload.array('images', 10); // Max 10 images
-export const uploadFields = upload.fields([
-  { name: 'image', maxCount: 1 },
-  { name: 'gallery', maxCount: 10 },
-]);
+// Middleware for single file upload
+export const uploadSingle = (fieldName: string) => upload.single(fieldName);
 
-export default upload;
+// Middleware for multiple file uploads
+export const uploadMultiple = (fields: { name: string; maxCount: number }[]) => upload.fields(fields);
+
+// Middleware for visa application file uploads
+export const uploadVisaFiles = upload.fields([
+  { name: 'passportBioFile', maxCount: 1 },
+  { name: 'passportPhotoFile', maxCount: 1 },
+  { name: 'supportingDocumentsFile', maxCount: 1 },
+]);
