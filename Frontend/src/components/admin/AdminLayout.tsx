@@ -12,6 +12,9 @@ import {
   Menu,
   X,
   ChevronRight,
+  Plane,
+  Route,
+  FolderOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -51,6 +54,21 @@ const menuItems = [
     title: "Applications",
     icon: FileText,
     path: "/admin/applications",
+  },
+  {
+    title: "Visa Applications",
+    icon: Plane,
+    path: "/admin/visa-applications",
+  },
+  {
+    title: "Custom Trips",
+    icon: Route,
+    path: "/admin/custom-trips",
+  },
+  {
+    title: "Documentation",
+    icon: FolderOpen,
+    path: "/admin/documentation",
   },
   {
     title: "Settings",

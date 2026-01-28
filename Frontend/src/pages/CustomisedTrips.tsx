@@ -3,6 +3,7 @@ import { MapPin, Calendar, Users, Send, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
@@ -18,6 +19,7 @@ const features = [
 ];
 
 const CustomisedTrips = () => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -31,8 +33,44 @@ const CustomisedTrips = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log(formData);
+    
+    // Validate form
+    if (!formData.name || !formData.email || !formData.phone || !formData.destination) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Save to localStorage
+    const customTripRequests = JSON.parse(localStorage.getItem("customTripRequests") || "[]");
+    const newRequest = {
+      id: Date.now().toString(),
+      ...formData,
+      status: "New",
+      submittedDate: new Date().toISOString(),
+    };
+    customTripRequests.push(newRequest);
+    localStorage.setItem("customTripRequests", JSON.stringify(customTripRequests));
+
+    toast({
+      title: "Enquiry Submitted!",
+      description: "Our travel expert will get back to you within 24 hours",
+    });
+
+    // Reset form
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      destination: "",
+      travelers: "",
+      dates: "",
+      budget: "",
+      message: "",
+    });
   };
 
   return (
@@ -108,23 +146,25 @@ const CustomisedTrips = () => {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">
-                    Your Name
+                    Your Name *
                   </label>
                   <Input 
                     placeholder="John Doe"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    required
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">
-                    Email
+                    Email *
                   </label>
                   <Input 
                     type="email"
                     placeholder="john@example.com"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required
                   />
                 </div>
               </div>
@@ -132,23 +172,25 @@ const CustomisedTrips = () => {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">
-                    Phone Number
+                    Phone Number *
                   </label>
                   <Input 
                     placeholder="+91 98765 43210"
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    required
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">
                     <MapPin className="w-4 h-4 inline mr-1" />
-                    Destination
+                    Destination *
                   </label>
                   <Input 
                     placeholder="Where do you want to go?"
                     value={formData.destination}
                     onChange={(e) => setFormData({...formData, destination: e.target.value})}
+                    required
                   />
                 </div>
               </div>

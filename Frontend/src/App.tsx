@@ -43,6 +43,9 @@ import AdminBookings from "./pages/admin/AdminBookings";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminApplications from "./pages/admin/AdminApplications";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminVisaApplications from "./pages/admin/AdminVisaApplications";
+import AdminCustomTrips from "./pages/admin/AdminCustomTrips";
+import AdminDocumentation from "./pages/admin/AdminDocumentation";
 
 // Admin Components
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
@@ -151,6 +154,30 @@ const App = () => (
               element={
                 <ProtectedAdminRoute>
                   <AdminApplications />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/visa-applications"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminVisaApplications />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/custom-trips"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminCustomTrips />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/documentation"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminDocumentation />
                 </ProtectedAdminRoute>
               }
             />
