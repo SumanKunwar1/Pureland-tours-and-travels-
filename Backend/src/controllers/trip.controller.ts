@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { catchAsync } from '../utils/catchAsync';
 import { AppError } from '../utils/appError';
-import Trip, { ITrip } from '../models/trip.model';
+import Trip, { ITrip } from '../models/Trip.model';
 import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary';
 
 // @desc    Get all trips with filtering, sorting, and pagination

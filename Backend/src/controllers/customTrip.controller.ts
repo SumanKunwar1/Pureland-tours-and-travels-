@@ -1,6 +1,6 @@
 // controllers/customTrip.controller.ts
 import { Request, Response, NextFunction } from 'express';
-import { CustomTrip } from '../models/Customtrip.model';
+import { CustomTrip } from '../models/customTrip.model';
 import { AppError } from '../utils/appError';
 import { catchAsync } from '../utils/catchAsync';
 
