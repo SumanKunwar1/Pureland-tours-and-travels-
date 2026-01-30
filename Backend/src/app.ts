@@ -18,6 +18,7 @@ import customTripRoutes from './routes/customTrip.routes';
 import bookingRoutes from './routes/booking.routes';
 import heroImageRoutes from './routes/heroImage.routes';
 import exploreDestinationRoutes from './routes/exploreDestination.routes';
+import trendingDestinationRoutes from './routes/trendingDestination.routes';
 
 const app: Application = express();
 
@@ -63,6 +64,7 @@ app.use('/api/v1/custom-trips', customTripRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 app.use('/api/v1/hero-images', heroImageRoutes);
 app.use('/api/v1/explore-destinations', exploreDestinationRoutes);
+app.use('/api/v1/trending-destinations', trendingDestinationRoutes);
 
 // Handle undefined routes
 app.all('*', (req: Request, _res: Response, next: NextFunction) => {

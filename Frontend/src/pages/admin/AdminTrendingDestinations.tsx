@@ -13,11 +13,13 @@ interface TrendingDestination {
   name: string;
   price: number;
   image: string;
-  url: string; // Link where it should redirect
+  url: string;
   order: number;
   isActive: boolean;
   createdAt: string;
 }
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function AdminTrendingDestinations() {
   const { toast } = useToast();
@@ -42,39 +44,28 @@ export default function AdminTrendingDestinations() {
   const loadDestinations = async () => {
     try {
       setIsLoading(true);
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/v1/trending-destinations');
-      // const data = await response.json();
+      const token = localStorage.getItem('token');
       
-      // Mock data
-      const mockData: TrendingDestination[] = [
-        {
-          _id: "1",
-          name: "Bali Tour Packages",
-          price: 49999,
-          image: "/assets/dest-bali.jpg",
-          url: "/trip/bali-tour",
-          order: 1,
-          isActive: true,
-          createdAt: new Date().toISOString(),
+      const response = await fetch(`${API_URL}/api/v1/trending-destinations`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        {
-          _id: "2",
-          name: "Georgia Tour Packages",
-          price: 52999,
-          image: "/assets/dest-georgia.jpg",
-          url: "/trip/georgia-tour",
-          order: 2,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-        },
-      ];
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load destinations');
+      }
+
+      const data = await response.json();
       
-      setDestinations(mockData.sort((a, b) => a.order - b.order));
+      if (data.status === 'success') {
+        setDestinations(data.data.trendingDestinations.sort((a: TrendingDestination, b: TrendingDestination) => a.order - b.order));
+      }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to load destinations",
+        description: error.message || "Failed to load destinations",
         variant: "destructive",
       });
     } finally {
@@ -136,35 +127,39 @@ export default function AdminTrendingDestinations() {
     }
 
     try {
-      if (editingDestination) {
-        // TODO: Update API call
-        setDestinations(destinations.map(dest => 
-          dest._id === editingDestination._id 
-            ? { ...dest, ...formData }
-            : dest
-        ));
+      const token = localStorage.getItem('token');
+      const url = editingDestination
+        ? `${API_URL}/api/v1/trending-destinations/${editingDestination._id}`
+        : `${API_URL}/api/v1/trending-destinations`;
 
-        toast({
-          title: "Success",
-          description: "Destination updated successfully",
-        });
-      } else {
-        // TODO: Create API call
-        const newDestination: TrendingDestination = {
-          _id: Date.now().toString(),
-          ...formData,
-          createdAt: new Date().toISOString(),
-        };
-        
-        setDestinations([...destinations, newDestination].sort((a, b) => a.order - b.order));
+      const method = editingDestination ? 'PATCH' : 'POST';
 
-        toast({
-          title: "Success",
-          description: "Destination created successfully",
-        });
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save destination');
       }
 
-      setShowModal(false);
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        toast({
+          title: "Success",
+          description: data.message || (editingDestination ? "Destination updated successfully" : "Destination created successfully"),
+        });
+
+        // Reload destinations
+        await loadDestinations();
+        setShowModal(false);
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -178,17 +173,34 @@ export default function AdminTrendingDestinations() {
     if (!confirm("Are you sure you want to delete this destination?")) return;
 
     try {
-      // TODO: Delete API call
-      setDestinations(destinations.filter(dest => dest._id !== id));
+      const token = localStorage.getItem('token');
       
+      const response = await fetch(`${API_URL}/api/v1/trending-destinations/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete destination');
+      }
+
+      const data = await response.json();
+
       toast({
         title: "Success",
-        description: "Destination deleted successfully",
+        description: data.message || "Destination deleted successfully",
       });
+
+      // Reload destinations
+      await loadDestinations();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to delete destination",
+        description: error.message || "Failed to delete destination",
         variant: "destructive",
       });
     }
@@ -196,19 +208,34 @@ export default function AdminTrendingDestinations() {
 
   const toggleActive = async (id: string) => {
     try {
-      // TODO: Update API call
-      setDestinations(destinations.map(dest => 
-        dest._id === id ? { ...dest, isActive: !dest.isActive } : dest
-      ));
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`${API_URL}/api/v1/trending-destinations/${id}/toggle-active`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update status');
+      }
+
+      const data = await response.json();
 
       toast({
         title: "Success",
-        description: "Destination status updated",
+        description: data.message || "Destination status updated",
       });
+
+      // Reload destinations
+      await loadDestinations();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to update status",
+        description: error.message || "Failed to update status",
         variant: "destructive",
       });
     }
@@ -275,7 +302,7 @@ export default function AdminTrendingDestinations() {
                       {destination.name}
                     </h3>
                     <p className="text-white/90 text-sm font-semibold">
-                      ₹{destination.price.toLocaleString()}
+                      ₹{destination.price.toLocaleString('en-IN')}
                     </p>
                     <p className="text-white/70 text-xs mt-1 flex items-center gap-1">
                       <LinkIcon className="w-3 h-3" />
@@ -352,7 +379,7 @@ export default function AdminTrendingDestinations() {
                     min="0"
                     placeholder="49999"
                     value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) || 0 })}
                     required
                   />
                 </div>
@@ -417,7 +444,7 @@ export default function AdminTrendingDestinations() {
                     type="number"
                     min="1"
                     value={formData.order}
-                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 1 })}
                     required
                   />
                   <p className="text-sm text-muted-foreground mt-1">
