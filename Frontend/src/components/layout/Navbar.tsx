@@ -57,12 +57,10 @@ const allTrips = [
 
 const navItems: NavItem[] = [
   {
-    label: "Group Trips",
+    label: "EMI Trips",
+     href: "/trips/upcoming",
     icon: <Users className="w-4 h-4 text-primary" />,
-    children: [
-      { label: "Upcoming Group Trips", href: "/trips/upcoming" },
-      { label: "Fixed Departure Trips", href: "/trips/fixed-departure" },
-    ],
+    
   },
   {
     label: "Deals",
@@ -72,6 +70,7 @@ const navItems: NavItem[] = [
       { label: "Limited Time Offers", href: "/deals/limited" },
     ],
   },
+  
   {
     label: "Travel Styles",
     icon: <MapPin className="w-4 h-4 text-rose-500" />,
@@ -81,6 +80,8 @@ const navItems: NavItem[] = [
       { label: "Group Trips", href: "/trips/group" },
       { label: "Weekend Trips", href: "/trips/weekend" },
       { label: "Adventure Trips", href: "/style/adventure" },
+      {label: "Cruise Trips", href: "/trips/cruise" },
+      { label: "Customised Trips", href: "/custom" },
     ],
   },
   {
@@ -90,19 +91,16 @@ const navItems: NavItem[] = [
   },
   {
     label: "Retreats",
+    href: "/retreats/meditation" ,
     icon: <Sparkles className="w-4 h-4 text-purple-500" />,
-    children: [
-      { label: "Weekly Retreats", href: "/retreats/meditation" },
-      { label: "Spiritual Retreats", href: "/retreats/spiritual" },
-      { label: "Wellness Retreats", href: "/retreats/wellness" },
-      { label: "Yoga Retreats", href: "/retreats/yoga" },
-    ],
+    
   },
   {
-    label: "Customised Trips",
-    href: "/custom",
+    label: "Healing",
+    href: "/retreats/wellness",
     icon: <Globe className="w-4 h-4 text-teal-500" />,
   },
+  
   {
     label: "Visa & Documentation",
     icon: <Info className="w-4 h-4 text-purple-500" />,
