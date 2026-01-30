@@ -241,11 +241,11 @@ export function Navbar() {
           {/* Right side: Phone + Auth + CTA */}
           <div className="flex items-center gap-4">
             <a
-              href="tel:(+91)75016 10109"
+              href="tel: +917363933945"
               className="hidden sm:flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors"
             >
               <Phone className="w-4 h-4" />
-              <span className="font-medium">(+91) 75016 10109</span>
+              <span className="font-medium">(+91) 73639 33945 </span>
             </a>
 
             {/* Auth Buttons */}
@@ -426,11 +426,11 @@ export function Navbar() {
                     </>
                   )}
                   <a
-                    href="tel:(+91)7501610109"
+                    href="tel: +917363933945"
                     className="flex items-center gap-2 text-sm text-foreground px-4 py-3"
                   >
                     <Phone className="w-4 h-4" />
-                    <span>(+91)7501610109</span>
+                    <span>(+91)73639 33945</span>
                   </a>
                   <Link to="/contact" onClick={() => setMobileOpen(false)}>
                     <Button className="w-full">Plan Your Trip</Button>

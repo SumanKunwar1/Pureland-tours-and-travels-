@@ -145,7 +145,7 @@ export function Footer() {
               </p>
               <p className="text-sm text-muted-foreground flex items-center gap-2 mb-3">
                 <Phone className="w-4 h-4 shrink-0" />
-                (+91) 75016 10109
+                 (+91) 7363933945
               </p>
               <button className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-full text-sm hover:bg-muted transition-colors">
                 <MapPin className="w-4 h-4" />
@@ -193,11 +193,11 @@ export function Footer() {
             <h3 className="font-display text-base font-bold text-foreground mb-4">Talk To Us</h3>
             <div className="space-y-2 mb-6">
               <a
-                href="tel:(+91) 9310660016 / (+977) 970-4502011"
+                href="tel:(+91) 7363933945"
                 className="flex items-center gap-2 text-sm text-primary hover:underline"
               >
                 <Phone className="w-4 h-4" />
-                (+91) 9310660016 / (+977) 970-4502011
+                (+91) 7363933945
               </a>
               <a
                 href="mailto:info@padmasambhavatrip.com"
