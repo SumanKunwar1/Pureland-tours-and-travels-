@@ -1,12 +1,15 @@
 // src/pages/admin/AdminExploreDestinations.tsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trash2, Edit2, Eye, EyeOff, Link as LinkIcon, Filter } from "lucide-react";
+import { Plus, Trash2, Edit2, Eye, EyeOff, Upload, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { cn } from "@/lib/utils";
+import { getAuthToken } from "@/utils/auth";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 type FilterType = "all" | "international" | "domestic" | "weekend";
 
@@ -15,7 +18,7 @@ interface ExploreDestination {
   name: string;
   image: string;
   type: "international" | "domestic" | "weekend";
-  url: string; // Link where it should redirect
+  url: string;
   order: number;
   isActive: boolean;
   createdAt: string;
@@ -29,6 +32,7 @@ export default function AdminExploreDestinations() {
   const [editingDestination, setEditingDestination] = useState<ExploreDestination | null>(null);
   const [previewImage, setPreviewImage] = useState<string>("");
   const [filterType, setFilterType] = useState<FilterType>("all");
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     image: "",
@@ -45,39 +49,55 @@ export default function AdminExploreDestinations() {
   const loadDestinations = async () => {
     try {
       setIsLoading(true);
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/v1/explore-destinations');
-      // const data = await response.json();
-      
-      // Mock data
-      const mockData: ExploreDestination[] = [
-        {
-          _id: "1",
-          name: "Bali",
-          image: "/assets/dest-bali.jpg",
-          type: "international",
-          url: "/trip/bali-tour",
-          order: 1,
-          isActive: true,
-          createdAt: new Date().toISOString(),
+      const token = getAuthToken();
+
+      if (!token) {
+        toast({
+          title: "Authentication Required",
+          description: "Please login to access this page",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = '/admin/login';
+        }, 1500);
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/explore-destinations`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        {
-          _id: "2",
-          name: "Ladakh",
-          image: "/assets/dest-ladakh.jpg",
-          type: "domestic",
-          url: "/trip/ladakh-tour",
-          order: 2,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-        },
-      ];
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem("token");
+          toast({
+            title: "Session Expired",
+            description: "Please login again.",
+            variant: "destructive",
+          });
+          setTimeout(() => {
+            window.location.href = '/admin/login';
+          }, 1500);
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
       
-      setDestinations(mockData.sort((a, b) => a.order - b.order));
+      if (data.status === "success") {
+        setDestinations(data.data.exploreDestinations);
+      }
     } catch (error: any) {
+      console.error("Error loading destinations:", error);
       toast({
         title: "Error",
-        description: "Failed to load destinations",
+        description: error.message || "Failed to load destinations",
         variant: "destructive",
       });
     } finally {
@@ -120,6 +140,24 @@ export default function AdminExploreDestinations() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "Image size should be less than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!file.type.startsWith("image/")) {
+        toast({
+          title: "Error",
+          description: "Please upload an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
@@ -142,42 +180,88 @@ export default function AdminExploreDestinations() {
       return;
     }
 
+    setIsSaving(true);
+
     try {
-      if (editingDestination) {
-        // TODO: Update API call
-        setDestinations(destinations.map(dest => 
-          dest._id === editingDestination._id 
-            ? { ...dest, ...formData }
-            : dest
-        ));
+      const token = getAuthToken();
 
+      if (!token) {
         toast({
-          title: "Success",
-          description: "Destination updated successfully",
+          title: "Authentication Required",
+          description: "Please login to continue",
+          variant: "destructive",
         });
-      } else {
-        // TODO: Create API call
-        const newDestination: ExploreDestination = {
-          _id: Date.now().toString(),
-          ...formData,
-          createdAt: new Date().toISOString(),
-        };
-        
-        setDestinations([...destinations, newDestination].sort((a, b) => a.order - b.order));
-
-        toast({
-          title: "Success",
-          description: "Destination created successfully",
-        });
+        setTimeout(() => {
+          window.location.href = '/admin/login';
+        }, 1500);
+        return;
       }
 
-      setShowModal(false);
+      const url = editingDestination 
+        ? `${API_URL}/api/v1/explore-destinations/${editingDestination._id}`
+        : `${API_URL}/api/v1/explore-destinations`;
+
+      const method = editingDestination ? 'PATCH' : 'POST';
+
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem("token");
+          toast({
+            title: "Session Expired",
+            description: "Please login again.",
+            variant: "destructive",
+          });
+          setTimeout(() => {
+            window.location.href = '/admin/login';
+          }, 1500);
+          return;
+        }
+        
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.status === "success") {
+        if (editingDestination) {
+          setDestinations(
+            destinations.map((dest) =>
+              dest._id === editingDestination._id ? data.data.exploreDestination : dest
+            ).sort((a, b) => a.order - b.order)
+          );
+          toast({
+            title: "Success",
+            description: "Destination updated successfully",
+          });
+        } else {
+          setDestinations([...destinations, data.data.exploreDestination].sort((a, b) => a.order - b.order));
+          toast({
+            title: "Success",
+            description: "Destination created successfully",
+          });
+        }
+        setShowModal(false);
+      }
     } catch (error: any) {
+      console.error("Error saving destination:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to save destination",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -185,17 +269,56 @@ export default function AdminExploreDestinations() {
     if (!confirm("Are you sure you want to delete this destination?")) return;
 
     try {
-      // TODO: Delete API call
-      setDestinations(destinations.filter(dest => dest._id !== id));
-      
-      toast({
-        title: "Success",
-        description: "Destination deleted successfully",
+      const token = getAuthToken();
+
+      if (!token) {
+        toast({
+          title: "Authentication Required",
+          description: "Please login to continue",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/explore-destinations/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
       });
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem("token");
+          toast({
+            title: "Session Expired",
+            description: "Please login again.",
+            variant: "destructive",
+          });
+          setTimeout(() => {
+            window.location.href = '/admin/login';
+          }, 1500);
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.status === "success") {
+        setDestinations(destinations.filter((dest) => dest._id !== id));
+        toast({
+          title: "Success",
+          description: "Destination deleted successfully",
+        });
+      }
     } catch (error: any) {
+      console.error("Error deleting destination:", error);
       toast({
         title: "Error",
-        description: "Failed to delete destination",
+        description: error.message || "Failed to delete destination",
         variant: "destructive",
       });
     }
@@ -203,19 +326,60 @@ export default function AdminExploreDestinations() {
 
   const toggleActive = async (id: string) => {
     try {
-      // TODO: Update API call
-      setDestinations(destinations.map(dest => 
-        dest._id === id ? { ...dest, isActive: !dest.isActive } : dest
-      ));
+      const token = getAuthToken();
 
-      toast({
-        title: "Success",
-        description: "Destination status updated",
+      if (!token) {
+        toast({
+          title: "Authentication Required",
+          description: "Please login to continue",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/explore-destinations/${id}/toggle-active`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
       });
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem("token");
+          toast({
+            title: "Session Expired",
+            description: "Please login again.",
+            variant: "destructive",
+          });
+          setTimeout(() => {
+            window.location.href = '/admin/login';
+          }, 1500);
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.status === "success") {
+        setDestinations(
+          destinations.map((dest) =>
+            dest._id === id ? data.data.exploreDestination : dest
+          )
+        );
+        toast({
+          title: "Success",
+          description: data.message,
+        });
+      }
     } catch (error: any) {
+      console.error("Error toggling active status:", error);
       toast({
         title: "Error",
-        description: "Failed to update status",
+        description: error.message || "Failed to update status",
         variant: "destructive",
       });
     }
@@ -224,48 +388,63 @@ export default function AdminExploreDestinations() {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-display font-bold">Explore Destinations</h1>
+            <h1 className="text-3xl font-bold">Explore Destinations</h1>
             <p className="text-muted-foreground mt-1">
-              Manage explore destinations section on homepage
+              Manage featured destinations on homepage
             </p>
           </div>
-          <Button onClick={handleCreate}>
-            <Plus className="w-4 h-4 mr-2" />
+          <Button onClick={handleCreate} size="lg">
+            <Plus className="w-5 h-5 mr-2" />
             Add Destination
           </Button>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <Filter className="w-4 h-4 text-muted-foreground" />
-          {(["all", "international", "domestic", "weekend"] as FilterType[]).map((type) => (
+        <div className="flex flex-wrap gap-3">
+          {[
+            { label: "All", value: "all" as FilterType },
+            { label: "International", value: "international" as FilterType },
+            { label: "Domestic", value: "domestic" as FilterType },
+            { label: "Weekend", value: "weekend" as FilterType },
+          ].map((filter) => (
             <button
-              key={type}
-              onClick={() => setFilterType(type)}
+              key={filter.value}
+              onClick={() => setFilterType(filter.value)}
               className={cn(
-                "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                filterType === type
+                "px-4 py-2 rounded-lg font-medium transition-colors",
+                filterType === filter.value
                   ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  : "bg-card hover:bg-accent"
               )}
             >
-              {type === "all" ? "All" : type.charAt(0).toUpperCase() + type.slice(1)}
+              {filter.label}
             </button>
           ))}
         </div>
 
+        {/* Loading State */}
         {isLoading ? (
-          <div className="text-center py-12">Loading...</div>
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Loading destinations...</p>
+            </div>
+          </div>
         ) : filteredDestinations.length === 0 ? (
-          <div className="text-center py-12 bg-muted rounded-lg">
-            <p className="text-muted-foreground">
+          <div className="text-center py-12 bg-card rounded-lg border-2 border-dashed">
+            <Filter className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No Destinations Found</h3>
+            <p className="text-muted-foreground mb-6">
               {filterType === "all" 
-                ? "No destinations yet" 
-                : `No ${filterType} destinations yet`}
+                ? "Create your first destination to get started"
+                : `No ${filterType} destinations yet`
+              }
             </p>
-            <Button onClick={handleCreate} className="mt-4">
+            <Button onClick={handleCreate}>
+              <Plus className="w-5 h-5 mr-2" />
               Add Destination
             </Button>
           </div>
@@ -347,11 +526,16 @@ export default function AdminExploreDestinations() {
               animate={{ opacity: 1, scale: 1 }}
               className="bg-card rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             >
-              <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between">
+              <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between z-10">
                 <h2 className="text-2xl font-bold">
                   {editingDestination ? "Edit Destination" : "Add Destination"}
                 </h2>
-                <Button variant="ghost" size="sm" onClick={() => setShowModal(false)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowModal(false)}
+                  disabled={isSaving}
+                >
                   ✕
                 </Button>
               </div>
@@ -367,6 +551,7 @@ export default function AdminExploreDestinations() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
+                    disabled={isSaving}
                   />
                 </div>
 
@@ -383,6 +568,7 @@ export default function AdminExploreDestinations() {
                     })}
                     className="w-full px-3 py-2 border border-border rounded-lg bg-background"
                     required
+                    disabled={isSaving}
                   >
                     <option value="international">International</option>
                     <option value="domestic">Domestic</option>
@@ -396,12 +582,17 @@ export default function AdminExploreDestinations() {
                     Destination Image *
                   </label>
                   <div className="space-y-4">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="cursor-pointer"
-                    />
+                    <div className="flex items-center gap-4">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="cursor-pointer"
+                        disabled={isSaving}
+                      />
+                      <Upload className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                    
                     {previewImage && (
                       <div className="relative w-32 h-32 rounded-full overflow-hidden border mx-auto">
                         <img
@@ -411,6 +602,7 @@ export default function AdminExploreDestinations() {
                         />
                       </div>
                     )}
+                    
                     <p className="text-sm text-muted-foreground">
                       Or enter image URL:
                     </p>
@@ -421,6 +613,7 @@ export default function AdminExploreDestinations() {
                         setFormData({ ...formData, image: e.target.value });
                         setPreviewImage(e.target.value);
                       }}
+                      disabled={isSaving}
                     />
                   </div>
                 </div>
@@ -435,6 +628,7 @@ export default function AdminExploreDestinations() {
                     value={formData.url}
                     onChange={(e) => setFormData({ ...formData, url: e.target.value })}
                     required
+                    disabled={isSaving}
                   />
                   <p className="text-sm text-muted-foreground mt-1">
                     Internal link (e.g., /trip/bali-tour) or external URL
@@ -450,8 +644,9 @@ export default function AdminExploreDestinations() {
                     type="number"
                     min="1"
                     value={formData.order}
-                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 1 })}
                     required
+                    disabled={isSaving}
                   />
                   <p className="text-sm text-muted-foreground mt-1">
                     Lower numbers appear first
@@ -466,6 +661,7 @@ export default function AdminExploreDestinations() {
                     checked={formData.isActive}
                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                     className="w-4 h-4"
+                    disabled={isSaving}
                   />
                   <label htmlFor="isActive" className="text-sm font-medium cursor-pointer">
                     Active (Show on homepage)
@@ -479,11 +675,21 @@ export default function AdminExploreDestinations() {
                     variant="outline"
                     onClick={() => setShowModal(false)}
                     className="flex-1"
+                    disabled={isSaving}
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" className="flex-1">
-                    {editingDestination ? "Update" : "Create"}
+                  <Button type="submit" className="flex-1" disabled={isSaving}>
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                        Saving...
+                      </>
+                    ) : editingDestination ? (
+                      "Update"
+                    ) : (
+                      "Create"
+                    )}
                   </Button>
                 </div>
               </form>
