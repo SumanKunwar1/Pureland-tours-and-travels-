@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 import { 
   Briefcase, 
   User, 
@@ -15,6 +16,7 @@ import {
   Shield,
   Users,
   TrendingUp,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,15 +46,67 @@ export default function AgentSignup() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const response = await fetch("http://localhost:5000/api/v1/agents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-    console.log("Agent Signup Data:", formData);
-    
-    // Show success and redirect
-    alert("Application submitted successfully! We'll contact you within 24 hours.");
-    navigate("/");
-    setIsSubmitting(false);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to submit application");
+      }
+
+      // Success notification
+      toast.success(
+        "🎉 Application submitted successfully! We'll contact you within 24-48 hours.",
+        {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        }
+      );
+
+      // Reset form
+      setFormData({
+        fullName: "",
+        companyName: "",
+        email: "",
+        phone: "",
+        city: "",
+        state: "",
+        website: "",
+        experience: "",
+      });
+
+      // Redirect after short delay
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+    } catch (error: any) {
+      // Error notification
+      toast.error(
+        error.message || "Failed to submit application. Please try again.",
+        {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        }
+      );
+      console.error("Error submitting application:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const benefits = [
@@ -387,7 +441,7 @@ export default function AgentSignup() {
                   >
                     {isSubmitting ? (
                       <span className="flex items-center gap-2">
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <Loader2 className="w-5 h-5 animate-spin" />
                         Submitting Application...
                       </span>
                     ) : (

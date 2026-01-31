@@ -1,5 +1,7 @@
 // src/App.tsx
 import { Toaster } from "@/components/ui/toaster";
+import { ToastContainer } from "react-toastify";
+
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -53,6 +55,7 @@ import AdminVisaApplications from "./pages/admin/AdminVisaApplications";
 import AdminCustomTrips from "./pages/admin/AdminCustomTrips";
 import AdminDocumentation from "./pages/admin/AdminDocumentation";
 import AdminInsurance from "./pages/admin/AdminInsurance";
+import AdminAgents from "./pages/admin/AdminAgents";
 
 // Admin Homepage Management Pages
 import AdminHeroSection from "./pages/admin/AdminHeroSection";
@@ -215,6 +218,14 @@ const App = () => (
               element={
                 <ProtectedAdminRoute>
                   <AdminInsurance />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/agents"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminAgents />
                 </ProtectedAdminRoute>
               }
             />
