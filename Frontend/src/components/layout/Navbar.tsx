@@ -18,8 +18,8 @@ import {
   LogIn,
   UserPlus,
   LogOut,
-  Plane,
   LayoutDashboard,
+  Plane,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,20 +60,20 @@ const navItems: NavItem[] = [
 
   {
     label: "EMI Trips",
-     href: "/trips/upcoming",
+     href: "/trips/emi",
     icon: <Users className="w-4 h-4 text-primary" />,
     
   },
   {
     label: "International Trips",
-     href: "/trips/upcoming",
-    icon: <Plane className="w-4 h-4 text-primary" />,
+     href: "/international-trips",
+    icon: <Plane className="w-4 h-4 text-sky-500" />,
     
   },
   {
     label: "India Trips",
-     href: "/trips/upcoming",
-    icon: <Users className="w-4 h-4 text-primary" />,
+     href: "/domestic-trips",
+    icon: <span className="text-base">🇮🇳</span>,
     
   },
 
@@ -207,50 +207,41 @@ export function Navbar() {
                 }}
                 onFocus={() => setShowSearchResults(true)}
                 onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
-                className="w-full pl-10 pr-4 py-2 rounded-full border-border bg-muted/50 focus:bg-background"
+                className="pl-10 pr-4 h-10 rounded-full border-border focus:border-primary"
               />
+              
+              {/* Search Results Dropdown */}
+              <AnimatePresence>
+                {showSearchResults && searchResults.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-xl shadow-lg overflow-hidden z-50"
+                  >
+                    {searchResults.map((trip) => (
+                      <button
+                        key={trip.href}
+                        onClick={() => handleSearchSelect(trip.href)}
+                        className="w-full text-left px-4 py-3 hover:bg-muted transition-colors border-b border-border last:border-0"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">{trip.name}</p>
+                            <p className="text-xs text-muted-foreground">{trip.destination}</p>
+                          </div>
+                          <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
+                            {trip.category}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-            
-            {/* Search Results Dropdown */}
-            <AnimatePresence>
-              {showSearchResults && searchResults.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-xl shadow-lg overflow-hidden z-50"
-                >
-                  {searchResults.map((trip, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSearchSelect(trip.href)}
-                      className="w-full text-left px-4 py-3 hover:bg-muted transition-colors flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{trip.name}</p>
-                        <p className="text-xs text-muted-foreground">{trip.destination} • {trip.category}</p>
-                      </div>
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                        {trip.category}
-                      </span>
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-              {showSearchResults && searchQuery.trim() && searchResults.length === 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-xl shadow-lg p-4 z-50"
-                >
-                  <p className="text-sm text-muted-foreground text-center">No trips found</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
 
-          {/* Right side: Phone + Auth + CTA */}
           <div className="flex items-center gap-4">
             <a
               href="tel: +917363933945"
