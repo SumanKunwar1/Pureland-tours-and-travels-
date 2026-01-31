@@ -27,6 +27,25 @@ interface TripDate {
 
 // Trip Categories based on Navbar structure
 const TRIP_CATEGORIES = {
+"EMI Trips": {
+    value: "emi-trips",
+    subcategories: [
+      { label: "Combo Packages", value: "combo", route: "/trips/emi" },
+    ],
+  },
+"International Trips": {
+    value: "international-trips",
+    subcategories: [
+      { label: "Combo Packages", value: "combo", route: "/international-trips" },
+    ],
+  },
+  "India Trips": {
+    value: "india-trips",
+    subcategories: [
+      { label: "Combo Packages", value: "combo", route: "/domestic-trips" },
+    ],
+  },
+
   "Group Trips": {
     value: "group-trips",
     subcategories: [
