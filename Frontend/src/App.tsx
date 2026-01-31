@@ -22,6 +22,8 @@ import Contact from "./pages/Contact";
 import AboutUs from "./pages/AboutUs";
 import Blogs from "./pages/Blogs";
 import NotFound from "./pages/NotFound";
+import CruiseTrips from "./pages/CruiseTrips";
+import EMITrips from "./pages/EMITrips";
 
 // Auth Pages
 import SignUp from "./pages/SignUp";
@@ -238,6 +240,8 @@ const App = () => (
             <Route path="/weekend-trips" element={<WeekendTrips />} />
             <Route path="/international-trips" element={<InternationalTrips />} />
             <Route path="/domestic-trips" element={<DomesticTrips />} />
+            <Route path="/trips/emi" element={<EMITrips />} />
+            <Route path="/trips/cruise" element={<CruiseTrips />} />
             
             {/* Destination Routes */}
             <Route path="/destination/:slug" element={<TripDetail />} />
