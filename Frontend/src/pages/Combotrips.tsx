@@ -3,9 +3,37 @@ import TripListingPage from "@/components/trips/TripListingPage";
 import destCombo from "@/assets/dest-combo.jpg";
 
 const destinations = [
-  "All", "Southeast Asia", "South Asia", "East Asia", "Europe", 
-  "Thailand", "Vietnam", "Singapore", "Malaysia", "Bhutan", "India", 
-  "Sri Lanka", "Japan", "Korea", "Italy", "Switzerland", "France"
+  "All",
+  "Canada",
+  "USA",
+  "Australia",
+  "Russia",
+  "UK",
+  "Europe",
+  "Phillipine",
+  "Dubai",
+  "Azerbaijan",
+  "Armenia",
+  "Baku",
+  "Brazil",
+  "South Africa",
+  "Georgia",  
+  "Turkey", 
+  "Egypt", 
+  "Saudi Arabia", 
+  "Qatar", 
+  "Tanzania",  
+  "Mandeep", 
+  "Nepal", 
+  "Korea", 
+  "Taiwan", 
+  "Malaysia",
+  "Tibet", 
+  "China", 
+  "Hongkong", 
+  "Loas", 
+  "Cambodia", 
+  "Phillipines"
 ];
 
 const ComboTrips = () => {

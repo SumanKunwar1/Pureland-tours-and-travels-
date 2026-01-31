@@ -3,8 +3,37 @@ import TripListingPage from "@/components/trips/TripListingPage";
 import destBali from "@/assets/dest-bali.jpg";
 
 const destinations = [
-  "All", "Philippines", "Japan", "Russia", "Vietnam", "Bali", "Thailand", 
-  "Dubai", "Georgia", "Almaty", "Sri Lanka", "Northern Lights", "Bhutan", "Azerbaijan"
+  
+  "Canada",
+  "USA",
+  "Australia",
+  "Russia",
+  "UK",
+  "Europe",
+  "Phillipine",
+  "Dubai",
+  "Azerbaijan",
+  "Armenia",
+  "Baku",
+  "Brazil",
+  "South Africa",
+  "Georgia",  
+  "Turkey", 
+  "Egypt", 
+  "Saudi Arabia", 
+  "Qatar", 
+  "Tanzania",  
+  "Mandeep", 
+  "Nepal", 
+  "Korea", 
+  "Taiwan", 
+  "Malaysia",
+  "Tibet", 
+  "China", 
+  "Hongkong", 
+  "Loas", 
+  "Cambodia", 
+  "Phillipines"
 ];
 
 const InternationalTrips = () => {

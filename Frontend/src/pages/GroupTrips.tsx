@@ -3,8 +3,40 @@ import TripListingPage from "@/components/trips/TripListingPage";
 import destGeorgia from "@/assets/dest-georgia.jpg";
 
 const destinations = [
-  "All", "Spiti Valley", "Meghalaya", "Himachal Pradesh", "Dubai", "Almaty", 
-  "Bhutan", "Bali", "Vietnam", "Georgia", "Sri Lanka", "Japan", "Thailand"
+  "All",
+  "Sikkim",
+  "Darjeeling",
+  "Tsopema Himalchal",
+  "Canada",
+  "USA",
+  "Australia",
+  "Russia",
+  "UK",
+  "Europe",
+  "Phillipine",
+  "Dubai",
+  "Azerbaijan",
+  "Armenia",
+  "Baku",
+  "Brazil",
+  "South Africa",
+  "Georgia",  
+  "Turkey", 
+  "Egypt", 
+  "Saudi Arabia", 
+  "Qatar", 
+  "Tanzania",  
+  "Mandeep", 
+  "Nepal", 
+  "Korea", 
+  "Taiwan", 
+  "Malaysia",
+  "Tibet", 
+  "China", 
+  "Hongkong", 
+  "Loas", 
+  "Cambodia", 
+  "Phillipines"
 ];
 
 const GroupTrips = () => {

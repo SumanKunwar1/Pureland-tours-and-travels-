@@ -3,7 +3,7 @@ import TripListingPage from "@/components/trips/TripListingPage";
 import destBhutan from "@/assets/dest-bhutan.jpg";
 
 const destinations = [
-  "All", "Rishikesh", "Dharamsala", "Bali", "Thailand", "Nepal", 
+  "All", "Rishikesh", "Dharamsala", "Nepal", 
   "Sri Lanka", "Bhutan", "Kerala"
 ];
 

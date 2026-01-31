@@ -4,7 +4,12 @@ import heroPilgrimage from "@/assets/hero-pilgrimage.jpg";
 
 const destinations = [
   "All", "Bhutan", "Nepal", "Tibet", "Varanasi", "Rishikesh", "Bodh Gaya", 
-  "Dharamsala", "Amritsar", "Tirupati", "Char Dham"
+  "Dharamsala", "Amritsar", "Tirupati", "Char Dham",
+  "Sikkim",
+  "Darjeeling",
+  "Tsopema", "Himalchal",
+  
+ 
 ];
 
 const PilgrimageTrips = () => {
