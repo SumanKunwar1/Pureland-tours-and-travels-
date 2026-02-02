@@ -12,8 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
-import { API_BASE_URL } from "@/lib/api-config";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 interface Trip {
   _id: string;
@@ -78,16 +77,16 @@ const TripListingPage = ({
   const fetchTrips = async () => {
     try {
       setLoading(true);
-      let url = `${API_BASE_URL}/trips?`;
+      let endpoint = '/trips?';
       
       if (tripCategory) {
-        url += `tripCategory=${tripCategory}&`;
+        endpoint += `tripCategory=${tripCategory}&`;
       }
       if (tripType) {
-        url += `tripType=${tripType}&`;
+        endpoint += `tripType=${tripType}&`;
       }
 
-      const response = await axios.get(url);
+      const response = await axiosInstance.get(endpoint);
       
       if (response.data.status === 'success') {
         setTrips(response.data.data.trips);

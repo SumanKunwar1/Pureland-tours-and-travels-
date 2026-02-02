@@ -19,9 +19,8 @@ import { Footer } from "@/components/layout/Footer";
 import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
 import { BookingFormModal } from "@/components/shared/BookingFormModal";
 import { cn } from "@/lib/utils";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5020/api/v1";
 const WHATSAPP_CONTACT = "9779851045900";
 
 const TRIP_TABS = ["Itinerary", "Inclusions", "Costing", "Notes"];
@@ -81,7 +80,7 @@ export default function TripDetail() {
 
   const fetchTripData = async (tripId: string) => {
     try {
-      const response = await axios.get(`${API_URL}/trips/${tripId}`);
+      const response = await axiosInstance.get(`/trips/${tripId}`);
       
       if (response.data.status === 'success') {
         const trip = response.data.data.trip;
