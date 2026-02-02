@@ -30,7 +30,8 @@ interface Config {
 export const config: Config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '5020', 10),
-  clientUrl: process.env.CLIENT_URL || 'https://padmasambhavatrip.com',
+  // FIXED: Use CLIENT_URL from .env (not FRONTEND_URL)
+  clientUrl: process.env.CLIENT_URL || 'http://localhost:8080',
   mongoUri: process.env.MONGO_URI || 'mongodb://localhost:27017/padmasambhava-trips',
   jwtSecret: process.env.JWT_SECRET || 'your-secret-key-change-this',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
@@ -48,3 +49,25 @@ export const config: Config = {
   razorpayKeyId: process.env.RAZORPAY_KEY_ID || '',
   razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || '',
 };
+
+// Log configuration in development (for debugging CORS issues)
+if (process.env.NODE_ENV === 'development') {
+  console.log('✅ Configuration loaded:');
+  console.log(`   NODE_ENV: ${process.env.NODE_ENV}`);
+  console.log(`   PORT: ${process.env.PORT || 5000}`);
+  console.log(`   CLIENT_URL: ${process.env.CLIENT_URL || 'http://localhost:8080'}`);
+}
+
+// Validate critical environment variables in production
+if (process.env.NODE_ENV === 'production') {
+  const requiredVars = ['MONGO_URI', 'JWT_SECRET', 'CLIENT_URL'];
+  const missing = requiredVars.filter(v => !process.env[v]);
+  
+  if (missing.length > 0) {
+    console.error(`❌ Missing critical environment variables: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+  
+  console.log('✅ Production configuration validated:');
+  console.log(`   CLIENT_URL: ${process.env.CLIENT_URL}`);
+}

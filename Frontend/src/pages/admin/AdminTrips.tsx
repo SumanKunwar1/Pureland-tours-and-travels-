@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { cn } from "@/lib/utils";
-import axios from "axios";
-import { API_BASE_URL } from "@/lib/api-config";
+import axiosInstance from "@/lib/axios";
 
 interface Trip {
   _id: string;
@@ -51,19 +50,18 @@ export default function AdminTrips() {
 
   const fetchTrips = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_BASE_URL}/trips?status=`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      setLoading(true);
+      // FIXED: No need to pass status parameter, axios will handle auth
+      const response = await axiosInstance.get('/trips');
 
       if (response.data.status === 'success') {
         setTrips(response.data.data.trips);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching trips:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch trips",
+        description: error.response?.data?.message || "Failed to fetch trips",
         variant: "destructive",
       });
     } finally {
@@ -73,16 +71,18 @@ export default function AdminTrips() {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_BASE_URL}/trips/admin/stats`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axiosInstance.get('/trips/admin/stats');
 
       if (response.data.status === 'success') {
         setStats(response.data.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching stats:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch statistics",
+        variant: "destructive",
+      });
     }
   };
 
@@ -92,10 +92,7 @@ export default function AdminTrips() {
     }
 
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`${API_BASE_URL}/trips/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axiosInstance.delete(`/trips/${id}`);
 
       setTrips(trips.filter((trip) => trip._id !== id));
       toast({
@@ -125,6 +122,9 @@ export default function AdminTrips() {
   const categories = [
     "All",
     "group-trips",
+    "india-trips",
+    "international-trips",
+    "emi-trips",
     "travel-styles",
     "destinations",
     "combo-trips",
