@@ -10,27 +10,41 @@ import { catchAsync } from '../utils/catchAsync';
 export const submitCustomTrip = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { name, email, phone, destination, travelers, dates, budget, message } = req.body;
+      // Accept both field name variations
+      const name = req.body.name || req.body.customerName;
+      const email = req.body.email;
+      const phone = req.body.phone;
+      const destination = req.body.destination;
+      const travelers = req.body.travelers;
+      const dates = req.body.dates || req.body.travelDates;
+      const budget = req.body.budget;
+      const message = req.body.message;
 
-      // Log incoming data for debugging
       console.log('Received custom trip request:', { name, email, phone, destination });
 
       // Validate required fields
       if (!name || !email || !phone || !destination) {
-        return next(new AppError('Please provide all required fields', 400));
+        console.log('Validation failed:', { name, email, phone, destination });
+        return next(new AppError('Please provide all required fields: name, email, phone, destination', 400));
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return next(new AppError('Please provide a valid email address', 400));
       }
 
       // Create custom trip request
       const customTrip = await CustomTrip.create({
-        userId: (req as any).user?._id || undefined, // Optional - for logged in users
-        name,
-        email,
-        phone,
-        destination,
-        travelers: travelers || undefined,
-        dates: dates || undefined,
-        budget: budget || undefined,
-        message: message || undefined,
+        userId: (req as any).user?._id || undefined,
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
+        destination: destination.trim(),
+        travelers: travelers ? travelers.trim() : undefined,
+        dates: dates ? dates.trim() : undefined,
+        budget: budget ? budget.trim() : undefined,
+        message: message ? message.trim() : undefined,
         status: 'pending',
         submittedDate: new Date(),
       });
@@ -59,7 +73,7 @@ export const submitCustomTrip = catchAsync(
       }
       
       // Pass other errors to error handler
-      return next(new AppError('Failed to submit custom trip request', 500));
+      return next(new AppError(error.message || 'Failed to submit custom trip request', 500));
     }
   }
 );
@@ -218,10 +232,20 @@ export const getCustomTripStats = catchAsync(
     ]);
 
     const total = await CustomTrip.countDocuments();
+    const pending = await CustomTrip.countDocuments({ status: 'pending' });
+    const inProgress = await CustomTrip.countDocuments({ status: 'in-progress' });
+    const quoted = await CustomTrip.countDocuments({ status: 'quoted' });
+    const confirmed = await CustomTrip.countDocuments({ status: 'confirmed' });
+    const cancelled = await CustomTrip.countDocuments({ status: 'cancelled' });
 
     res.status(200).json({
       status: 'success',
       data: {
+        totalRequests: total,
+        pendingRequests: pending,
+        quotedRequests: inProgress,
+        acceptedRequests: confirmed,
+        rejectedRequests: cancelled,
         total,
         stats,
       },

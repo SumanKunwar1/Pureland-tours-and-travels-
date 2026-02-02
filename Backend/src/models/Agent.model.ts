@@ -28,6 +28,7 @@ const agentSchema = new Schema<IAgent>(
     agentId: {
       type: String,
       unique: true,
+      sparse: true, // Allows multiple documents without agentId
       // NOT required - will be auto-generated
     },
     fullName: {
@@ -114,15 +115,27 @@ const agentSchema = new Schema<IAgent>(
   }
 );
 
-// Generate agentId before saving - FIXED VERSION
+// Generate agentId before saving with better collision handling
 agentSchema.pre('save', async function (next) {
   // Only generate agentId if it doesn't exist
   if (!this.agentId) {
     try {
-      // Use the model directly instead of this.constructor
       const AgentModel = mongoose.model<IAgent>('Agent');
-      const count = await AgentModel.countDocuments();
-      this.agentId = `AGT${String(count + 1).padStart(6, '0')}`;
+      
+      // Find the highest existing agentId
+      const lastAgent = await AgentModel.findOne()
+        .sort({ agentId: -1 })
+        .select('agentId')
+        .lean();
+      
+      let nextNumber = 1;
+      if (lastAgent && lastAgent.agentId) {
+        // Extract number from AGT000001 format
+        const lastNumber = parseInt(lastAgent.agentId.replace('AGT', ''));
+        nextNumber = lastNumber + 1;
+      }
+      
+      this.agentId = `AGT${String(nextNumber).padStart(6, '0')}`;
     } catch (error) {
       return next(error as Error);
     }

@@ -36,11 +36,49 @@ const CustomisedTrips = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form
-    if (!formData.name || !formData.email || !formData.phone || !formData.destination) {
+    // Validate required fields
+    if (!formData.name?.trim()) {
       toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields",
+        title: "Missing Name",
+        description: "Please enter your name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.email?.trim()) {
+      toast({
+        title: "Missing Email",
+        description: "Please enter your email",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.phone?.trim()) {
+      toast({
+        title: "Missing Phone",
+        description: "Please enter your phone number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.destination?.trim()) {
+      toast({
+        title: "Missing Destination",
+        description: "Please enter your destination",
         variant: "destructive",
       });
       return;
@@ -49,12 +87,24 @@ const CustomisedTrips = () => {
     try {
       setIsSubmitting(true);
 
+      // Log what we're sending
+      console.log("Submitting form data:", formData);
+
       // Submit to backend API
-      await customTripService.submitRequest(formData);
+      await customTripService.submitRequest({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        destination: formData.destination.trim(),
+        travelers: formData.travelers.trim() || undefined,
+        dates: formData.dates.trim() || undefined,
+        budget: formData.budget.trim() || undefined,
+        message: formData.message.trim() || undefined,
+      });
 
       toast({
-        title: "Enquiry Submitted!",
-        description: "Our travel expert will get back to you within 24 hours",
+        title: "Success! 🎉",
+        description: "Your enquiry has been submitted successfully! Our travel expert will contact you within 24 hours.",
       });
 
       // Reset form
@@ -70,9 +120,27 @@ const CustomisedTrips = () => {
       });
     } catch (error: any) {
       console.error("Error submitting custom trip:", error);
+      
+      // Get detailed error message
+      let errorMessage = "Failed to submit your request. Please try again.";
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      console.error("Error details:", {
+        status: error.response?.status,
+        message: errorMessage,
+        data: error.response?.data,
+      });
+      
       toast({
         title: "Submission Failed",
-        description: error.response?.data?.message || "Failed to submit your request. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -159,7 +227,6 @@ const CustomisedTrips = () => {
                     placeholder="John Doe"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    required
                     disabled={isSubmitting}
                   />
                 </div>
@@ -172,7 +239,6 @@ const CustomisedTrips = () => {
                     placeholder="john@example.com"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    required
                     disabled={isSubmitting}
                   />
                 </div>
@@ -187,7 +253,6 @@ const CustomisedTrips = () => {
                     placeholder="+91 98765 43210"
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    required
                     disabled={isSubmitting}
                   />
                 </div>
@@ -200,7 +265,6 @@ const CustomisedTrips = () => {
                     placeholder="Where do you want to go?"
                     value={formData.destination}
                     onChange={(e) => setFormData({...formData, destination: e.target.value})}
-                    required
                     disabled={isSubmitting}
                   />
                 </div>

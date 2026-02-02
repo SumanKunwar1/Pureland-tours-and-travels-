@@ -18,17 +18,27 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { cn } from "@/lib/utils";
-import { API_URL } from "@/lib/api-config";
+import { API_BASE_URL } from "@/lib/api-config";
 
 interface Agent {
   _id: string;
-  name: string;
+  agentId?: string;
+  fullName: string;
+  companyName: string;
   email: string;
   phone: string;
-  location: string;
-  status: "pending" | "approved" | "rejected";
+  city: string;
+  state: string;
+  website?: string;
+  experience: string;
+  status: "Pending" | "Approved" | "Rejected";
   commissionRate?: number;
-  experience?: string;
+  totalBookings?: number;
+  totalRevenue?: number;
+  isActive?: boolean;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface Stats {
@@ -59,14 +69,15 @@ export default function AdminAgents() {
       const queryParams = new URLSearchParams();
 
       if (statusFilter !== "all") {
-        queryParams.append("status", statusFilter);
+        const capitalizedStatus = statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1);
+        queryParams.append("status", capitalizedStatus);
       }
       if (searchQuery) {
         queryParams.append("search", searchQuery);
       }
 
       const response = await fetch(
-        `${API_URL}/agents?${queryParams}`,
+        `${API_BASE_URL}/agents?${queryParams}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -100,7 +111,7 @@ export default function AdminAgents() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_URL}/agents/admin/stats`,
+        `${API_BASE_URL}/agents/admin/stats`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -123,7 +134,7 @@ export default function AdminAgents() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_URL}/agents/${selectedAgent._id}/approve`,
+        `${API_BASE_URL}/agents/${selectedAgent._id}/approve`,
         {
           method: "PATCH",
           headers: {
@@ -135,7 +146,7 @@ export default function AdminAgents() {
       if (response.ok) {
         toast({
           title: "Agent approved",
-          description: `${selectedAgent.name} has been approved`,
+          description: `${selectedAgent.fullName} has been approved`,
         });
         fetchAgents();
         fetchStats();
@@ -157,7 +168,7 @@ export default function AdminAgents() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_URL}/agents/${selectedAgent._id}/reject`,
+        `${API_BASE_URL}/agents/${selectedAgent._id}/reject`,
         {
           method: "PATCH",
           headers: {
@@ -169,7 +180,7 @@ export default function AdminAgents() {
       if (response.ok) {
         toast({
           title: "Agent rejected",
-          description: `${selectedAgent.name} has been rejected`,
+          description: `${selectedAgent.fullName} has been rejected`,
         });
         fetchAgents();
         fetchStats();
@@ -191,7 +202,7 @@ export default function AdminAgents() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_URL}/agents/${id}`,
+        `${API_BASE_URL}/agents/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -220,15 +231,15 @@ export default function AdminAgents() {
 
   const filteredAgents = agents.filter(
     (agent) =>
-      agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agent.email.toLowerCase().includes(searchQuery.toLowerCase())
+      agent.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      agent.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "approved":
+      case "approved": case "Approved":
         return <CheckCircle className="w-4 h-4" />;
-      case "rejected":
+      case "rejected": case "Rejected":
         return <XCircle className="w-4 h-4" />;
       default:
         return <Clock className="w-4 h-4" />;
@@ -237,9 +248,9 @@ export default function AdminAgents() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "approved":
+      case "approved": case "Approved":
         return "bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300";
-      case "rejected":
+      case "rejected": case "Rejected":
         return "bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300";
       default:
         return "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300";
@@ -324,7 +335,7 @@ export default function AdminAgents() {
                 className="bg-card rounded-xl border border-border p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <h3 className="font-semibold text-lg">{agent.name}</h3>
+                  <h3 className="font-semibold text-lg">{agent.fullName || 'Unknown Agent'}</h3>
                   <span
                     className={cn(
                       "px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1",
@@ -332,27 +343,27 @@ export default function AdminAgents() {
                     )}
                   >
                     {getStatusIcon(agent.status)}
-                    {agent.status.charAt(0).toUpperCase() + agent.status.slice(1)}
+                    {agent.status?.charAt(0).toUpperCase() + agent.status?.slice(1)}
                   </span>
                 </div>
 
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Mail className="w-4 h-4" />
-                    <span className="truncate">{agent.email}</span>
+                    <span className="truncate">{agent.email || 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Phone className="w-4 h-4" />
-                    <span>{agent.phone}</span>
+                    <span>{agent.phone || 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="w-4 h-4" />
-                    <span>{agent.location}</span>
+                    <span>{agent.city && agent.state ? `${agent.city}, ${agent.state}` : 'N/A'}</span>
                   </div>
                 </div>
 
                 <div className="flex gap-2 pt-4 border-t border-border">
-                  {agent.status === "pending" && (
+                  {agent.status?.toLowerCase() === "pending" && (
                     <>
                       <Button
                         size="sm"

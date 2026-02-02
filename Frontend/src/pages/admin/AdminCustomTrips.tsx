@@ -7,26 +7,35 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { cn } from "@/lib/utils";
-import { API_URL } from "@/lib/api-config";
+import { API_BASE_URL } from "@/lib/api-config";
 
 interface CustomTrip {
   _id: string;
-  customerName: string;
-  email: string;
-  destination: string;
+  name?: string;
+  customerName?: string;
+  email?: string;
+  destination?: string;
   budget?: string;
-  status: "pending" | "quoted" | "accepted" | "rejected";
-  submittedDate: string;
+  status: "pending" | "in-progress" | "quoted" | "confirmed" | "cancelled";
+  submittedDate?: string;
+  dates?: string;
   quotedPrice?: number;
   adminNotes?: string;
 }
 
 interface Stats {
-  totalRequests: number;
-  pendingRequests: number;
-  quotedRequests: number;
-  acceptedRequests: number;
-  rejectedRequests: number;
+  totalRequests?: number;
+  pendingRequests?: number;
+  quotedRequests?: number;
+  acceptedRequests?: number;
+  rejectedRequests?: number;
+  total?: number;
+}
+
+interface FormData {
+  quotedPrice: number;
+  adminNotes: string;
+  status: "pending" | "in-progress" | "quoted" | "confirmed" | "cancelled";
 }
 
 export default function AdminCustomTrips() {
@@ -38,9 +47,10 @@ export default function AdminCustomTrips() {
   const [loading, setLoading] = useState(true);
   const [editingTrip, setEditingTrip] = useState<CustomTrip | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     quotedPrice: 0,
     adminNotes: "",
+    status: "pending",
   });
 
   useEffect(() => {
@@ -61,7 +71,7 @@ export default function AdminCustomTrips() {
       }
 
       const response = await fetch(
-        `${API_URL}/custom-trips?${params}`,
+        `${API_BASE_URL}/custom-trips?${params}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -89,7 +99,7 @@ export default function AdminCustomTrips() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_URL}/custom-trips/admin/stats`,
+        `${API_BASE_URL}/custom-trips/admin/stats`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -112,7 +122,7 @@ export default function AdminCustomTrips() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_URL}/custom-trips/${editingTrip._id}`,
+        `${API_BASE_URL}/custom-trips/${editingTrip._id}`,
         {
           method: "PATCH",
           headers: {
@@ -149,7 +159,7 @@ export default function AdminCustomTrips() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_URL}/custom-trips/${id}`,
+        `${API_BASE_URL}/custom-trips/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -176,23 +186,48 @@ export default function AdminCustomTrips() {
     }
   };
 
-  const filteredTrips = trips.filter(
-    (trip) =>
-      trip.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      trip.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      trip.destination.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Safe filter function - handles undefined values
+  const filteredTrips = trips.filter((trip) => {
+    const name = (trip.customerName || trip.name || "").toLowerCase();
+    const email = (trip.email || "").toLowerCase();
+    const destination = (trip.destination || "").toLowerCase();
+    const searchLower = searchQuery.toLowerCase();
+
+    return (
+      name.includes(searchLower) ||
+      email.includes(searchLower) ||
+      destination.includes(searchLower)
+    );
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "accepted":
+      case "confirmed":
         return "bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300";
-      case "rejected":
+      case "cancelled":
         return "bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300";
       case "quoted":
         return "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300";
+      case "in-progress":
+        return "bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300";
       default:
         return "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300";
+    }
+  };
+
+  // Get display name - try customerName first, then name
+  const getDisplayName = (trip: CustomTrip) => {
+    return trip.customerName || trip.name || "N/A";
+  };
+
+  // Get display date
+  const getDisplayDate = (trip: CustomTrip) => {
+    const date = trip.submittedDate || trip.dates;
+    if (!date) return "N/A";
+    try {
+      return new Date(date).toLocaleDateString();
+    } catch {
+      return date;
     }
   };
 
@@ -217,14 +252,14 @@ export default function AdminCustomTrips() {
             />
           </div>
           <div className="flex gap-2">
-            {["all", "pending", "quoted", "accepted", "rejected"].map((status) => (
+            {["all", "pending", "in-progress", "quoted", "confirmed", "cancelled"].map((status) => (
               <Button
                 key={status}
                 variant={statusFilter === status ? "default" : "outline"}
                 size="sm"
                 onClick={() => setStatusFilter(status)}
               >
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+                {status.charAt(0).toUpperCase() + status.slice(1).replace("-", " ")}
               </Button>
             ))}
           </div>
@@ -234,23 +269,23 @@ export default function AdminCustomTrips() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="bg-card rounded-lg border border-border p-4">
               <p className="text-sm text-muted-foreground">Total Requests</p>
-              <p className="text-2xl font-bold">{stats.totalRequests}</p>
+              <p className="text-2xl font-bold">{stats.totalRequests || stats.total}</p>
             </div>
             <div className="bg-card rounded-lg border border-border p-4">
               <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-2xl font-bold text-amber-600">{stats.pendingRequests}</p>
+              <p className="text-2xl font-bold text-amber-600">{stats.pendingRequests || 0}</p>
             </div>
             <div className="bg-card rounded-lg border border-border p-4">
-              <p className="text-sm text-muted-foreground">Quoted</p>
-              <p className="text-2xl font-bold text-blue-600">{stats.quotedRequests}</p>
+              <p className="text-sm text-muted-foreground">In Progress</p>
+              <p className="text-2xl font-bold text-yellow-600">{stats.quotedRequests || 0}</p>
             </div>
             <div className="bg-card rounded-lg border border-border p-4">
-              <p className="text-sm text-muted-foreground">Accepted</p>
-              <p className="text-2xl font-bold text-green-600">{stats.acceptedRequests}</p>
+              <p className="text-sm text-muted-foreground">Confirmed</p>
+              <p className="text-2xl font-bold text-green-600">{stats.acceptedRequests || 0}</p>
             </div>
             <div className="bg-card rounded-lg border border-border p-4">
-              <p className="text-sm text-muted-foreground">Rejected</p>
-              <p className="text-2xl font-bold text-red-600">{stats.rejectedRequests}</p>
+              <p className="text-sm text-muted-foreground">Cancelled</p>
+              <p className="text-2xl font-bold text-red-600">{stats.rejectedRequests || 0}</p>
             </div>
           </div>
         )}
@@ -276,33 +311,42 @@ export default function AdminCustomTrips() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-lg">{trip.customerName}</h3>
+                      <h3 className="font-semibold text-lg">{getDisplayName(trip)}</h3>
                       <span
                         className={cn(
                           "px-3 py-1 rounded-full text-xs font-medium",
                           getStatusColor(trip.status)
                         )}
                       >
-                        {trip.status.charAt(0).toUpperCase() + trip.status.slice(1)}
+                        {trip.status.charAt(0).toUpperCase() + trip.status.slice(1).replace("-", " ")}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm text-muted-foreground mb-2">
                       <div>
-                        <span className="font-medium">Email:</span> {trip.email}
+                        <span className="font-medium">Email:</span> {trip.email || "N/A"}
                       </div>
                       <div>
-                        <span className="font-medium">Destination:</span> {trip.destination}
+                        <span className="font-medium">Destination:</span> {trip.destination || "N/A"}
                       </div>
                       <div>
                         <span className="font-medium">Budget:</span> {trip.budget || "N/A"}
                       </div>
                     </div>
-                    {trip.quotedPrice && (
-                      <div className="text-sm">
-                        <span className="font-medium">Quoted Price:</span> ₹
-                        {trip.quotedPrice.toLocaleString()}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm text-muted-foreground mb-2">
+                      <div>
+                        <span className="font-medium">Date:</span> {getDisplayDate(trip)}
                       </div>
-                    )}
+                      {trip.quotedPrice && (
+                        <div>
+                          <span className="font-medium">Quoted Price:</span> ₹{trip.quotedPrice.toLocaleString()}
+                        </div>
+                      )}
+                      {trip.adminNotes && (
+                        <div>
+                          <span className="font-medium">Notes:</span> {trip.adminNotes}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
@@ -314,6 +358,7 @@ export default function AdminCustomTrips() {
                         setFormData({
                           quotedPrice: trip.quotedPrice || 0,
                           adminNotes: trip.adminNotes || "",
+                          status: trip.status,
                         });
                         setShowModal(true);
                       }}
@@ -344,6 +389,26 @@ export default function AdminCustomTrips() {
             <h2 className="text-2xl font-bold mb-4">Update Custom Trip</h2>
 
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Status</label>
+                <select
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      status: e.target.value as "pending" | "in-progress" | "quoted" | "confirmed" | "cancelled",
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="quoted">Quoted</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-2">Quoted Price</label>
                 <input

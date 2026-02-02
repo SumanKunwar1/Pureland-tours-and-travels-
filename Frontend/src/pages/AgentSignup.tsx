@@ -48,19 +48,36 @@ export default function AgentSignup() {
     setIsSubmitting(true);
 
     try {
+      // Transform formData to match backend API expectations
+      const payload = {
+        fullName: formData.fullName,
+        companyName: formData.companyName,
+        email: formData.email,
+        phone: formData.phone,
+        city: formData.city,
+        state: formData.state,
+        website: formData.website,
+        experience: formData.experience,
+      };
+
+      console.log("Submitting agent application:", payload);
+
       const response = await fetch(`${API_BASE_URL}/agents`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        console.error("API Error Response:", data);
         throw new Error(data.message || "Failed to submit application");
       }
+
+      console.log("Success! Agent created:", data);
 
       // Success notification
       toast.success(
@@ -93,18 +110,24 @@ export default function AgentSignup() {
       }, 2000);
     } catch (error: any) {
       // Error notification
-      toast.error(
-        error.message || "Failed to submit application. Please try again.",
-        {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        }
-      );
       console.error("Error submitting application:", error);
+      
+      let errorMessage = "Failed to submit application. Please try again.";
+      
+      if (error.message.includes("Failed to fetch")) {
+        errorMessage = "Network error. Please check your internet connection.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } finally {
       setIsSubmitting(false);
     }

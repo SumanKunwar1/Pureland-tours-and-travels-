@@ -13,7 +13,7 @@ import {
   Users,
   MessageSquare,
 } from "lucide-react";
-import { API_URL } from "@/lib/api-config";
+import { API_BASE_URL } from "@/lib/api-config";
 
 interface Testimonial {
   _id: string;
@@ -68,7 +68,7 @@ export function AdminTestimonials() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_URL}/testimonials/admin/stats`,
+        `${API_BASE_URL}/testimonials/admin/stats`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -106,7 +106,7 @@ export function AdminTestimonials() {
       }
 
       const response = await fetch(
-        `${API_URL}/testimonials?${params}`,
+        `${API_BASE_URL}/testimonials?${params}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -139,8 +139,8 @@ export function AdminTestimonials() {
     try {
       const token = localStorage.getItem("token");
       const url = editingTestimonial
-        ? `${API_URL}/testimonials/${editingTestimonial._id}`
-        : `${API_URL}/testimonials`;
+        ? `${API_BASE_URL}/testimonials/${editingTestimonial._id}`
+        : `${API_BASE_URL}/testimonials`;
 
       const response = await fetch(url, {
         method: editingTestimonial ? "PATCH" : "POST",
@@ -189,7 +189,7 @@ export function AdminTestimonials() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_URL}/testimonials/${id}`,
+        `${API_BASE_URL}/testimonials/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -215,7 +215,7 @@ export function AdminTestimonials() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_URL}/testimonials/${id}/toggle-active`,
+        `${API_BASE_URL}/testimonials/${id}/toggle-active`,
         {
           method: "PATCH",
           headers: {
@@ -237,7 +237,7 @@ export function AdminTestimonials() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_URL}/testimonials/${id}/toggle-featured`,
+        `${API_BASE_URL}/testimonials/${id}/toggle-featured`,
         {
           method: "PATCH",
           headers: {
