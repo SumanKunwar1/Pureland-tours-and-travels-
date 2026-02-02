@@ -180,7 +180,7 @@ export function Navbar() {
     >
       {/* Top announcement bar */}
       <div className="bg-primary text-primary-foreground py-2 text-center text-sm">
-        <span className="font-medium">Ladakh Spiti Early Bird – Save up to ₹3,000 🎉</span>
+        <span className="font-medium">Sacred Darshan of His Holiness the Dalai Lama Early Bird – Save up to ₹5,000 🎉</span>
       </div>
 
       <nav className="container-custom">
