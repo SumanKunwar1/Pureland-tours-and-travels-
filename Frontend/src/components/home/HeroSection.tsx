@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BookingFormModal } from "@/components/shared/BookingFormModal";
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 interface HeroImage {
   _id: string;

@@ -14,10 +14,33 @@ interface TrendingDestination {
   isActive: boolean;
 }
 
+// Create a reusable API client utility
+const apiClient = {
+  baseURL: import.meta.env.VITE_API_URL || '', // Will be empty in production for relative paths
+  
+  async get(endpoint: string) {
+    const url = this.baseURL ? `${this.baseURL}${endpoint}` : endpoint;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  }
+};
+
 export function TrendingDestinations() {
   const { toast } = useToast();
   const [destinations, setDestinations] = useState<TrendingDestination[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDestinations();
@@ -26,55 +49,26 @@ export function TrendingDestinations() {
   const loadDestinations = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       
-      // Get API URL with fallback
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const endpoint = `${apiUrl}/api/v1/trending-destinations/active`;
+      // Use relative path - proxy will handle it in dev, same-origin in prod
+      const data = await apiClient.get('/api/v1/trending-destinations/active');
       
-      console.log('Fetching trending destinations from:', endpoint);
-      
-      const response = await fetch(endpoint);
-      
-      console.log('Response status:', response.status);
-      console.log('Response content-type:', response.headers.get('content-type'));
-      
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        console.error('Server returned non-JSON response');
-        const text = await response.text();
-        console.error('Response text:', text.substring(0, 200));
-        throw new Error('Server returned invalid response format');
-      }
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('API Response:', data);
-      
-      if (data.status === 'success' && data.data && data.data.trendingDestinations) {
+      if (data.status === 'success' && data.data?.trendingDestinations) {
         setDestinations(data.data.trendingDestinations);
-        console.log('Loaded destinations:', data.data.trendingDestinations.length);
       } else {
-        console.warn('Unexpected data structure:', data);
         setDestinations([]);
       }
     } catch (error: any) {
       console.error('Error loading trending destinations:', error);
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
       
-      // Only show toast in development mode
+      setError(error.message);
+      
+      // Only show toast in development for debugging
       if (import.meta.env.DEV) {
         toast({
           title: "Failed to load destinations",
-          description: error.message,
+          description: `Backend might not be running. ${error.message}`,
           variant: "destructive",
         });
       }
@@ -85,8 +79,40 @@ export function TrendingDestinations() {
     }
   };
 
-  // Don't show the section if there are no destinations or still loading
-  if (isLoading || destinations.length === 0) {
+  // Show loading state
+  if (isLoading) {
+    return (
+      <section className="bg-muted py-8 border-b border-border">
+        <div className="container-custom">
+          <h2 className="text-xl font-display font-bold mb-4">Trending Destinations</h2>
+          <div className="flex gap-6 animate-pulse">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="w-48 aspect-[3/4] bg-gray-200 rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Show error state
+  if (error && destinations.length === 0) {
+    return (
+      <section className="bg-muted py-8 border-b border-border">
+        <div className="container-custom">
+          <h2 className="text-xl font-display font-bold mb-4">Trending Destinations</h2>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p className="text-yellow-800">
+              Destinations will be available soon.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Don't show the section if there are no destinations
+  if (destinations.length === 0) {
     return null;
   }
 
@@ -122,10 +148,6 @@ export function TrendingDestinations() {
                     alt={destination.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     loading="lazy"
-                    onError={(e) => {
-                      // Fallback image if the image fails to load
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=400&h=600&fit=crop';
-                    }}
                   />
                   <div className="gradient-overlay" />
                   <div className="absolute bottom-0 left-0 right-0 p-3 text-primary-foreground">
