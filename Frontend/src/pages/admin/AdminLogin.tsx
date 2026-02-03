@@ -226,8 +226,8 @@ export default function AdminLogin() {
           className="mt-6 p-4 bg-primary/10 border border-primary/20 rounded-lg text-sm text-primary"
         >
           <p className="font-semibold mb-1">Demo Admin Account</p>
-          <p>Email: admin@padmasambhavatrip.com</p>
-          <p>Password: P@dm@2026</p>
+          <p>Email: ""</p>
+          <p>Password: ""</p>
         </motion.div>
 
         {/* Back to Home */}

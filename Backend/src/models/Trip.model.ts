@@ -19,7 +19,7 @@ export interface ITripDate {
 export interface ITrip extends Document {
   name: string;
   destination: string;
-  tripCategory: string;
+  tripCategory: string[]; // CHANGED: Now an array of strings
   tripType: string;
   tripRoute: string;
   duration: string;
@@ -85,21 +85,28 @@ const tripSchema = new Schema<ITrip>(
       trim: true,
     },
     tripCategory: {
-      type: String,
-      required: [true, 'Trip category is required'],
-      // FIXED: Added 'group-trips' to the enum
-      enum: [
-        'india-trips',
-        'international-trips', 
-        'emi-trips', 
-        'group-trips',  // ← ADDED THIS
-        'travel-styles', 
-        'destinations', 
-        'combo-trips', 
-        'retreats', 
-        'customised', 
-        'deals'
-      ],
+      type: [String], // CHANGED: Now accepts array of strings
+      required: [true, 'At least one trip category is required'],
+      validate: {
+        validator: function(categories: string[]) {
+          // Ensure at least one category is selected
+          if (!categories || categories.length === 0) {
+            return false;
+          }
+          // Validate each category is in the allowed list
+          const allowedCategories = [
+            'emi-trips',
+            'international-trips',
+            'india-trips',
+            'deals',
+            'travel-styles',
+            'combo-trips',
+            'retreats',
+          ];
+          return categories.every(cat => allowedCategories.includes(cat));
+        },
+        message: 'Invalid trip category provided'
+      }
     },
     tripType: {
       type: String,

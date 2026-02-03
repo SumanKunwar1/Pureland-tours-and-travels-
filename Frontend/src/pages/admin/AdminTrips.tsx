@@ -14,7 +14,7 @@ interface Trip {
   _id: string;
   name: string;
   destination: string;
-  tripCategory: string;
+  tripCategory: string | string[]; // Support both old single and new multiple categories
   duration: string;
   price: number;
   status: "Active" | "Inactive" | "Draft";
@@ -51,7 +51,6 @@ export default function AdminTrips() {
   const fetchTrips = async () => {
     try {
       setLoading(true);
-      // FIXED: No need to pass status parameter, axios will handle auth
       const response = await axiosInstance.get('/trips');
 
       if (response.data.status === 'success') {
@@ -114,23 +113,27 @@ export default function AdminTrips() {
     const matchesSearch =
       trip.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       trip.destination.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Handle both single category (string) and multiple categories (array)
+    const tripCategories = Array.isArray(trip.tripCategory) 
+      ? trip.tripCategory 
+      : [trip.tripCategory];
+    
     const matchesCategory =
-      filterCategory === "All" || trip.tripCategory === filterCategory;
+      filterCategory === "All" || tripCategories.includes(filterCategory);
+    
     return matchesSearch && matchesCategory;
   });
 
   const categories = [
     "All",
-    "group-trips",
-    "india-trips",
-    "international-trips",
     "emi-trips",
+    "international-trips",
+    "india-trips",
+    "deals",
     "travel-styles",
-    "destinations",
     "combo-trips",
     "retreats",
-    "customised",
-    "deals"
   ];
 
   const formatCategoryName = (category: string) => {
@@ -208,7 +211,7 @@ export default function AdminTrips() {
               <thead className="bg-muted border-b border-border">
                 <tr>
                   <th className="text-left p-4 font-semibold text-sm">Trip Name</th>
-                  <th className="text-left p-4 font-semibold text-sm">Category</th>
+                  <th className="text-left p-4 font-semibold text-sm">Categories</th>
                   <th className="text-left p-4 font-semibold text-sm">Duration</th>
                   <th className="text-left p-4 font-semibold text-sm">Price</th>
                   <th className="text-left p-4 font-semibold text-sm">Bookings</th>
@@ -230,75 +233,89 @@ export default function AdminTrips() {
                     </td>
                   </tr>
                 ) : (
-                  filteredTrips.map((trip, index) => (
-                    <motion.tr
-                      key={trip._id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="border-b border-border hover:bg-muted/50 transition-colors"
-                    >
-                      <td className="p-4">
-                        <div>
-                          <p className="font-semibold">{trip.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {trip.destination}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs font-medium">
-                          {formatCategoryName(trip.tripCategory)}
-                        </span>
-                      </td>
-                      <td className="p-4 text-sm">{trip.duration}</td>
-                      <td className="p-4">
-                        <span className="font-semibold">
-                          ₹{trip.price.toLocaleString()}
-                        </span>
-                      </td>
-                      <td className="p-4 text-sm">{trip.bookings}</td>
-                      <td className="p-4">
-                        <span
-                          className={cn(
-                            "px-2 py-1 rounded text-xs font-medium",
-                            trip.status === "Active"
-                              ? "bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300"
-                              : trip.status === "Inactive"
-                              ? "bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300"
-                              : "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300"
-                          )}
-                        >
-                          {trip.status}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/trip/${trip._id}`)}
+                  filteredTrips.map((trip, index) => {
+                    // Handle both single and multiple categories
+                    const tripCategories = Array.isArray(trip.tripCategory) 
+                      ? trip.tripCategory 
+                      : [trip.tripCategory];
+                    
+                    return (
+                      <motion.tr
+                        key={trip._id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="border-b border-border hover:bg-muted/50 transition-colors"
+                      >
+                        <td className="p-4">
+                          <div>
+                            <p className="font-semibold">{trip.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {trip.destination}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex flex-wrap gap-1">
+                            {tripCategories.map((category, idx) => (
+                              <span 
+                                key={idx}
+                                className="px-2 py-1 bg-primary/10 text-primary rounded text-xs font-medium"
+                              >
+                                {formatCategoryName(category)}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="p-4 text-sm">{trip.duration}</td>
+                        <td className="p-4">
+                          <span className="font-semibold">
+                            ₹{trip.price.toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="p-4 text-sm">{trip.bookings}</td>
+                        <td className="p-4">
+                          <span
+                            className={cn(
+                              "px-2 py-1 rounded text-xs font-medium",
+                              trip.status === "Active"
+                                ? "bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300"
+                                : trip.status === "Inactive"
+                                ? "bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300"
+                                : "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300"
+                            )}
                           >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/admin/trips/edit/${trip._id}`)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(trip._id)}
-                          >
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))
+                            {trip.status}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/trip/${trip._id}`)}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/admin/trips/edit/${trip._id}`)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(trip._id)}
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

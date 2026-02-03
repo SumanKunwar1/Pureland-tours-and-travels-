@@ -27,31 +27,29 @@ interface TripDate {
 
 // Trip Categories based on Navbar structure
 const TRIP_CATEGORIES = {
-"EMI Trips": {
+  "EMI Trips": {
     value: "emi-trips",
     subcategories: [
-      { label: "Combo Packages", value: "combo", route: "/trips/emi" },
+      { label: "EMI Packages", value: "emi-package", route: "/trips/emi" },
     ],
   },
-"International Trips": {
+  "International Trips": {
     value: "international-trips",
     subcategories: [
-      { label: "Combo Packages", value: "combo", route: "/international-trips" },
+      { label: "International Packages", value: "international-package", route: "/international-trips" },
     ],
   },
   "India Trips": {
     value: "india-trips",
     subcategories: [
-      { label: "Combo Packages", value: "combo", route: "/domestic-trips" },
+      { label: "Domestic Packages", value: "domestic-package", route: "/domestic-trips" },
     ],
   },
-
-  "Group Trips": {
-    value: "group-trips",
+  "Deals": {
+    value: "deals",
     subcategories: [
-      { label: "Upcoming Group Trips", value: "upcoming", route: "/trips/upcoming" },
-      { label: "Fixed Departure Trips", value: "fixed-departure", route: "/trips/fixed-departure" },
-      { label: "Group Travel", value: "group", route: "/trips/group" },
+      { label: "Seasonal Deals", value: "seasonal", route: "/deals/seasonal" },
+      { label: "Limited Time Offers", value: "limited", route: "/deals/limited" },
     ],
   },
   "Travel Styles": {
@@ -59,17 +57,11 @@ const TRIP_CATEGORIES = {
     subcategories: [
       { label: "Pilgrimage Trips", value: "pilgrimage", route: "/trips/pilgrimage" },
       { label: "Solo Trips", value: "solo", route: "/style/solo" },
+      { label: "Group Trips", value: "group", route: "/trips/group" },
       { label: "Weekend Trips", value: "weekend", route: "/trips/weekend" },
       { label: "Adventure Trips", value: "adventure", route: "/style/adventure" },
       { label: "Cruise Trips", value: "cruise", route: "/trips/cruise" },
-
-    ],
-  },
-  "Destinations": {
-    value: "destinations",
-    subcategories: [
-      { label: "Domestic Trips", value: "domestic", route: "/domestic-trips" },
-      { label: "International Trips", value: "international", route: "/international-trips" },
+      { label: "Customised Trips", value: "customised", route: "/custom" },
     ],
   },
   "Combo Trips": {
@@ -78,24 +70,11 @@ const TRIP_CATEGORIES = {
       { label: "Combo Packages", value: "combo", route: "/trips/combo" },
     ],
   },
-  "Retreats": {
+  "Retreats & Healings": {
     value: "retreats",
     subcategories: [
       { label: "Retreats", value: "meditation", route: "/retreats/meditation" },
-      { label: "Healing", value: "wellness", route: "/retreats/wellness" },
-    ],
-  },
-  "Customised Trips": {
-    value: "customised",
-    subcategories: [
-      { label: "Custom Packages", value: "custom", route: "/custom" },
-    ],
-  },
-  "Deals": {
-    value: "deals",
-    subcategories: [
-      { label: "Seasonal Deals", value: "seasonal", route: "/deals/seasonal" },
-      { label: "Limited Time Offers", value: "limited", route: "/deals/limited" },
+      { label: "Healings", value: "wellness", route: "/retreats/wellness" },
     ],
   },
 };
@@ -109,7 +88,7 @@ export default function AdminTripForm() {
   const [formData, setFormData] = useState({
     name: "",
     destination: "",
-    tripCategory: "",
+    tripCategory: [] as string[], // Changed to array for multiple categories
     tripType: "",
     tripRoute: "",
     duration: "",
@@ -129,12 +108,12 @@ export default function AdminTripForm() {
   });
 
   const [currentTab, setCurrentTab] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]); // Changed to array
   const [availableTypes, setAvailableTypes] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const tabs = ["Basic Info", "Category & Type", "Pricing", "Itinerary", "Inclusions", "Dates"];
+  const tabs = ["Basic Info", "Categories & Type", "Pricing", "Itinerary", "Inclusions", "Dates"];
 
   // Load trip data if editing
   useEffect(() => {
@@ -152,10 +131,15 @@ export default function AdminTripForm() {
       
       if (response.data.status === 'success') {
         const trip = response.data.data.trip;
+        // Handle both old single category and new multiple categories format
+        const categories = Array.isArray(trip.tripCategory) 
+          ? trip.tripCategory 
+          : [trip.tripCategory];
+        
         setFormData({
           name: trip.name,
           destination: trip.destination,
-          tripCategory: trip.tripCategory,
+          tripCategory: categories,
           tripType: trip.tripType,
           tripRoute: trip.tripRoute,
           duration: trip.duration,
@@ -173,7 +157,7 @@ export default function AdminTripForm() {
           tags: trip.tags || "",
           hasGoodies: trip.hasGoodies || false,
         });
-        setSelectedCategory(trip.tripCategory);
+        setSelectedCategories(categories);
       }
     } catch (error) {
       console.error("Error fetching trip:", error);
@@ -185,17 +169,28 @@ export default function AdminTripForm() {
     }
   };
 
-  // Update available types when category changes
+  // Update available types when categories change
   useEffect(() => {
-    if (selectedCategory) {
-      const category = Object.values(TRIP_CATEGORIES).find(
-        (cat) => cat.value === selectedCategory
+    if (selectedCategories.length > 0) {
+      // Collect all unique subcategories from selected categories
+      const allTypes: any[] = [];
+      selectedCategories.forEach(categoryValue => {
+        const category = Object.values(TRIP_CATEGORIES).find(
+          (cat) => cat.value === categoryValue
+        );
+        if (category) {
+          allTypes.push(...category.subcategories);
+        }
+      });
+      // Remove duplicates based on value
+      const uniqueTypes = allTypes.filter((type, index, self) =>
+        index === self.findIndex((t) => t.value === type.value)
       );
-      if (category) {
-        setAvailableTypes(category.subcategories);
-      }
+      setAvailableTypes(uniqueTypes);
+    } else {
+      setAvailableTypes([]);
     }
-  }, [selectedCategory]);
+  }, [selectedCategories]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -206,14 +201,19 @@ export default function AdminTripForm() {
     }));
   };
 
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-    setFormData((prev) => ({
-      ...prev,
-      tripCategory: category,
-      tripType: "",
-      tripRoute: "",
-    }));
+  const handleCategoryToggle = (category: string) => {
+    setSelectedCategories((prev) => {
+      const newCategories = prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category];
+      
+      setFormData((prevForm) => ({
+        ...prevForm,
+        tripCategory: newCategories,
+      }));
+      
+      return newCategories;
+    });
   };
 
   const handleTypeChange = (type: string) => {
@@ -225,19 +225,24 @@ export default function AdminTripForm() {
     }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
       const reader = new FileReader();
-      reader.onload = (event) => {
-        setFormData((prev) => ({ ...prev, image: event.target?.result as string }));
+      reader.onloadend = () => {
+        setFormData((prev) => ({ ...prev, image: reader.result as string }));
       };
-      reader.readAsDataURL(e.target.files[0]);
+      reader.readAsDataURL(file);
     }
   };
 
+  // Array handlers
   const addArrayItem = (field: "inclusions" | "exclusions" | "notes") => {
-    setFormData((prev) => ({ ...prev, [field]: [...prev[field], ""] }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: [...prev[field], ""],
+    }));
   };
 
   const updateArrayItem = (
@@ -245,34 +250,20 @@ export default function AdminTripForm() {
     index: number,
     value: string
   ) => {
-    const newArray = [...formData[field]];
-    newArray[index] = value;
-    setFormData((prev) => ({ ...prev, [field]: newArray }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: prev[field].map((item, i) => (i === index ? value : item)),
+    }));
   };
 
-  const removeArrayItem = (
-    field: "inclusions" | "exclusions" | "notes",
-    index: number
-  ) => {
-    const newArray = formData[field].filter((_, i) => i !== index);
-    setFormData((prev) => ({ ...prev, [field]: newArray }));
+  const removeArrayItem = (field: "inclusions" | "exclusions" | "notes", index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index),
+    }));
   };
 
-  const handleItineraryChange = (
-    dayIndex: number,
-    field: "title" | "highlights",
-    value: string,
-    highlightIndex?: number
-  ) => {
-    const newItinerary = [...formData.itinerary];
-    if (field === "title") {
-      newItinerary[dayIndex].title = value;
-    } else if (field === "highlights" && highlightIndex !== undefined) {
-      newItinerary[dayIndex].highlights[highlightIndex] = value;
-    }
-    setFormData((prev) => ({ ...prev, itinerary: newItinerary }));
-  };
-
+  // Itinerary handlers
   const addItineraryDay = () => {
     setFormData((prev) => ({
       ...prev,
@@ -283,30 +274,50 @@ export default function AdminTripForm() {
     }));
   };
 
+  const handleItineraryChange = (
+    dayIndex: number,
+    field: string,
+    value: string,
+    highlightIndex?: number
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      itinerary: prev.itinerary.map((day, i) => {
+        if (i === dayIndex) {
+          if (field === "highlights" && highlightIndex !== undefined) {
+            return {
+              ...day,
+              highlights: day.highlights.map((h, hi) => (hi === highlightIndex ? value : h)),
+            };
+          }
+          return { ...day, [field]: value };
+        }
+        return day;
+      }),
+    }));
+  };
+
   const addItineraryHighlight = (dayIndex: number) => {
-    const newItinerary = [...formData.itinerary];
-    newItinerary[dayIndex].highlights.push("");
-    setFormData((prev) => ({ ...prev, itinerary: newItinerary }));
+    setFormData((prev) => ({
+      ...prev,
+      itinerary: prev.itinerary.map((day, i) =>
+        i === dayIndex ? { ...day, highlights: [...day.highlights, ""] } : day
+      ),
+    }));
   };
 
   const removeItineraryHighlight = (dayIndex: number, highlightIndex: number) => {
-    const newItinerary = [...formData.itinerary];
-    newItinerary[dayIndex].highlights = newItinerary[dayIndex].highlights.filter(
-      (_, i) => i !== highlightIndex
-    );
-    setFormData((prev) => ({ ...prev, itinerary: newItinerary }));
+    setFormData((prev) => ({
+      ...prev,
+      itinerary: prev.itinerary.map((day, i) =>
+        i === dayIndex
+          ? { ...day, highlights: day.highlights.filter((_, hi) => hi !== highlightIndex) }
+          : day
+      ),
+    }));
   };
 
-  const handleDateChange = (
-    index: number,
-    field: "date" | "price" | "available",
-    value: string | number
-  ) => {
-    const newDates = [...formData.dates];
-    newDates[index] = { ...newDates[index], [field]: value };
-    setFormData((prev) => ({ ...prev, dates: newDates }));
-  };
-
+  // Date handlers
   const addDate = () => {
     setFormData((prev) => ({
       ...prev,
@@ -314,9 +325,20 @@ export default function AdminTripForm() {
     }));
   };
 
+  const handleDateChange = (index: number, field: keyof TripDate, value: string | number) => {
+    setFormData((prev) => ({
+      ...prev,
+      dates: prev.dates.map((date, i) =>
+        i === index ? { ...date, [field]: value } : date
+      ),
+    }));
+  };
+
   const removeDate = (index: number) => {
-    const newDates = formData.dates.filter((_, i) => i !== index);
-    setFormData((prev) => ({ ...prev, dates: newDates }));
+    setFormData((prev) => ({
+      ...prev,
+      dates: prev.dates.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -324,82 +346,54 @@ export default function AdminTripForm() {
     setIsLoading(true);
 
     try {
-      // Validate required fields
-      if (!formData.name || !formData.destination || !formData.price) {
-        toast({
-          title: "Validation Error",
-          description: "Please fill in all required fields",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      if (!formData.tripCategory || !formData.tripType) {
-        toast({
-          title: "Validation Error",
-          description: "Please select trip category and type",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
       const token = localStorage.getItem("adminToken");
       
-      // Prepare form data for submission
-      const submitData = new FormData();
-      
-      // Add image file if selected
-      if (imageFile) {
-        submitData.append('image', imageFile);
-      } else if (formData.image) {
-        submitData.append('image', formData.image);
-      }
-
-      // Add all other fields
-      submitData.append('name', formData.name);
-      submitData.append('destination', formData.destination);
-      submitData.append('tripCategory', formData.tripCategory);
-      submitData.append('tripType', formData.tripType);
-      submitData.append('tripRoute', formData.tripRoute);
-      submitData.append('duration', formData.duration);
-      submitData.append('description', formData.description);
-      submitData.append('price', formData.price);
-      submitData.append('originalPrice', formData.originalPrice);
-      submitData.append('status', formData.status);
-      submitData.append('tags', formData.tags);
-      submitData.append('hasGoodies', formData.hasGoodies.toString());
-      submitData.append('inclusions', JSON.stringify(formData.inclusions.filter(i => i.trim())));
-      submitData.append('exclusions', JSON.stringify(formData.exclusions.filter(i => i.trim())));
-      submitData.append('notes', JSON.stringify(formData.notes.filter(i => i.trim())));
-      submitData.append('itinerary', JSON.stringify(formData.itinerary));
-      submitData.append('dates', JSON.stringify(formData.dates));
+      // Filter out empty strings from arrays
+      const cleanedData = {
+        ...formData,
+        inclusions: formData.inclusions.filter((item) => item.trim() !== ""),
+        exclusions: formData.exclusions.filter((item) => item.trim() !== ""),
+        notes: formData.notes.filter((item) => item.trim() !== ""),
+        itinerary: formData.itinerary.map((day) => ({
+          ...day,
+          highlights: day.highlights.filter((h) => h.trim() !== ""),
+        })),
+        dates: formData.dates.filter((date) => date.date !== ""),
+        price: parseFloat(formData.price),
+        originalPrice: parseFloat(formData.originalPrice),
+        discount: parseFloat(formData.discount),
+      };
 
       let response;
       if (isEdit) {
-        response = await axios.patch(`${API_BASE_URL}/trips/${id}`, submitData, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        response = await axios.put(
+          `${API_BASE_URL}/trips/${id}`,
+          cleanedData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
       } else {
-        response = await axios.post(`${API_BASE_URL}/trips`, submitData, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        response = await axios.post(
+          `${API_BASE_URL}/trips`,
+          cleanedData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
       }
 
-      if (response.data.status === 'success') {
-        toast({
-          title: isEdit ? "Trip updated" : "Trip created",
-          description: `Trip has been ${isEdit ? "updated" : "created"} successfully and will appear on ${formData.tripRoute}`,
-        });
-        navigate("/admin/trips");
-      }
+      toast({
+        title: "Success",
+        description: isEdit ? "Trip updated successfully" : "Trip created successfully",
+      });
+      navigate("/admin/trips");
     } catch (error: any) {
       console.error("Error saving trip:", error);
       toast({
@@ -414,194 +408,206 @@ export default function AdminTripForm() {
 
   return (
     <AdminLayout>
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/admin/trips")}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <div>
-              <h1 className="text-3xl font-display font-bold">
-                {isEdit ? "Edit Trip" : "Create New Trip"}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {isEdit ? "Update trip details" : "Add a new trip package"}
-              </p>
-            </div>
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/admin/trips")}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-display font-bold">
+              {isEdit ? "Edit Trip" : "Create New Trip"}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              {isEdit ? "Update trip information" : "Add a new trip package"}
+            </p>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 border-b border-border overflow-x-auto">
-          {tabs.map((tab, index) => (
-            <button
-              key={tab}
-              onClick={() => setCurrentTab(index)}
-              className={cn(
-                "px-4 py-3 font-medium text-sm whitespace-nowrap transition-colors border-b-2 -mb-px",
-                currentTab === index
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Tabs */}
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {tabs.map((tab, index) => (
+              <Button
+                key={tab}
+                type="button"
+                variant={currentTab === index ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCurrentTab(index)}
+                className="whitespace-nowrap"
+              >
+                {tab}
+              </Button>
+            ))}
+          </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit}>
-          <div className="bg-card rounded-xl border border-border p-6 space-y-6">
+          {/* Tab Content */}
+          <div className="bg-card rounded-xl border border-border p-6">
             {/* Basic Info Tab */}
             {currentTab === 0 && (
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Trip Name *
-                    </label>
-                    <Input
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      placeholder="e.g., Spiti Valley Winter Expedition"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Destination *
-                    </label>
-                    <Input
-                      name="destination"
-                      value={formData.destination}
-                      onChange={handleInputChange}
-                      placeholder="e.g., Spiti Valley, Himachal Pradesh"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Duration *
-                    </label>
-                    <Input
-                      name="duration"
-                      value={formData.duration}
-                      onChange={handleInputChange}
-                      placeholder="e.g., 7 Days / 6 Nights"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Status
-                    </label>
-                    <select
-                      name="status"
-                      value={formData.status}
-                      onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-md border border-input bg-background"
-                    >
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
-                      <option value="Draft">Draft</option>
-                    </select>
-                  </div>
-                </div>
-
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Description *
-                  </label>
-                  <Textarea
-                    name="description"
-                    value={formData.description}
+                  <label className="block text-sm font-medium mb-2">Trip Name *</label>
+                  <Input
+                    name="name"
+                    value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="Describe the trip in detail..."
-                    rows={5}
+                    placeholder="Enter trip name..."
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Trip Image *
-                  </label>
+                  <label className="block text-sm font-medium mb-2">Destination *</label>
+                  <Input
+                    name="destination"
+                    value={formData.destination}
+                    onChange={handleInputChange}
+                    placeholder="Enter destination..."
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Duration *</label>
+                  <Input
+                    name="duration"
+                    value={formData.duration}
+                    onChange={handleInputChange}
+                    placeholder="e.g., 5 Days 4 Nights"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Description *</label>
+                  <Textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Enter trip description..."
+                    rows={6}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Tags (comma separated)</label>
+                  <Input
+                    name="tags"
+                    value={formData.tags}
+                    onChange={handleInputChange}
+                    placeholder="e.g., adventure, beach, cultural"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Trip Image</label>
                   <div className="flex items-center gap-4">
                     <Input
                       type="file"
                       accept="image/*"
-                      onChange={handleImageChange}
+                      onChange={handleImageUpload}
                       className="flex-1"
                     />
                     {formData.image && (
                       <img
                         src={formData.image}
                         alt="Preview"
-                        className="w-20 h-20 object-cover rounded-md"
+                        className="w-20 h-20 object-cover rounded"
                       />
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      name="hasGoodies"
-                      checked={formData.hasGoodies}
-                      onChange={handleInputChange}
-                      className="rounded"
-                    />
-                    <span className="text-sm font-medium">Has Free Goodies</span>
-                  </label>
+                  <label className="block text-sm font-medium mb-2">Status</label>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, status: e.target.value }))
+                    }
+                    className="w-full p-2 border border-border rounded-md bg-background"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Draft">Draft</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="hasGoodies"
+                    checked={formData.hasGoodies}
+                    onChange={handleInputChange}
+                    className="w-4 h-4"
+                  />
+                  <label className="text-sm font-medium">Has Goodies/Special Offers</label>
                 </div>
               </div>
             )}
 
-            {/* Category & Type Tab */}
+            {/* Categories & Type Tab */}
             {currentTab === 1 && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Trip Category *
+                  <label className="block text-sm font-medium mb-3">
+                    Select Categories * (You can select multiple)
                   </label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => handleCategoryChange(e.target.value)}
-                    className="w-full px-3 py-2 rounded-md border border-input bg-background"
-                    required
-                  >
-                    <option value="">Select Category</option>
-                    {Object.entries(TRIP_CATEGORIES).map(([label, cat]) => (
-                      <option key={cat.value} value={cat.value}>
-                        {label}
-                      </option>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {Object.entries(TRIP_CATEGORIES).map(([label, category]) => (
+                      <div
+                        key={category.value}
+                        onClick={() => handleCategoryToggle(category.value)}
+                        className={cn(
+                          "p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md",
+                          selectedCategories.includes(category.value)
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{label}</span>
+                          {selectedCategories.includes(category.value) && (
+                            <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                              <svg
+                                className="w-3 h-3 text-white"
+                                fill="none"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path d="M5 13l4 4L19 7"></path>
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     ))}
-                  </select>
+                  </div>
+                  {selectedCategories.length > 0 && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Selected: {selectedCategories.map(cat => 
+                        Object.entries(TRIP_CATEGORIES).find(([, c]) => c.value === cat)?.[0]
+                      ).join(", ")}
+                    </p>
+                  )}
                 </div>
 
                 {availableTypes.length > 0 && (
                   <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Trip Type *
-                    </label>
+                    <label className="block text-sm font-medium mb-2">Trip Type *</label>
                     <select
                       value={formData.tripType}
                       onChange={(e) => handleTypeChange(e.target.value)}
-                      className="w-full px-3 py-2 rounded-md border border-input bg-background"
+                      className="w-full p-2 border border-border rounded-md bg-background"
                       required
                     >
-                      <option value="">Select Type</option>
+                      <option value="">Select trip type</option>
                       {availableTypes.map((type) => (
                         <option key={type.value} value={type.value}>
                           {type.label}
@@ -612,24 +618,11 @@ export default function AdminTripForm() {
                 )}
 
                 {formData.tripRoute && (
-                  <div className="p-4 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      This trip will appear on: <strong>{formData.tripRoute}</strong>
-                    </p>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Trip Route</label>
+                    <Input value={formData.tripRoute} disabled className="bg-muted" />
                   </div>
                 )}
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Tags (comma-separated)
-                  </label>
-                  <Input
-                    name="tags"
-                    value={formData.tags}
-                    onChange={handleInputChange}
-                    placeholder="e.g., adventure, snow, mountain, winter"
-                  />
-                </div>
               </div>
             )}
 
@@ -639,39 +632,43 @@ export default function AdminTripForm() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Price *
+                      Current Price (₹) *
                     </label>
                     <Input
-                      type="number"
                       name="price"
+                      type="number"
                       value={formData.price}
                       onChange={handleInputChange}
-                      placeholder="25000"
+                      placeholder="Enter current price"
                       required
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Original Price *
+                      Original Price (₹)
                     </label>
                     <Input
-                      type="number"
                       name="originalPrice"
+                      type="number"
                       value={formData.originalPrice}
                       onChange={handleInputChange}
-                      placeholder="35000"
-                      required
+                      placeholder="Enter original price"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Discount
-                    </label>
+                    <label className="block text-sm font-medium mb-2">Discount (%)</label>
                     <Input
+                      name="discount"
                       type="number"
-                      value={formData.originalPrice && formData.price 
-                        ? parseInt(formData.originalPrice) - parseInt(formData.price)
-                        : 0}
+                      value={
+                        formData.originalPrice && formData.price
+                          ? (
+                              ((parseFloat(formData.originalPrice) -
+                                parseFloat(formData.price)) /
+                                parseFloat(formData.originalPrice)) *
+                              100
+                            ).toFixed(0)
+                          : 0}
                       disabled
                       className="bg-muted"
                     />
@@ -832,41 +829,86 @@ export default function AdminTripForm() {
               </div>
             )}
 
-            {/* Dates Tab */}
+            {/* Dates Tab with Improved Labels */}
             {currentTab === 5 && (
               <div className="space-y-4">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold mb-1">Trip Availability Dates</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Add all available dates for this trip with specific pricing and group sizes
+                  </p>
+                </div>
+                
                 {formData.dates.map((dateItem, index) => (
-                  <div key={index} className="flex gap-4 items-center">
-                    <Input
-                      type="date"
-                      value={dateItem.date}
-                      onChange={(e) => handleDateChange(index, "date", e.target.value)}
-                    />
-                    <Input
-                      type="number"
-                      value={dateItem.price}
-                      onChange={(e) => handleDateChange(index, "price", parseInt(e.target.value))}
-                      placeholder="Price"
-                    />
-                    <Input
-                      type="number"
-                      value={dateItem.available}
-                      onChange={(e) => handleDateChange(index, "available", parseInt(e.target.value))}
-                      placeholder="Available"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeDate(index)}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
+                  <div key={index} className="border border-border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Date #{index + 1}
+                      </span>
+                      {formData.dates.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeDate(index)}
+                        >
+                          <X className="w-4 h-4 text-destructive" />
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Date *
+                        </label>
+                        <Input
+                          type="date"
+                          value={dateItem.date}
+                          onChange={(e) => handleDateChange(index, "date", e.target.value)}
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Starting Price (₹) *
+                        </label>
+                        <Input
+                          type="number"
+                          value={dateItem.price}
+                          onChange={(e) => handleDateChange(index, "price", parseInt(e.target.value))}
+                          placeholder="Enter price"
+                          required
+                          min="0"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Group Size (Available Seats) *
+                        </label>
+                        <Input
+                          type="number"
+                          value={dateItem.available}
+                          onChange={(e) => handleDateChange(index, "available", parseInt(e.target.value))}
+                          placeholder="Enter available seats"
+                          required
+                          min="1"
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))}
-                <Button type="button" variant="outline" onClick={addDate}>
+                
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={addDate}
+                  className="w-full"
+                >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Date
+                  Add Another Date
                 </Button>
               </div>
             )}

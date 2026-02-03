@@ -21,9 +21,9 @@ export const getAllTrips = catchAsync(
 
     let query = Trip.find(JSON.parse(queryStr));
 
-    // Filter by category and type
+    // Filter by category (support both single and multiple categories)
     if (req.query.tripCategory) {
-      query = query.find({ tripCategory: req.query.tripCategory });
+      query = query.find({ tripCategory: { $in: [req.query.tripCategory] } });
     }
     if (req.query.tripType) {
       query = query.find({ tripType: req.query.tripType });
@@ -119,6 +119,7 @@ export const createTrip = catchAsync(
     let notes = req.body.notes;
     let itinerary = req.body.itinerary;
     let dates = req.body.dates;
+    let tripCategory = req.body.tripCategory; // Handle tripCategory
 
     if (typeof inclusions === 'string') {
       inclusions = JSON.parse(inclusions);
@@ -135,6 +136,19 @@ export const createTrip = catchAsync(
     if (typeof dates === 'string') {
       dates = JSON.parse(dates);
     }
+    // Parse tripCategory if it's a string
+    if (typeof tripCategory === 'string') {
+      try {
+        tripCategory = JSON.parse(tripCategory);
+      } catch (e) {
+        // If it's not JSON, convert single category to array
+        tripCategory = [tripCategory];
+      }
+    }
+    // Ensure tripCategory is always an array
+    if (!Array.isArray(tripCategory)) {
+      tripCategory = [tripCategory];
+    }
 
     // Calculate discount
     const discount = req.body.originalPrice - req.body.price;
@@ -142,6 +156,7 @@ export const createTrip = catchAsync(
     // Create trip
     const trip = await Trip.create({
       ...req.body,
+      tripCategory, // Use the parsed/array version
       image: imageUrl,
       discount,
       inclusions,
@@ -190,6 +205,7 @@ export const updateTrip = catchAsync(
     let notes = req.body.notes || trip.notes;
     let itinerary = req.body.itinerary || trip.itinerary;
     let dates = req.body.dates || trip.dates;
+    let tripCategory = req.body.tripCategory || trip.tripCategory;
 
     if (typeof inclusions === 'string') {
       inclusions = JSON.parse(inclusions);
@@ -206,6 +222,19 @@ export const updateTrip = catchAsync(
     if (typeof dates === 'string') {
       dates = JSON.parse(dates);
     }
+    // Parse tripCategory if it's a string
+    if (typeof tripCategory === 'string') {
+      try {
+        tripCategory = JSON.parse(tripCategory);
+      } catch (e) {
+        // If it's not JSON, convert single category to array
+        tripCategory = [tripCategory];
+      }
+    }
+    // Ensure tripCategory is always an array
+    if (!Array.isArray(tripCategory)) {
+      tripCategory = [tripCategory];
+    }
 
     // Calculate discount
     const discount = req.body.originalPrice 
@@ -217,6 +246,7 @@ export const updateTrip = catchAsync(
       req.params.id,
       {
         ...req.body,
+        tripCategory, // Use the parsed/array version
         image: imageUrl,
         discount,
         inclusions,
@@ -281,8 +311,9 @@ export const getTripsByCategory = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { category } = req.params;
     
+    // UPDATED: Use $in to match trips that have this category in their array
     const trips = await Trip.find({ 
-      tripCategory: category,
+      tripCategory: { $in: [category] },
       status: 'Active'
     }).sort('-createdAt');
 
@@ -369,7 +400,11 @@ export const getTripStats = catchAsync(
       },
     ]);
 
+    // UPDATED: Handle multiple categories in aggregation
     const tripsByCategory = await Trip.aggregate([
+      {
+        $unwind: '$tripCategory' // Unwind the array to count each category
+      },
       {
         $group: {
           _id: '$tripCategory',
