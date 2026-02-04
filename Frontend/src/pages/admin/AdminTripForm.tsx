@@ -9,8 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { cn } from "@/lib/utils";
-import axios from "axios";
-import { API_BASE_URL } from "@/lib/api-config";
+import axiosInstance from "@/lib/axios";
 
 
 interface ItineraryDay {
@@ -124,10 +123,7 @@ export default function AdminTripForm() {
 
   const fetchTripData = async (tripId: string) => {
     try {
-      const token = localStorage.getItem("adminToken");
-      const response = await axios.get(`${API_BASE_URL}/trips/${tripId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axiosInstance.get(`/trips/${tripId}`);
       
       if (response.data.status === 'success') {
         const trip = response.data.data.trip;
@@ -346,8 +342,6 @@ export default function AdminTripForm() {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem("adminToken");
-      
       // Filter out empty strings from arrays
       const cleanedData = {
         ...formData,
@@ -366,27 +360,10 @@ export default function AdminTripForm() {
 
       let response;
       if (isEdit) {
-        response = await axios.put(
-          `${API_BASE_URL}/trips/${id}`,
-          cleanedData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        // Use PATCH instead of PUT to match backend route
+        response = await axiosInstance.patch(`/trips/${id}`, cleanedData);
       } else {
-        response = await axios.post(
-          `${API_BASE_URL}/trips`,
-          cleanedData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        response = await axiosInstance.post('/trips', cleanedData);
       }
 
       toast({
