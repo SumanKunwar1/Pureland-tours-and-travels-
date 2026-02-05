@@ -12,19 +12,19 @@ const contactInfo = [
   {
     icon: Phone,
     title: "Phone",
-    details: ["(+91) 73639 33945"],
+    details: ["(+977) 986-3593271"],
     color: "text-primary",
   },
   {
     icon: Mail,
     title: "Email",
-    details: ["info@padmasambhavatrip.com", "bookings@padmasambhavatrip.com"],
+    details: ["info@purelandtours.com", "bookings@purelandtours.com"],
     color: "text-amber-500",
   },
   {
     icon: MapPin,
     title: "Office Address",
-    details: ["Siliguri 734001", "West Bengal", "India"],
+    details: ["Trinity Tower, Maharajgunj", "Kathmandu", "Nepal"],
     color: "text-rose-500",
   },
   {
@@ -155,7 +155,7 @@ const Contact = () => {
                       Phone Number
                     </label>
                     <Input 
-                      placeholder="(+91) 73639 33945"
+                      placeholder="(+977) 986-3593271"
                       value={formData.phone}
                       onChange={(e) => setFormData({...formData, phone: e.target.value})}
                     />
@@ -205,7 +205,7 @@ const Contact = () => {
           className="rounded-2xl overflow-hidden border border-border"
         >
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d224345.83923192776!2d77.06889754725782!3d28.52758200617607!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cfd5b347eb62d%3A0x37205b715389640!2sDelhi!5e0!3m2!1sen!2sin!4v1690000000000!5m2!1sen!2sin"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.0857707476207!2d85.34037767614917!3d27.737416674954836!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb190078010057%3A0x712221afbf890915!2sPure%20Land%20Tours%20and%20Travels!5e0!3m2!1sen!2snp!4v1738765432000!5m2!1sen!2snp"
             width="100%"
             height="400"
             style={{ border: 0 }}

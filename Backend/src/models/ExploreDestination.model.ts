@@ -4,7 +4,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IExploreDestination extends Document {
   name: string;
   image: string;
-  type: 'international' | 'domestic' | 'weekend';
+  type: 'international' | 'domestic' | 'weekend' | 'Retreats & Healing';
   url: string;
   order: number;
   isActive: boolean;
@@ -29,8 +29,8 @@ const exploreDestinationSchema = new Schema<IExploreDestination>(
       type: String,
       required: [true, 'Destination type is required'],
       enum: {
-        values: ['international', 'domestic', 'weekend'],
-        message: 'Type must be either international, domestic, or weekend',
+        values: ['international', 'domestic', 'weekend', 'Retreats & Healing'],
+        message: 'Type must be either international, domestic, weekend, or Retreats & Healing',
       },
     },
     url: {

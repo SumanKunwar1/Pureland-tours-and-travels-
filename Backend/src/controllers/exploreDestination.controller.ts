@@ -17,7 +17,7 @@ export const createExploreDestination = catchAsync(
     }
 
     // Validate type
-    if (!['international', 'domestic', 'weekend'].includes(type)) {
+    if (!['international', 'domestic', 'weekend', 'Retreats & Healing'].includes(type)) {
       return next(new AppError('Invalid destination type', 400));
     }
 
@@ -51,7 +51,7 @@ export const getAllExploreDestinations = catchAsync(
     const query: any = {};
 
     // Filter by type if specified
-    if (type && ['international', 'domestic', 'weekend'].includes(type as string)) {
+    if (type && ['international', 'domestic', 'weekend', 'Retreats & Healing'].includes(type as string)) {
       query.type = type;
     }
 
@@ -85,7 +85,7 @@ export const getActiveExploreDestinations = catchAsync(
     const query: any = { isActive: true };
 
     // Filter by type if specified
-    if (type && ['international', 'domestic', 'weekend'].includes(type as string)) {
+    if (type && ['international', 'domestic', 'weekend', 'Retreats & Healing'].includes(type as string)) {
       query.type = type;
     }
 
@@ -135,7 +135,7 @@ export const updateExploreDestination = catchAsync(
     if (name !== undefined) updateData.name = name;
     if (image !== undefined) updateData.image = image;
     if (type !== undefined) {
-      if (!['international', 'domestic', 'weekend'].includes(type)) {
+      if (!['international', 'domestic', 'weekend', 'Retreats & Healing'].includes(type)) {
         return next(new AppError('Invalid destination type', 400));
       }
       updateData.type = type;
@@ -275,6 +275,11 @@ export const getExploreDestinationStats = catchAsync(
       type: 'weekend',
       isActive: true,
     });
+    const retreatsCount = await ExploreDestination.countDocuments({
+      type: 'Retreats & Healing',
+      isActive: true,
+    });
+    
 
     res.status(200).json({
       status: 'success',
@@ -286,6 +291,7 @@ export const getExploreDestinationStats = catchAsync(
           international: internationalCount,
           domestic: domesticCount,
           weekend: weekendCount,
+          retreats: retreatsCount,
         },
       },
     });

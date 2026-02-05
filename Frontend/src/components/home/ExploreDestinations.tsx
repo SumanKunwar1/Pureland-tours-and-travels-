@@ -6,13 +6,13 @@ import { cn } from "@/lib/utils";
 import { API_BASE_URL } from "@/lib/api-config";
 import axios from "axios";
 
-type FilterType = "all" | "international" | "domestic" | "weekend";
+type FilterType = "all" | "international" | "domestic" | "Retreats & Healing" | "weekend";
 
 interface Destination {
   _id: string;
   name: string;
   image: string;
-  type: "international" | "domestic" | "weekend";
+  type: "international" | "domestic" | "Retreats & Healing" | "weekend";
   url: string;
   order: number;
   isActive: boolean;
@@ -23,6 +23,7 @@ const filters: { label: string; value: FilterType; icon: string }[] = [
   { label: "International", value: "international", icon: "✈️" },
   { label: "Domestic", value: "domestic", icon: "🇮🇳" },
   { label: "Weekend", value: "weekend", icon: "🚗" },
+  { label: "Retreats & Healing", value: "Retreats & Healing", icon: "🧘‍♀️" },
 ];
 
 export function ExploreDestinations() {
