@@ -29,11 +29,13 @@ const app: Application = express();
 console.log(`🔧 Setting up CORS for CLIENT_URL: ${config.clientUrl}`);
 console.log(`🔧 Node Environment: ${config.nodeEnv}`);
 
-// FIXED: Production-ready CORS configuration
+// FIXED: Production-ready CORS configuration - NO TRAILING SLASHES!
 const allowedOrigins = [
   config.clientUrl,
-  'https://purelandtravels.com.np/',
-  'https://www.purelandtravels.com.np/',
+  'https://purelandtravels.com.np',
+  'https://www.purelandtravels.com.np',
+  'http://purelandtravels.com.np',
+  'http://www.purelandtravels.com.np',
   // Add any other subdomains you might use
 ];
 
@@ -52,9 +54,11 @@ const corsOptions = {
     }
     
     if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log(`✅ CORS allowed for origin: ${origin}`);
       callback(null, true);
     } else {
       console.warn(`⚠️  Blocked CORS request from origin: ${origin}`);
+      console.warn(`   Allowed origins are:`, allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
