@@ -32,8 +32,8 @@ console.log(`🔧 Node Environment: ${config.nodeEnv}`);
 // FIXED: Production-ready CORS configuration
 const allowedOrigins = [
   config.clientUrl,
-  'https://padmasambhavatrip.com',
-  'https://www.padmasambhavatrip.com',
+  'https://purelandtravels.com.np/',
+  'https://www.purelandtravels.com.np/',
   // Add any other subdomains you might use
 ];
 
