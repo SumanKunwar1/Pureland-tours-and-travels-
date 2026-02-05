@@ -4,7 +4,7 @@ import axios from 'axios';
 // Get API URL from environment
 const isDevelopment = import.meta.env.MODE === 'development';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-  (isDevelopment ? 'http://localhost:5020/api/v1' : 'https://padmasambhavatrip.com/api/v1');
+  (isDevelopment ? 'http://localhost:5040/api/v1' : 'https://padmasambhavatrip.com/api/v1');
 
 console.log('🔧 Axios configuration:');
 console.log('   Mode:', import.meta.env.MODE);

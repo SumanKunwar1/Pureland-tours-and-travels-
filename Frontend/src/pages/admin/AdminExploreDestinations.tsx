@@ -9,7 +9,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { cn } from "@/lib/utils";
 import { getAuthToken } from "@/utils/auth";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5020";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5040";
 
 type FilterType = "all" | "international" | "domestic" | "weekend" | "Retreats & Healing";
 

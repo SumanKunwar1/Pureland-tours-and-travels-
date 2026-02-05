@@ -29,7 +29,7 @@ interface Config {
 
 export const config: Config = {
   nodeEnv: process.env.NODE_ENV || 'development',
-  port: parseInt(process.env.PORT || '5020', 10),
+  port: parseInt(process.env.PORT || '5040', 10),
   // FIXED: Use CLIENT_URL from .env (not FRONTEND_URL)
   clientUrl: process.env.CLIENT_URL || 'http://localhost:8080',
   mongoUri: process.env.MONGO_URI || 'mongodb://localhost:27017/padmasambhava-trips',
@@ -54,7 +54,7 @@ export const config: Config = {
 if (process.env.NODE_ENV === 'development') {
   console.log('✅ Configuration loaded:');
   console.log(`   NODE_ENV: ${process.env.NODE_ENV}`);
-  console.log(`   PORT: ${process.env.PORT || 5020}`);
+  console.log(`   PORT: ${process.env.PORT || 5040}`);
   console.log(`   CLIENT_URL: ${process.env.CLIENT_URL || 'http://localhost:8080'}`);
 }
 
