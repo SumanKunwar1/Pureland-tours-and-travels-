@@ -36,6 +36,10 @@ const allowedOrigins = [
   'https://www.purelandtravels.com.np',
   'http://purelandtravels.com.np',
   'http://www.purelandtravels.com.np',
+  'https://padmasambhavatrip.com',
+  'https://www.padmasambhavatrip.com',
+  'http://padmasambhavatrip.com',
+  'http://www.padmasambhavatrip.com',
   // Add any other subdomains you might use
 ];
 
