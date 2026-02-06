@@ -34,7 +34,7 @@ const createSendToken = (admin: any, statusCode: number, res: Response): void =>
     httpOnly: true,
     secure: config.nodeEnv === 'production', // HTTPS only in production
     sameSite: config.nodeEnv === 'production' ? 'none' as const : 'lax' as const, // CRITICAL: 'none' for cross-origin in production
-    domain: config.nodeEnv === 'production' ? '.padmasambhavatrip.com' : undefined, // Allow subdomain cookies
+    domain: config.nodeEnv === 'production' ? '.purelandtravels.com.np' : undefined, // Allow subdomain cookies
   };
 
   res.cookie('jwt', token, cookieOptions);
@@ -92,7 +92,7 @@ export const logout = catchAsync(
       httpOnly: true,
       secure: config.nodeEnv === 'production',
       sameSite: config.nodeEnv === 'production' ? 'none' as const : 'lax' as const,
-      domain: config.nodeEnv === 'production' ? '.padmasambhavatrip.com' : undefined,
+      domain: config.nodeEnv === 'production' ? '.purelandtravels.com.np' : undefined,
     };
 
     res.cookie('jwt', 'loggedout', cookieOptions);
