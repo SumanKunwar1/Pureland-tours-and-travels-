@@ -7,8 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { cn } from "@/lib/utils";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5020";
+import axiosInstance from "@/lib/axios"; // ✅ Import the configured axios instance
 
 interface HeroImage {
   _id: string;
@@ -19,34 +18,6 @@ interface HeroImage {
   isActive: boolean;
   createdAt: string;
 }
-
-// Helper function to get cookie
-const getCookie = (name: string): string | null => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-  return null;
-};
-
-// Helper function to get auth token
-const getAuthToken = (): string | null => {
-  // First try localStorage
-  const localToken = localStorage.getItem("token");
-  if (localToken) {
-    console.log("✅ Token found in localStorage");
-    return localToken;
-  }
-  
-  // Then try cookie
-  const cookieToken = getCookie("jwt");
-  if (cookieToken) {
-    console.log("✅ Token found in cookie");
-    return cookieToken;
-  }
-  
-  console.error("❌ No token found in localStorage or cookie");
-  return null;
-};
 
 export default function AdminHeroSection() {
   const { toast } = useToast();
@@ -71,66 +42,36 @@ export default function AdminHeroSection() {
   const loadHeroImages = async () => {
     try {
       setIsLoading(true);
-      const token = getAuthToken();
+      console.log("🔄 Fetching hero images...");
 
-      if (!token) {
-        console.error("❌ No token available for loadHeroImages");
+      // ✅ Use axios instance - it handles auth automatically
+      const response = await axiosInstance.get('/hero-images');
+
+      console.log("✅ Hero images loaded:", response.data.results);
+      
+      if (response.data.status === "success") {
+        setHeroImages(response.data.data.heroImages);
+      }
+    } catch (error: any) {
+      console.error("❌ Error loading hero images:", error);
+      
+      // Check if it's an auth error (axios interceptor handles 401)
+      if (error.response?.status === 401) {
         toast({
-          title: "Authentication Required",
-          description: "Please login to access this page",
+          title: "Session Expired",
+          description: "Your session has expired. Please login again.",
           variant: "destructive",
         });
         setTimeout(() => {
           window.location.href = '/admin/login';
         }, 1500);
-        return;
+      } else {
+        toast({
+          title: "Error",
+          description: error.response?.data?.message || error.message || "Failed to load hero images",
+          variant: "destructive",
+        });
       }
-
-      console.log("🔄 Fetching hero images with token...");
-
-      const response = await fetch(`${API_URL}/api/v1/hero-images`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        credentials: 'include',
-      });
-
-      console.log("📡 Response status:", response.status);
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          console.error("❌ Authentication failed:", response.status);
-          // Clear invalid token
-          localStorage.removeItem("token");
-          
-          toast({
-            title: "Session Expired",
-            description: "Your session has expired. Please login again.",
-            variant: "destructive",
-          });
-          setTimeout(() => {
-            window.location.href = '/admin/login';
-          }, 1500);
-          return;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("✅ Hero images loaded:", data.results);
-      
-      if (data.status === "success") {
-        setHeroImages(data.data.heroImages);
-      }
-    } catch (error: any) {
-      console.error("❌ Error loading hero images:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load hero images",
-        variant: "destructive",
-      });
     } finally {
       setIsLoading(false);
     }
@@ -215,92 +156,28 @@ export default function AdminHeroSection() {
     setIsSaving(true);
 
     try {
-      const token = getAuthToken();
-
-      if (!token) {
-        console.error("❌ No token available for submit");
+      // ✅ Use axios instance
+      if (editingImage) {
+        await axiosInstance.patch(`/hero-images/${editingImage._id}`, formData);
         toast({
-          title: "Authentication Required",
-          description: "Please login to continue",
-          variant: "destructive",
+          title: "Success",
+          description: "Hero image updated successfully",
         });
-        setTimeout(() => {
-          window.location.href = '/admin/login';
-        }, 1500);
-        return;
+      } else {
+        await axiosInstance.post('/hero-images', formData);
+        toast({
+          title: "Success",
+          description: "Hero image created successfully",
+        });
       }
 
-      const url = editingImage 
-        ? `${API_URL}/api/v1/hero-images/${editingImage._id}`
-        : `${API_URL}/api/v1/hero-images`;
-
-      const method = editingImage ? 'PATCH' : 'POST';
-
-      console.log(`🔄 ${method} request to:`, url);
-      console.log("📤 Request data:", { ...formData, imageUrl: formData.imageUrl.substring(0, 50) + '...' });
-
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        credentials: 'include',
-        body: JSON.stringify(formData),
-      });
-
-      console.log("📡 Response status:", response.status);
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          console.error("❌ Authentication failed during submit:", response.status);
-          // Clear invalid token
-          localStorage.removeItem("token");
-          
-          toast({
-            title: "Session Expired",
-            description: "Your session has expired. Please login again.",
-            variant: "destructive",
-          });
-          setTimeout(() => {
-            window.location.href = '/admin/login';
-          }, 1500);
-          return;
-        }
-        
-        const errorData = await response.json();
-        console.error("❌ Server error:", errorData);
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("✅ Operation successful:", data);
-
-      if (data.status === "success") {
-        if (editingImage) {
-          setHeroImages(
-            heroImages.map((img) =>
-              img._id === editingImage._id ? data.data.heroImage : img
-            ).sort((a, b) => a.order - b.order)
-          );
-          toast({
-            title: "Success",
-            description: "Hero image updated successfully",
-          });
-        } else {
-          setHeroImages([...heroImages, data.data.heroImage].sort((a, b) => a.order - b.order));
-          toast({
-            title: "Success",
-            description: "Hero image created successfully",
-          });
-        }
-        setShowModal(false);
-      }
+      setShowModal(false);
+      loadHeroImages();
     } catch (error: any) {
-      console.error("❌ Error in handleSubmit:", error);
+      console.error("❌ Error saving hero image:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to save hero image",
+        description: error.response?.data?.message || error.message || "Failed to save hero image",
         variant: "destructive",
       });
     } finally {
@@ -310,60 +187,20 @@ export default function AdminHeroSection() {
 
   const toggleActive = async (id: string) => {
     try {
-      const token = getAuthToken();
-
-      if (!token) {
-        toast({
-          title: "Authentication Required",
-          description: "Please login to continue",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/api/v1/hero-images/${id}/toggle-active`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        credentials: 'include',
+      // ✅ Use axios instance
+      await axiosInstance.patch(`/hero-images/${id}/toggle-active`);
+      
+      toast({
+        title: "Success",
+        description: "Hero image status updated",
       });
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem("token");
-          toast({
-            title: "Session Expired",
-            description: "Please login again.",
-            variant: "destructive",
-          });
-          setTimeout(() => {
-            window.location.href = '/admin/login';
-          }, 1500);
-          return;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.status === "success") {
-        setHeroImages(
-          heroImages.map((img) =>
-            img._id === id ? data.data.heroImage : img
-          )
-        );
-        toast({
-          title: "Success",
-          description: data.message,
-        });
-      }
+      
+      loadHeroImages();
     } catch (error: any) {
-      console.error("Error toggling active status:", error);
+      console.error("❌ Error toggling hero image:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to update status",
+        description: error.response?.data?.message || error.message || "Failed to update status",
         variant: "destructive",
       });
     }
@@ -375,56 +212,20 @@ export default function AdminHeroSection() {
     }
 
     try {
-      const token = getAuthToken();
-
-      if (!token) {
-        toast({
-          title: "Authentication Required",
-          description: "Please login to continue",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/api/v1/hero-images/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        credentials: 'include',
+      // ✅ Use axios instance
+      await axiosInstance.delete(`/hero-images/${id}`);
+      
+      toast({
+        title: "Success",
+        description: "Hero image deleted successfully",
       });
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem("token");
-          toast({
-            title: "Session Expired",
-            description: "Please login again.",
-            variant: "destructive",
-          });
-          setTimeout(() => {
-            window.location.href = '/admin/login';
-          }, 1500);
-          return;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.status === "success") {
-        setHeroImages(heroImages.filter((img) => img._id !== id));
-        toast({
-          title: "Success",
-          description: "Hero image deleted successfully",
-        });
-      }
+      
+      loadHeroImages();
     } catch (error: any) {
-      console.error("Error deleting hero image:", error);
+      console.error("❌ Error deleting hero image:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to delete hero image",
+        description: error.response?.data?.message || error.message || "Failed to delete hero image",
         variant: "destructive",
       });
     }
@@ -436,45 +237,51 @@ export default function AdminHeroSection() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Hero Banner Management</h1>
+            <h1 className="text-3xl font-bold">Hero Section Management</h1>
             <p className="text-muted-foreground mt-1">
-              Manage homepage hero slider images
+              Manage homepage hero banner images and slideshow
             </p>
           </div>
-          <Button onClick={handleCreate} size="lg">
-            <Plus className="w-5 h-5 mr-2" />
+          <Button onClick={handleCreate}>
+            <Plus className="w-4 h-4 mr-2" />
             Add Hero Image
           </Button>
         </div>
 
         {/* Loading State */}
-        {isLoading ? (
+        {isLoading && (
           <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-4 text-muted-foreground">Loading hero images...</p>
-            </div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
-        ) : heroImages.length === 0 ? (
-          <div className="text-center py-12 bg-card rounded-lg border-2 border-dashed">
-            <ImageIcon className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Hero Images Yet</h3>
-            <p className="text-muted-foreground mb-6">
-              Create your first hero banner image to get started
+        )}
+
+        {/* Empty State */}
+        {!isLoading && heroImages.length === 0 && (
+          <div className="bg-card rounded-lg border border-dashed border-border p-12 text-center">
+            <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No hero images yet</h3>
+            <p className="text-muted-foreground mb-4">
+              Create your first hero image to display on the homepage
             </p>
             <Button onClick={handleCreate}>
-              <Plus className="w-5 h-5 mr-2" />
-              Add First Hero Image
+              <Plus className="w-4 h-4 mr-2" />
+              Add Hero Image
             </Button>
           </div>
-        ) : (
+        )}
+
+        {/* Hero Images Grid */}
+        {!isLoading && heroImages.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {heroImages.map((image) => (
               <motion.div
                 key={image._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-card rounded-lg overflow-hidden shadow-lg border"
+                className={cn(
+                  "bg-card rounded-lg border overflow-hidden transition-all hover:shadow-lg",
+                  !image.isActive && "opacity-60"
+                )}
               >
                 <div className="relative aspect-video">
                   <img
