@@ -3,12 +3,18 @@ import axios from 'axios';
 
 // Get API URL from environment
 const isDevelopment = import.meta.env.MODE === 'development';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-  (isDevelopment ? 'http://localhost:5040/api/v1' : 'https://purelandtravels.com.np/api/v1');
+
+// FIXED: Build the base URL from VITE_API_URL (not VITE_API_BASE_URL)
+const API_URL = import.meta.env.VITE_API_URL || 
+  (isDevelopment ? 'http://localhost:5040' : 'https://purelandtravels.com.np');
+
+const API_BASE_URL = `${API_URL}/api/v1`;
 
 console.log('🔧 Axios configuration:');
 console.log('   Mode:', import.meta.env.MODE);
-console.log('   API_BASE_URL:', API_BASE_URL);
+console.log('   VITE_API_URL (from .env):', import.meta.env.VITE_API_URL);
+console.log('   API_URL (computed):', API_URL);
+console.log('   API_BASE_URL (final):', API_BASE_URL);
 console.log('   isDevelopment:', isDevelopment);
 
 // Create axios instance with default config
@@ -30,7 +36,7 @@ axiosInstance.interceptors.request.use(
     // CRITICAL: Always add Authorization header if token exists
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('🔑 Token added to request:', token.substring(0, 20) + '...');
+      console.log('🔐 Token added to request:', token.substring(0, 20) + '...');
     } else {
       console.warn('⚠️  No token found in localStorage');
     }
@@ -70,6 +76,7 @@ axiosInstance.interceptors.response.use(
       status: error.response?.status,
       message: error.response?.data?.message || error.message,
       url: error.config?.url,
+      fullURL: error.config?.baseURL + error.config?.url,
     });
 
     // If 401 Unauthorized, clear token and redirect to login
