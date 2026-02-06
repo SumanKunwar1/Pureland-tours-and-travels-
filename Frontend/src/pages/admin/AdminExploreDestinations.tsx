@@ -7,9 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { cn } from "@/lib/utils";
-import { getAuthToken } from "@/utils/auth";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5040";
+import axiosInstance from "@/lib/axios"; // ✅ Use centralized axios instance
 
 type FilterType = "all" | "international" | "domestic" | "weekend" | "Retreats & Healing";
 
@@ -49,57 +47,24 @@ export default function AdminExploreDestinations() {
   const loadDestinations = async () => {
     try {
       setIsLoading(true);
-      const token = getAuthToken();
-
-      if (!token) {
-        toast({
-          title: "Authentication Required",
-          description: "Please login to access this page",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = '/admin/login';
-        }, 1500);
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/api/v1/explore-destinations`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem("token");
-          toast({
-            title: "Session Expired",
-            description: "Please login again.",
-            variant: "destructive",
-          });
-          setTimeout(() => {
-            window.location.href = '/admin/login';
-          }, 1500);
-          return;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
       
-      if (data.status === "success") {
-        setDestinations(data.data.exploreDestinations);
+      // ✅ Use axiosInstance - it handles auth automatically
+      const response = await axiosInstance.get('/explore-destinations');
+      
+      if (response.data.status === "success") {
+        setDestinations(response.data.data.exploreDestinations);
       }
     } catch (error: any) {
       console.error("Error loading destinations:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load destinations",
-        variant: "destructive",
-      });
+      
+      // axios interceptor handles 401 redirects automatically
+      if (error.response?.status !== 401) {
+        toast({
+          title: "Error",
+          description: error.response?.data?.message || error.message || "Failed to load destinations",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -183,203 +148,80 @@ export default function AdminExploreDestinations() {
     setIsSaving(true);
 
     try {
-      const token = getAuthToken();
-
-      if (!token) {
+      // ✅ Use axiosInstance for POST/PATCH
+      if (editingDestination) {
+        await axiosInstance.patch(`/explore-destinations/${editingDestination._id}`, formData);
         toast({
-          title: "Authentication Required",
-          description: "Please login to continue",
-          variant: "destructive",
+          title: "Success",
+          description: "Destination updated successfully",
         });
-        setTimeout(() => {
-          window.location.href = '/admin/login';
-        }, 1500);
-        return;
+      } else {
+        await axiosInstance.post('/explore-destinations', formData);
+        toast({
+          title: "Success",
+          description: "Destination created successfully",
+        });
       }
 
-      const url = editingDestination 
-        ? `${API_URL}/api/v1/explore-destinations/${editingDestination._id}`
-        : `${API_URL}/api/v1/explore-destinations`;
-
-      const method = editingDestination ? 'PATCH' : 'POST';
-
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        credentials: 'include',
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem("token");
-          toast({
-            title: "Session Expired",
-            description: "Please login again.",
-            variant: "destructive",
-          });
-          setTimeout(() => {
-            window.location.href = '/admin/login';
-          }, 1500);
-          return;
-        }
-        
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.status === "success") {
-        if (editingDestination) {
-          setDestinations(
-            destinations.map((dest) =>
-              dest._id === editingDestination._id ? data.data.exploreDestination : dest
-            ).sort((a, b) => a.order - b.order)
-          );
-          toast({
-            title: "Success",
-            description: "Destination updated successfully",
-          });
-        } else {
-          setDestinations([...destinations, data.data.exploreDestination].sort((a, b) => a.order - b.order));
-          toast({
-            title: "Success",
-            description: "Destination created successfully",
-          });
-        }
-        setShowModal(false);
-      }
+      setShowModal(false);
+      loadDestinations();
     } catch (error: any) {
       console.error("Error saving destination:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save destination",
-        variant: "destructive",
-      });
+      
+      // axios interceptor handles 401 redirects automatically
+      if (error.response?.status !== 401) {
+        toast({
+          title: "Error",
+          description: error.response?.data?.message || error.message || "Failed to save destination",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this destination?")) return;
-
+  const toggleActive = async (id: string) => {
     try {
-      const token = getAuthToken();
-
-      if (!token) {
-        toast({
-          title: "Authentication Required",
-          description: "Please login to continue",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/api/v1/explore-destinations/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        credentials: 'include',
+      // ✅ Use axiosInstance
+      await axiosInstance.patch(`/explore-destinations/${id}/toggle-active`);
+      
+      toast({
+        title: "Success",
+        description: "Destination status updated",
       });
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem("token");
-          toast({
-            title: "Session Expired",
-            description: "Please login again.",
-            variant: "destructive",
-          });
-          setTimeout(() => {
-            window.location.href = '/admin/login';
-          }, 1500);
-          return;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.status === "success") {
-        setDestinations(destinations.filter((dest) => dest._id !== id));
-        toast({
-          title: "Success",
-          description: "Destination deleted successfully",
-        });
-      }
+      
+      loadDestinations();
     } catch (error: any) {
-      console.error("Error deleting destination:", error);
+      console.error("Error toggling destination:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to delete destination",
+        description: error.response?.data?.message || error.message || "Failed to update status",
         variant: "destructive",
       });
     }
   };
 
-  const toggleActive = async (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this destination?")) {
+      return;
+    }
+
     try {
-      const token = getAuthToken();
-
-      if (!token) {
-        toast({
-          title: "Authentication Required",
-          description: "Please login to continue",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/api/v1/explore-destinations/${id}/toggle-active`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        credentials: 'include',
+      // ✅ Use axiosInstance
+      await axiosInstance.delete(`/explore-destinations/${id}`);
+      
+      toast({
+        title: "Success",
+        description: "Destination deleted successfully",
       });
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem("token");
-          toast({
-            title: "Session Expired",
-            description: "Please login again.",
-            variant: "destructive",
-          });
-          setTimeout(() => {
-            window.location.href = '/admin/login';
-          }, 1500);
-          return;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.status === "success") {
-        setDestinations(
-          destinations.map((dest) =>
-            dest._id === id ? data.data.exploreDestination : dest
-          )
-        );
-        toast({
-          title: "Success",
-          description: data.message,
-        });
-      }
+      
+      loadDestinations();
     } catch (error: any) {
-      console.error("Error toggling active status:", error);
+      console.error("Error deleting destination:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to update status",
+        description: error.response?.data?.message || error.message || "Failed to delete destination",
         variant: "destructive",
       });
     }
@@ -396,90 +238,78 @@ export default function AdminExploreDestinations() {
               Manage featured destinations on homepage
             </p>
           </div>
-          <Button onClick={handleCreate} size="lg">
-            <Plus className="w-5 h-5 mr-2" />
+          <Button onClick={handleCreate}>
+            <Plus className="w-4 h-4 mr-2" />
             Add Destination
           </Button>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex flex-wrap gap-3">
-          {[
-            { label: "All", value: "all" as FilterType },
-            { label: "International", value: "international" as FilterType },
-            { label: "Domestic", value: "domestic" as FilterType },
-            { label: "Weekend", value: "weekend" as FilterType },
-            { label: "Retreats & Healing", value: "Retreats & Healing" as FilterType },
-          ].map((filter) => (
-            <button
-              key={filter.value}
-              onClick={() => setFilterType(filter.value)}
-              className={cn(
-                "px-4 py-2 rounded-lg font-medium transition-colors",
-                filterType === filter.value
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card hover:bg-accent"
-              )}
+        <div className="flex gap-2 flex-wrap">
+          {(["all", "international", "domestic", "weekend", "Retreats & Healing"] as FilterType[]).map((type) => (
+            <Button
+              key={type}
+              variant={filterType === type ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilterType(type)}
             >
-              {filter.label}
-            </button>
+              {type === "all" ? "All" : type.charAt(0).toUpperCase() + type.slice(1)}
+            </Button>
           ))}
         </div>
 
         {/* Loading State */}
-        {isLoading ? (
+        {isLoading && (
           <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-4 text-muted-foreground">Loading destinations...</p>
-            </div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
-        ) : filteredDestinations.length === 0 ? (
-          <div className="text-center py-12 bg-card rounded-lg border-2 border-dashed">
-            <Filter className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Destinations Found</h3>
-            <p className="text-muted-foreground mb-6">
+        )}
+
+        {/* Empty State */}
+        {!isLoading && filteredDestinations.length === 0 && (
+          <div className="bg-card rounded-lg border border-dashed border-border p-12 text-center">
+            <Filter className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No destinations found</h3>
+            <p className="text-muted-foreground mb-4">
               {filterType === "all" 
-                ? "Create your first destination to get started"
-                : `No ${filterType} destinations yet`
-              }
+                ? "Create your first destination to get started" 
+                : `No ${filterType} destinations yet`}
             </p>
             <Button onClick={handleCreate}>
-              <Plus className="w-5 h-5 mr-2" />
+              <Plus className="w-4 h-4 mr-2" />
               Add Destination
             </Button>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-6">
-            {filteredDestinations.map((destination, index) => (
+        )}
+
+        {/* Destinations Grid */}
+        {!isLoading && filteredDestinations.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {filteredDestinations.map((destination) => (
               <motion.div
                 key={destination._id}
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
                 className={cn(
-                  "relative group",
-                  !destination.isActive && "opacity-60"
+                  "relative group cursor-pointer",
+                  !destination.isActive && "opacity-50"
                 )}
+                onClick={() => handleEdit(destination)}
               >
-                <div className="relative aspect-square rounded-full overflow-hidden border-4 border-border shadow-lg">
+                <div className="relative aspect-square rounded-full overflow-hidden border-4 border-border hover:border-primary transition-all duration-300 shadow-lg hover:shadow-xl">
                   <img
                     src={destination.image}
                     alt={destination.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   
                   {/* Action Buttons */}
-                  <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={() => handleEdit(destination)}
-                      className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => toggleActive(destination._id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleActive(destination._id);
+                      }}
                       className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
                     >
                       {destination.isActive ? (
@@ -489,7 +319,10 @@ export default function AdminExploreDestinations() {
                       )}
                     </button>
                     <button
-                      onClick={() => handleDelete(destination._id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(destination._id);
+                      }}
                       className="p-2 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -506,7 +339,8 @@ export default function AdminExploreDestinations() {
                       destination.type === "Retreats & Healing" && "bg-purple-500 text-white",
                     )}>
                       {destination.type === "international" ? "Int'l" : 
-                       destination.type === "domestic" ? "Dom" : "Wknd"}
+                       destination.type === "domestic" ? "Dom" : 
+                       destination.type === "weekend" ? "Wknd" : "Heal"}
                     </span>
                   </div>
                 </div>
