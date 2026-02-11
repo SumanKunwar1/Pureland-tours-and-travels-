@@ -3,7 +3,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { BookingFormModal } from "@/components/shared/BookingFormModal";
+import { DalaiLamaBookingModal } from "@/components/shared/DalaiLamaBookingModal";
+import { ImageGallery } from "@/components/shared/ImageGallery";
 import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
 import {
   MapPin,
@@ -15,8 +16,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Random images for variety
-const randomImages = [
+// Pilgrimage journey images
+const pilgrimageImages = [
   "https://images.unsplash.com/photo-1578841387282-5a150ad16e93?w=800&h=600&fit=crop",
   "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop",
   "https://images.unsplash.com/photo-1516685038896-40e7371a4a4f?w=800&h=600&fit=crop",
@@ -26,6 +27,12 @@ const randomImages = [
   "https://images.unsplash.com/photo-1574482620811-1aa16ffe3c82?w=800&h=600&fit=crop",
   "https://images.unsplash.com/photo-1516737713241-dac347a21d42?w=800&h=600&fit=crop",
   "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1548013146-72479768bada?w=800&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1591825944072-6c5b7e4c7c34?w=800&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?w=800&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=800&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1604988955373-b5d4e5c8e6a5?w=800&h=600&fit=crop",
 ];
 
 const availableDates = [
@@ -194,16 +201,8 @@ export default function DalaiLamaDarshanPage() {
   const [selectedDate, setSelectedDate] = useState(availableDates[0]);
   const [travelers, setTravelers] = useState(1);
 
-  // FIXED: Use a real trip ID from your database, or make it optional in backend
-  // For now, we'll use an empty string as tripId, then update backend to handle it
-  const tripId = "";  // Empty - backend will handle it
-  const tripName = "His Holiness the 14th Dalai Lama - Darshan Pilgrimage";
   const pricePerPerson = 100000;
   const totalPrice = pricePerPerson * travelers;
-
-  const getRandomImage = (index: number) => {
-    return randomImages[index % randomImages.length];
-  };
 
   const handleBookNow = () => {
     setIsBookingOpen(true);
@@ -362,25 +361,7 @@ export default function DalaiLamaDarshanPage() {
                     Journey Highlights
                   </h2>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {randomImages.slice(0, 6).map((img, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: idx * 0.05 }}
-                        className="relative h-40 rounded-lg overflow-hidden group"
-                      >
-                        <img
-                          src={img}
-                          alt={`Journey highlight ${idx + 1}`}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </motion.div>
-                    ))}
-                  </div>
+                  <ImageGallery images={pilgrimageImages} maxDisplay={6} />
                 </motion.div>
 
                 {/* Inclusions & Exclusions */}
@@ -664,14 +645,11 @@ export default function DalaiLamaDarshanPage() {
       </main>
 
       {/* Booking Modal */}
-      <BookingFormModal
+      <DalaiLamaBookingModal
         isOpen={isBookingOpen}
         onClose={() => setIsBookingOpen(false)}
-        tripName={tripName}
-        tripId={tripId || "dalai-lama-darshan"}
         travelers={travelers}
         selectedDate={selectedDate.label}
-        selectedPrice={pricePerPerson}
         totalAmount={totalPrice}
       />
 
