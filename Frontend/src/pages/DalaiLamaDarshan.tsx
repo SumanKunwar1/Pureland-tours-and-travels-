@@ -242,20 +242,18 @@ export default function DalaiLamaDarshanPage() {
             </motion.div>
           </div>
 
-          {/* Hero Image - Placeholder for final image */}
+          {/* Hero Image */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="relative h-96 md:h-[480px] w-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10"
+            className="relative h-96 md:h-[480px] w-full overflow-hidden"
           >
-            {/* This will be replaced with your final image */}
-              <img
-                src="https://i1.himalayas.life/c/u/f67894297b6134a6b759b3a9ec15b6cb/2019/01/30042912/dalai-lama.jpg"
-                alt="His Holiness the Dalai Lama"
-                className="w-full h-80 md:h-96 object-cover"
-              />
-            
+            <img
+              src="https://i1.himalayas.life/c/u/f67894297b6134a6b759b3a9ec15b6cb/2019/01/30042912/dalai-lama.jpg"
+              alt="His Holiness the 14th Dalai Lama"
+              className="w-full h-full object-cover"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background to-transparent p-8 pt-16">
               <p className="text-white text-sm font-semibold">
