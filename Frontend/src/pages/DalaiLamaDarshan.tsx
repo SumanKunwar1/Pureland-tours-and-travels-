@@ -9,7 +9,6 @@ import {
   MapPin,
   Calendar,
   Users,
-  Clock,
   CheckCircle,
   Heart,
   Zap,
@@ -38,63 +37,156 @@ const availableDates = [
   { id: 6, label: "May 2 - 11, 2025", month: "May", spots: 14 },
 ];
 
-const itineraryDays = [
+// FULL 9-DAY ITINERARY
+const fullItinerary = [
   {
     day: 1,
-    date: "Day 1",
+    date: "Jan 7",
     title: "Kathmandu → Bangalore → Bylakuppe",
     activities: [
-      "Departure from Tribhuvan International Airport",
+      "Departure from Tribhuvan International Airport, Kathmandu",
       "Arrival at Bangalore Airport",
-      "Drive to Bylakuppe via scenic Western Ghats",
-      "Visit Namdroling Monastery - Golden Temple",
+      "Meet & greet by tour partner representative",
+      "Drive to Bylakuppe (scenic journey through Western Ghats)",
+      "Visit Namdroling Monastery (5-6 hours)",
+      "Explore Tibetan settlement",
     ],
+    overnight: "Bylakuppe",
   },
   {
     day: 2,
-    date: "Day 2",
+    date: "Jan 8",
     title: "Namdroling & Sera Monastery",
     activities: [
-      "Ngagyur Nyingma Institute",
-      "Nyingma Retreat Center",
-      "Visit Sera Monastery (Sera Je & Sera Mey)",
-      "Experience meditation sessions",
+      "Visit Namdroling Monastery - Golden Temple",
+      "Explore Ngagyur Nyingma Institute",
+      "Visit Nyingma Retreat Center",
+      "Drive to Sera Monastery (Sera Je & Sera Mey)",
+      "Experience debate sessions if available",
+      "Evening prayers at monastery",
     ],
+    overnight: "Bylakuppe",
   },
   {
     day: 3,
-    date: "Day 3",
-    title: "Mundgod - Preparation",
+    date: "Jan 9",
+    title: "Mundgod - Audience Preparation",
     activities: [
-      "Drive to Mundgod",
-      "Briefing session for H.H. audience",
+      "Drive to Mundgod (preparation begins)",
+      "Briefing session for H.H. Dalai Lama audience",
       "Visit Gaden Jangtse Monastery",
       "Visit Gaden Shartse Monastery",
+      "Visit Drepung Gomang",
+      "Visit Drepung Loseling College",
+      "Evening meditation and rest",
     ],
+    overnight: "Mundgod",
   },
   {
     day: 4,
-    date: "Day 4",
-    title: "✨ BLESSED AUDIENCE WITH H.H. DALAI LAMA",
+    date: "Jan 10",
+    title: "✨ SPECIAL AUDIENCE WITH H.H. DALAI LAMA",
     activities: [
+      "Early morning preparations",
       "Receive teachings and blessings from His Holiness",
       "Group photo opportunity (if permitted)",
-      "Blessed moments of spiritual presence",
-      "Evening meditation",
+      "Blessed moments of presence",
+      "Reflection and meditation",
+      "Evening celebration dinner",
     ],
+    overnight: "Mundgod",
     highlighted: true,
+  },
+  {
+    day: 5,
+    date: "Jan 11",
+    title: "Bylakuppe → Bangalore → Delhi",
+    activities: [
+      "Early morning drive to Bangalore (260km, 5 hours)",
+      "Visit local attractions if time permits",
+      "Flight Bangalore → Delhi",
+      "Transfer to hotel",
+      "Evening exploration of Delhi",
+    ],
+    overnight: "Delhi",
+  },
+  {
+    day: 6,
+    date: "Jan 12",
+    title: "Delhi → Tsopema (Rewalsar Lake)",
+    activities: [
+      "Early morning drive to Tsopema (Sacred Padmasambhava site)",
+      "Arrive at Rewalsar Lake (Tsopema) - the holy lake",
+      "Visit Guru Rinpoche Cave - sacred pilgrimage site",
+      "Evening Kora (circumambulation) around the holy lake",
+      "Spiritual meditation by the lake",
+      "Prayer sessions",
+    ],
+    overnight: "Rewalsar",
+  },
+  {
+    day: 7,
+    date: "Jan 13",
+    title: "Tsopema - Deep Spiritual Immersion",
+    activities: [
+      "Early morning visit to Rewalsar Lake",
+      "Visit Guru Rinpoche Cave - sacred pilgrimage site",
+      "Explore Tso-Pema Monasteries",
+      "Visit Padmasambhava Statue Viewpoint",
+      "Evening Kora around the holy lake",
+      "Sunset meditation and prayers",
+    ],
+    overnight: "Rewalsar",
+  },
+  {
+    day: 8,
+    date: "Jan 15",
+    title: "Tsopema → Amritsar (Golden Temple)",
+    activities: [
+      "Early morning drive to Amritsar",
+      "Arrive at Sri Harmandir Sahib (Golden Temple)",
+      "Langar Seva experience - serve and eat with community",
+      "Circumambulation of the Golden Temple",
+      "Optional: Wagah Border Flag Ceremony",
+      "Evening prayers and reflection",
+    ],
+    overnight: "Amritsar",
+  },
+  {
+    day: 9,
+    date: "Jan 16",
+    title: "Amritsar → Delhi → Kathmandu",
+    activities: [
+      "Early morning at Golden Temple",
+      "Morning breakfast at hotel",
+      "Drive to Delhi Airport",
+      "Flight Delhi → Kathmandu",
+      "Arrival in Kathmandu",
+      "Tour ends with Blessings from His Holiness",
+    ],
+    overnight: "Home",
   },
 ];
 
 const inclusions = [
-  "Round-trip Flights (Kathmandu-Bangalore-Delhi-Kathmandu)",
-  "AC Vehicles for ground transportation",
-  "Accommodation (hotels & monastery guest houses)",
-  "All meals - Pure Vegetarian",
-  "H.H. Dalai Lama audience arrangements",
-  "Monastery entrance fees",
-  "Expert guides & trip captains",
-  "All permits & taxes",
+  "Round-trip Flights (Kathmandu-Bangalore, Bangalore-Delhi, Delhi-Kathmandu)",
+  "AC Vehicles for entire ground transportation",
+  "Accommodation in non-star hotels and monastery guest houses",
+  "All meals (breakfast, lunch, dinner) - Pure Vegetarian",
+  "Special arrangements for H.H. Dalai Lama audience",
+  "Entrance fees to all monasteries and pilgrimage sites",
+  "Airport transfers and assistance",
+  "Expert guides and trained trip captains",
+  "Spiritual briefing and preparation sessions",
+  "All permits and taxes",
+];
+
+const exclusions = [
+  "Personal expenses (shopping, tips, laundry)",
+  "Travel insurance (recommended)",
+  "Unpredictable costs due to weather or flight delays",
+  "Donations to monasteries (optional but appreciated)",
+  "Any items not mentioned in inclusions",
 ];
 
 export default function DalaiLamaDarshanPage() {
@@ -102,8 +194,9 @@ export default function DalaiLamaDarshanPage() {
   const [selectedDate, setSelectedDate] = useState(availableDates[0]);
   const [travelers, setTravelers] = useState(1);
 
-  // Fixed trip data - matches your booking system requirements
-  const tripId = "dalai-lama-darshan-2025";
+  // FIXED: Use a real trip ID from your database, or make it optional in backend
+  // For now, we'll use an empty string as tripId, then update backend to handle it
+  const tripId = "";  // Empty - backend will handle it
   const tripName = "His Holiness the 14th Dalai Lama - Darshan Pilgrimage";
   const pricePerPerson = 100000;
   const totalPrice = pricePerPerson * travelers;
@@ -113,7 +206,6 @@ export default function DalaiLamaDarshanPage() {
   };
 
   const handleBookNow = () => {
-    // This will open the modal with properly formatted data
     setIsBookingOpen(true);
   };
 
@@ -150,18 +242,20 @@ export default function DalaiLamaDarshanPage() {
             </motion.div>
           </div>
 
-          {/* Hero Image */}
+          {/* Hero Image - Placeholder for final image */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="relative h-96 md:h-[480px] w-full overflow-hidden"
+            className="relative h-96 md:h-[480px] w-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10"
           >
-            <img
-              src={getRandomImage(0)}
-              alt="His Holiness the Dalai Lama"
-              className="w-full h-full object-cover"
-            />
+            {/* This will be replaced with your final image */}
+              <img
+                src="https://i1.himalayas.life/c/u/f67894297b6134a6b759b3a9ec15b6cb/2019/01/30042912/dalai-lama.jpg"
+                alt="His Holiness the Dalai Lama"
+                className="w-full h-80 md:h-96 object-cover"
+              />
+            
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background to-transparent p-8 pt-16">
               <p className="text-white text-sm font-semibold">
@@ -201,7 +295,7 @@ export default function DalaiLamaDarshanPage() {
                   ))}
                 </motion.div>
 
-                {/* Itinerary Preview */}
+                {/* FULL 9-DAY ITINERARY */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -209,17 +303,17 @@ export default function DalaiLamaDarshanPage() {
                   className="space-y-4"
                 >
                   <h2 className="text-2xl font-display font-bold text-foreground">
-                    9-Day Journey Overview
+                    Complete 9-Day Itinerary
                   </h2>
 
                   <div className="space-y-3">
-                    {itineraryDays.map((day, index) => (
+                    {fullItinerary.map((day, index) => (
                       <motion.div
                         key={day.day}
                         initial={{ opacity: 0, x: -20 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        transition={{ delay: index * 0.1 }}
+                        transition={{ delay: index * 0.05 }}
                         className={`rounded-lg p-4 border-l-4 transition-all ${
                           day.highlighted
                             ? "bg-primary/15 border-l-primary"
@@ -227,15 +321,23 @@ export default function DalaiLamaDarshanPage() {
                         }`}
                       >
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-foreground">
-                            {day.title}
-                          </h3>
-                          {day.highlighted && (
+                          <div>
                             <span className="text-xs font-bold text-primary">
+                              DAY {day.day}
+                            </span>
+                            <h3 className="font-semibold text-foreground">
+                              {day.title}
+                            </h3>
+                          </div>
+                          {day.highlighted && (
+                            <span className="text-xs font-bold text-primary px-2 py-1 bg-primary/10 rounded">
                               ✨ SPECIAL
                             </span>
                           )}
                         </div>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          📅 {day.date} • Overnight: {day.overnight}
+                        </p>
                         <div className="grid md:grid-cols-2 gap-2">
                           {day.activities.map((activity, idx) => (
                             <div key={idx} className="flex gap-2">
@@ -249,10 +351,6 @@ export default function DalaiLamaDarshanPage() {
                       </motion.div>
                     ))}
                   </div>
-
-                  <Button variant="outline" className="w-full mt-6">
-                    View Full 9-Day Itinerary
-                  </Button>
                 </motion.div>
 
                 {/* Image Gallery */}
@@ -287,24 +385,44 @@ export default function DalaiLamaDarshanPage() {
                   </div>
                 </motion.div>
 
-                {/* Inclusions */}
+                {/* Inclusions & Exclusions */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="space-y-4"
+                  className="grid md:grid-cols-2 gap-8"
                 >
-                  <h2 className="text-2xl font-display font-bold text-foreground">
-                    What's Included
-                  </h2>
+                  {/* Inclusions */}
+                  <div className="space-y-4">
+                    <h2 className="text-2xl font-display font-bold text-foreground flex items-center gap-2">
+                      <CheckCircle className="w-6 h-6 text-primary" />
+                      What's Included
+                    </h2>
+                    <div className="space-y-2">
+                      {inclusions.map((item, idx) => (
+                        <div key={idx} className="flex gap-3 p-3 bg-white rounded-lg">
+                          <Heart className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                          <span className="text-sm text-foreground">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {inclusions.map((item, idx) => (
-                      <div key={idx} className="flex gap-3 p-3 bg-white rounded-lg">
-                        <Heart className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-foreground">{item}</span>
-                      </div>
-                    ))}
+                  {/* Exclusions */}
+                  <div className="space-y-4">
+                    <h2 className="text-2xl font-display font-bold text-foreground">
+                      Not Included
+                    </h2>
+                    <div className="space-y-2">
+                      {exclusions.map((item, idx) => (
+                        <div key={idx} className="flex gap-3 p-3 bg-white rounded-lg">
+                          <span className="text-2xl">○</span>
+                          <span className="text-sm text-muted-foreground">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </motion.div>
               </div>
@@ -547,12 +665,12 @@ export default function DalaiLamaDarshanPage() {
         </section>
       </main>
 
-      {/* Booking Modal - Using the standard component */}
+      {/* Booking Modal */}
       <BookingFormModal
         isOpen={isBookingOpen}
         onClose={() => setIsBookingOpen(false)}
         tripName={tripName}
-        tripId={tripId}
+        tripId={tripId || "dalai-lama-darshan"}
         travelers={travelers}
         selectedDate={selectedDate.label}
         selectedPrice={pricePerPerson}

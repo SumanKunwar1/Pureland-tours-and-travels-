@@ -22,7 +22,7 @@ export function DalaiLamaDarshan() {
             <div className="relative rounded-2xl overflow-hidden shadow-lg">
               {/* Main Image */}
               <img
-                src="https://images.unsplash.com/photo-1578841387282-5a150ad16e93?w=600&h=500&fit=crop"
+                src="https://i1.himalayas.life/c/u/f67894297b6134a6b759b3a9ec15b6cb/2019/01/30042912/dalai-lama.jpg"
                 alt="His Holiness the Dalai Lama"
                 className="w-full h-80 md:h-96 object-cover"
               />
