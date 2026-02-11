@@ -27,6 +27,7 @@ import NotFound from "./pages/NotFound";
 import CruiseTrips from "./pages/CruiseTrips";
 import EMITrips from "./pages/EMITrips";
 import Healings from "./pages/Healing";
+import DalaiLamaDarshanPage from "./pages/DalaiLamaDarshan";
 
 
 // Auth Pages
@@ -276,6 +277,7 @@ const App = () => (
             <Route path="/domestic-trips" element={<DomesticTrips />} />
             <Route path="/trips/emi" element={<EMITrips />} />
             <Route path="/trips/cruise" element={<CruiseTrips />} />
+            <Route path="/dalai-lama-darshan" element={<DalaiLamaDarshanPage />} />
             
             {/* Destination Routes */}
             <Route path="/destination/:slug" element={<TripDetail />} />
