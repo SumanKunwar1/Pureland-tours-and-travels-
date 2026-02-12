@@ -175,9 +175,9 @@ export function Navbar() {
       )}
     >
       {/* Top announcement bar */}
-      <div className="bg-primary text-primary-foreground py-2 text-center text-sm">
+      <Link to="/dalai-lama-darshan" className="block bg-primary text-primary-foreground py-2 text-center text-sm hover:bg-primary/90 transition-colors cursor-pointer">
         <span className="font-medium">Sacred Darshan of His Holiness the Dalai Lama Early Bird – Save up to ₹5,000 🎉</span>
-      </div>
+      </Link>
 
       <nav className="container-custom">
         {/* Top row: Logo + Brand Name + Agent Login (ALWAYS VISIBLE AT TOP) */}
@@ -185,16 +185,16 @@ export function Navbar() {
           {/* Logo and Brand Name */}
           <Link to="/" className="flex items-center gap-3 flex-shrink-0">
             <img 
-              src="https://res.cloudinary.com/dihev9qxc/image/upload/v1770224880/54852__1_-removebg-preview_rkyiuc.png" 
-              alt="Pure Land Tours & Travels Logo" 
+              src="https://res.cloudinary.com/dihev9qxc/image/upload/v1768991877/453207561_122102729312441160_4787222294410407220_n-removebg-preview_voy795.png" 
+              alt="Padmasambhava Trip" 
               className="h-28 w-auto"
             />
             <div className="hidden lg:flex flex-col">
               <span className="text-xl font-bold text-foreground leading-tight">
-                Pure Land Tours & Travels
+                Padmasambhava Trips
               </span>
               <span className="text-sm text-muted-foreground font-medium">
-                Nepal DMC
+                India DMC
               </span>
             </div>
           </Link>
@@ -244,11 +244,11 @@ export function Navbar() {
 
             {/* Phone Icon - Desktop */}
             <a
-              href="tel: +9779863593271"
+              href="tel: +917363933945"
               className="hidden lg:flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors"
             >
               <Phone className="w-5 h-5" />
-              <span>(+977) 98635 93271</span>
+              <span>(+91) 73639 33945</span>
             </a>
 
             {/* ===== AGENT LOGIN - ALWAYS VISIBLE AT TOP RIGHT ON ALL DEVICES ===== */}
@@ -478,11 +478,11 @@ export function Navbar() {
 
                   {/* PHONE & CONTACT */}
                   <a
-                    href="tel: +9779863593271"
+                    href="tel: +917363933945"
                     className="flex items-center gap-2 text-sm text-foreground px-4 py-3 rounded-lg hover:bg-muted transition-colors"
                   >
                     <Phone className="w-4 h-4" />
-                    <span>(+977) 98635 93271</span>
+                    <span>(+91) 73639 33945</span>
                   </a>
                   <Link to="/contact" onClick={() => setMobileOpen(false)}>
                     <Button className="w-full rounded-lg">Plan Your Trip</Button>
