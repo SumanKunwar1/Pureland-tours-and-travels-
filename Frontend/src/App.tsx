@@ -57,7 +57,8 @@ import AdminCustomTrips from "./pages/admin/AdminCustomTrips";
 import AdminDocumentation from "./pages/admin/AdminDocumentation";
 import AdminInsurance from "./pages/admin/AdminInsurance";
 import AdminAgents from "./pages/admin/AdminAgents";
-import adminTestimonials, { AdminTestimonials } from "./pages/admin/AdminTestimonials";
+import  { AdminTestimonials } from "./pages/admin/AdminTestimonials";
+import AdminDalaiLamaBookings from "./pages/admin/AdminDalaiLamaBookings";
 
 // Admin Homepage Management Pages
 import AdminHeroSection from "./pages/admin/AdminHeroSection";
@@ -113,6 +114,15 @@ const App = () => (
                 </ProtectedAdminRoute>
               }
             />
+            <Route 
+              path="/admin/dalai-lama-bookings"
+              element={
+                <ProtectedAdminRoute>   
+                  <AdminDalaiLamaBookings />
+                </ProtectedAdminRoute>
+              }
+            />
+
             <Route
               path="/admin/homepage/trending"
               element={

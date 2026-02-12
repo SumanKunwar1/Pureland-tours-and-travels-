@@ -4,9 +4,19 @@ import { API_BASE_URL } from '@/lib/api-config';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true, // ADDED: This is important for cookies
   headers: {
     'Content-Type': 'application/json',
   },
+});
+
+// Add interceptor to include auth token from localStorage
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export interface DalaiLamaBookingData {
@@ -21,11 +31,18 @@ export interface DalaiLamaBookingData {
 
 export const dalaiLamaBookingService = {
   createBooking: async (data: DalaiLamaBookingData) => {
-    const response = await api.post('/dalai-lama-bookings', data);
-    return response.data;
+    try {
+      console.log('Submitting Dalai Lama booking:', data);
+      const response = await api.post('/dalai-lama-bookings', data);
+      console.log('Dalai Lama booking response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Dalai Lama booking error:', error.response?.data || error);
+      throw error;
+    }
   },
 
-  // Admin endpoints (if needed later)
+  // Admin endpoints
   getAllBookings: async (params?: { 
     status?: string; 
     search?: string; 
