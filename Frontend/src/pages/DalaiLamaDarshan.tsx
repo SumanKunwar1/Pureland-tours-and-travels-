@@ -18,30 +18,30 @@ import { Button } from "@/components/ui/button";
 
 // Pilgrimage journey images
 const pilgrimageImages = [
-  "https://images.unsplash.com/photo-1578841387282-5a150ad16e93?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1516685038896-40e7371a4a4f?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1579154204601-01d82976d5dc?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1580832261868-6f1b4fdf0c62?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1574482620811-1aa16ffe3c82?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1516737713241-dac347a21d42?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1548013146-72479768bada?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1591825944072-6c5b7e4c7c34?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=800&h=600&fit=crop",
-  "https://images.unsplash.com/photo-1604988955373-b5d4e5c8e6a5?w=800&h=600&fit=crop",
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/615407781_25649516711325385_1794480527887579625_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=833d8c&_nc_ohc=B_S_wH_epK8Q7kNvwFmZpCz&_nc_oc=AdnGMx-8GGJT2hvwKErP-neFDUjeRLIRGNSeKzWvB4O-9eDZhInpsbSP6dVj4ZWtA-s&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=7q327lB9dprI6WOcSM8-SA&oh=00_AfvjyxnvsFKtfrN8oSMgBhst7FhwyWi4ylDARsZoUDAnFg&oe=69936384",
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/613281737_25649517241325332_7368243054541655567_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=833d8c&_nc_ohc=v-0mAAHlXU8Q7kNvwGN_p9w&_nc_oc=AdmIWYeQAa6nEE2ReQ8EJM2Z1LEKoZZPQwJR68fl3oiKEAIENRdqBkE0DJIYGlffQzY&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=z5ozv7eNrdaIdG2Oi_723A&oh=00_AfvdI-KmrVhqJgeSypprn1MBRINXaT5By-fxxkmS0hnP2A&oe=699357FC",
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/615831139_25649518104658579_2217277330478332336_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=833d8c&_nc_ohc=dHZy0Ou5GHIQ7kNvwF6JtVR&_nc_oc=AdkHhCxR8sku2gI7DiYWBk3KbCoJK54qvXMZT9tAFzCCSasFMzNnuTIozcKUMHo9DyU&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=u7wF7OZuuRkQDXB43_sAqg&oh=00_Aft4kgblR55UJT-ReCuuyHU7UgFwZv9pxf2240w_UEkAJQ&oe=69936ED7",
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/615330000_25649523071324749_556856111905171096_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=833d8c&_nc_ohc=8b0jy2uuSdkQ7kNvwEYmBd4&_nc_oc=Adlt_C_Cfr91Q2fRRHX_65_isw8XvfppxwCwtEdWghj9E2zb5294Ax4TfYFBZS5OxnI&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=Q_FORfoZtQftZoZXbv_72A&oh=00_AfvdWe7tJFPjgDBoSk5oLRxcnyFW72YzB7w_W0Rttq2GNQ&oe=69935C57",
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/614898602_25649544384655951_4647058322178075868_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=833d8c&_nc_ohc=MSLJv3SW4NcQ7kNvwFzBHrE&_nc_oc=AdmHA_-BLguzKbCHUpOC8tkq5IW2K87-HETXCtJQ1c2OS9rlXpzMhsIqBCGo2sPa-0Q&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=gm7YTOuDqjqdVQWTN-xAwQ&oh=00_AfsLl1Cvyv0_lHUN9es2wTbd5JekJQC1wvF5tqjMoAaMbw&oe=69937E2B",
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/615749780_25649544914655898_8181865544175473920_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=833d8c&_nc_ohc=95n-YVbFWLgQ7kNvwEzoT6W&_nc_oc=Adl4vmS-scu8JylsBxUJHxDEyqcTkddLRke6aKy_s4BVdH7ceUB9gggcgk8aCSnxLfk&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=m6RPFYx41u8WBUGfxrdg1Q&oh=00_AfvOVdBZ0IDe8RlW5pA3Ezr_dSDkkCDrdjAsf90gdfNzyg&oe=69937147",
+  
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/614487863_25649546081322448_1741576006573135087_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=833d8c&_nc_ohc=WTS-OhaX4roQ7kNvwHQULS4&_nc_oc=AdmLukbFDBUPiMI6wqtJpS0B4xirkzb-eOyQBJJfSRA4AUyu8iDFvyKHAdbAlY4Nd3k&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=mYC5EQt-c0-r4ey-mA0Vjw&oh=00_AftwZGiO0KhGobjnjPyTEP4rw5DfnVXufSGxY7u0bpwI7A&oe=699381B6",
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/613773166_25649543144656075_7472832031259212044_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=833d8c&_nc_ohc=RXwFs3hjKvgQ7kNvwHJhGgX&_nc_oc=AdnET8q6K8flls_nZBBGL8Vp4z6ZI8JHGti7ZaJfmhssL7074Vyg32Sh3wpo9Tiy1o0&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=_GE9JJ9zHFow4r2RUB901g&oh=00_Afva7qNq9BlH-xP3TuWTWZcknQGRhSDrZD3GXE30fw7TGA&oe=69936DAB",
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/615467517_25649540114656378_3282776082181225722_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=833d8c&_nc_ohc=0HRVg-lSD7AQ7kNvwGdYR_f&_nc_oc=Adk_k5cpExGT__ipZKSYex8JaK5nGbAc3CR9UFcJRR3xrBHNb1FS46DbU6BHKxXSsdM&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=P6iNk54t2SeOE66EAyaa2A&oh=00_AftPCCBCSR0E2vwG-rRzMm-pRtHcRVZe2J-N7F_-gAi9og&oe=69937EBD",
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/615220699_25649538887989834_1016535208220875553_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=833d8c&_nc_ohc=dLG4-WnZjxAQ7kNvwHwFBAn&_nc_oc=AdlYzSGopwcbBRpm56ExB635Po12etnRIsVfBm-8P64yex7VOL-ceyBcWAGHQAVYg9g&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=MtDEpJ_D9JVIxvcXQbmf9w&oh=00_AfshG5u7fmJZgG8OxpxdsGc0nPNL0OtslG3AaWU4hYxfww&oe=69937077",
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/614599939_25649539447989778_2042450989832947657_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=833d8c&_nc_ohc=06sOc1BxyO4Q7kNvwENJYQG&_nc_oc=AdlxxiaMXNghE6t8UZho2KIFvxlcn60pceiDw4C2HFiJuKwdIJKQvktajeQ_E6blqn8&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=yQKpnoO1JiWTrEVye0qWoA&oh=00_AftKFovi6jdYtlOKjZpmL9Xs7W1aHI2Y1qsGw1Tt8SogZA&oe=6993701F",
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/615164896_25649531911323865_5261475497619979381_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=833d8c&_nc_ohc=uRNoXv_-RFIQ7kNvwGUQoze&_nc_oc=AdkmmNOmFOfBPnRdUmPMabiBkBJ1uXtgm4FiAVchD3Lurtbqn5qF1CakhUrPPLH2Uu8&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=TjhZuc1fTFVUR5udp9C2uw&oh=00_AfvpY4X_iI8AM6LFKlnA6cPkUhlJ4yf2ZLxFiTnrpbahpQ&oe=699371A0",
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/615437310_25649530281324028_8075386305152341324_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=833d8c&_nc_ohc=DWZMvYFo85MQ7kNvwHH0B2K&_nc_oc=Adlvull2pUgdb98g8opVRay8-4iKiIPJ64q2wSjRv1vcWGtZ5LCBqx4pzhMvuIv95sM&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=zrPxHHICwC-i-vXOlg2jfg&oh=00_AfvDDWgnLkTMf2Xw1fo21A0pO4PtrZrs_kRk7wp9K4Yj9A&oe=69935541",
+  "https://scontent.fktm9-2.fna.fbcdn.net/v/t39.30808-6/615399085_25649524354657954_2267486247401336271_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=833d8c&_nc_ohc=XeOmgIOu7AwQ7kNvwHb9Q0C&_nc_oc=Adn42OyDin93RWG55uTP-FCwz8Kn3CKpjAcfZGOiIGFj2XfeP4VdtzTvaBM1ENKyYAY&_nc_zt=23&_nc_ht=scontent.fktm9-2.fna&_nc_gid=owPjqmOJynsGo0HXjtLgdw&oh=00_AfukWI9YMbE-vOgl2rs1_iJn3JfkcI_6DMmMqbTR2uPRCw&oe=69936940",
 ];
 
 const availableDates = [
-  { id: 1, label: "Jan 7 - 16, 2025", month: "January", spots: 15 },
-  { id: 2, label: "Feb 14 - 23, 2025", month: "February", spots: 18 },
-  { id: 3, label: "Mar 7 - 16, 2025", month: "March", spots: 12 },
-  { id: 4, label: "Mar 21 - 30, 2025", month: "March", spots: 16 },
-  { id: 5, label: "Apr 11 - 20, 2025", month: "April", spots: 20 },
-  { id: 6, label: "May 2 - 11, 2025", month: "May", spots: 14 },
+  { id: 1, label: "Mar 7 - 16, 2026", month: "March", spots: 15 },
+  { id: 2, label: "Apr 14 - 23, 2026", month: "April", spots: 18 },
+  { id: 3, label: "May 7 - 16, 2026", month: "May", spots: 12 },
+  { id: 4, label: "May 21 - 30, 2026", month: "May", spots: 16 },
+  { id: 5, label: "Jun 11 - 20, 2026", month: "June", spots: 20 },
+  { id: 6, label: "Jul 2 - 11, 2026", month: "July", spots: 14 },
 ];
 
 // FULL 9-DAY ITINERARY
@@ -249,14 +249,14 @@ export default function DalaiLamaDarshanPage() {
             className="relative h-96 md:h-[480px] w-full overflow-hidden"
           >
             <img
-              src="https://i1.himalayas.life/c/u/f67894297b6134a6b759b3a9ec15b6cb/2019/01/30042912/dalai-lama.jpg"
+              src="https://peregrinetreks.com/wp-content/uploads/2024/07/Dalai-Lama.webp"
               alt="His Holiness the 14th Dalai Lama"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background to-transparent p-8 pt-16">
               <p className="text-white text-sm font-semibold">
-                A sacred journey to spiritual enlightenment
+                
               </p>
             </div>
           </motion.div>
@@ -537,7 +537,7 @@ export default function DalaiLamaDarshanPage() {
                         onClick={handleBookNow}
                         className="w-full bg-primary hover:bg-primary/90 text-white font-bold text-lg py-6"
                       >
-                        🎉 BOOK NOW
+                        BOOK NOW
                       </Button>
 
                       <a

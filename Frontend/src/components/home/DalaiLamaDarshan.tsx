@@ -138,7 +138,7 @@ export function DalaiLamaDarshan() {
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <Link to="/dalai-lama-darshan" className="flex-1">
                 <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base py-6">
-                  🎉 Book Now
+                  Book Now
                   <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
