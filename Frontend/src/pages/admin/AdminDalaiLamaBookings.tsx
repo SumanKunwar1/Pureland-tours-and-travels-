@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { cn } from "@/lib/utils";
-import { API_BASE_URL } from "@/lib/api-config";
+import axiosInstance from "@/lib/axios";
 
 interface DalaiLamaBooking {
   id: string;
@@ -32,6 +32,13 @@ interface Stats {
   avgBookingValue?: number;
 }
 
+interface FetchParams {
+  page: number;
+  limit: number;
+  search: string;
+  status?: string;
+}
+
 export default function AdminDalaiLamaBookings() {
   const { toast } = useToast();
   const [bookings, setBookings] = useState<DalaiLamaBooking[]>([]);
@@ -45,44 +52,36 @@ export default function AdminDalaiLamaBookings() {
   useEffect(() => {
     fetchBookings();
     fetchStats();
-  }, [statusFilter, currentPage]);
+  }, [statusFilter, currentPage, searchQuery]);
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: "10",
+      
+      const params: FetchParams = {
+        page: currentPage,
+        limit: 10,
         search: searchQuery,
-      });
+      };
 
       if (statusFilter !== "all") {
-        // Capitalize first letter for Dalai Lama bookings (Pending, Confirmed, Cancelled)
-        params.append("status", statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1));
+        params.status = statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1);
       }
 
-      const response = await fetch(
-        `${API_BASE_URL}/dalai-lama-bookings?${params}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setBookings(data.data.bookings || []);
-        setTotalPages(data.data.pagination?.pages || 1);
+      const response = await axiosInstance.get('/dalai-lama-bookings', { params });
+      
+      if (response.data?.data?.bookings) {
+        setBookings(response.data.data.bookings);
+        setTotalPages(response.data.data.pagination?.pages || 1);
       }
-    } catch (error) {
-      console.error("Error fetching Dalai Lama bookings:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch bookings",
-        variant: "destructive",
-      });
+    } catch (error: any) {
+      if (error.response?.status !== 401) {
+        toast({
+          title: "Error",
+          description: error.response?.data?.message || "Failed to fetch bookings",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -90,41 +89,23 @@ export default function AdminDalaiLamaBookings() {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${API_BASE_URL}/dalai-lama-bookings/admin/stats`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data.data);
+      const response = await axiosInstance.get('/dalai-lama-bookings/admin/stats');
+      if (response.data?.data) {
+        setStats(response.data.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching stats:", error);
     }
   };
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${API_BASE_URL}/dalai-lama-bookings/${id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ status: newStatus }),
-        }
+      const response = await axiosInstance.patch(
+        `/dalai-lama-bookings/${id}`,
+        { status: newStatus }
       );
 
-      if (response.ok) {
+      if (response.status === 200) {
         toast({
           title: "Booking updated",
           description: `Status changed to ${newStatus}`,
@@ -132,46 +113,33 @@ export default function AdminDalaiLamaBookings() {
         fetchBookings();
         fetchStats();
       }
-    } catch (error) {
-      console.error("Error updating booking:", error);
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to update booking",
+        description: error.response?.data?.message || "Failed to update booking",
         variant: "destructive",
       });
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this booking?")) return;
+    if (confirm("Are you sure you want to delete this booking?")) {
+      try {
+        await axiosInstance.delete(`/dalai-lama-bookings/${id}`);
 
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${API_BASE_URL}/dalai-lama-bookings/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
         toast({
           title: "Booking deleted",
-          description: "The booking has been deleted successfully",
+          description: "The booking has been removed",
         });
         fetchBookings();
         fetchStats();
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.response?.data?.message || "Failed to delete booking",
+          variant: "destructive",
+        });
       }
-    } catch (error) {
-      console.error("Error deleting booking:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete booking",
-        variant: "destructive",
-      });
     }
   };
 
