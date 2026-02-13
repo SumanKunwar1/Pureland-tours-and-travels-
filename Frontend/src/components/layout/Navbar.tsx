@@ -185,16 +185,16 @@ export function Navbar() {
           {/* Logo and Brand Name */}
           <Link to="/" className="flex items-center gap-3 flex-shrink-0">
             <img 
-              src="https://res.cloudinary.com/dihev9qxc/image/upload/v1768991877/453207561_122102729312441160_4787222294410407220_n-removebg-preview_voy795.png" 
-              alt="Padmasambhava Trip" 
+              src="" 
+              alt="Pure Land Tours & Travels" 
               className="h-28 w-auto"
             />
             <div className="hidden lg:flex flex-col">
               <span className="text-xl font-bold text-foreground leading-tight">
-                Padmasambhava Trips
+                Pure Land Tours & Travels
               </span>
               <span className="text-sm text-muted-foreground font-medium">
-                India DMC
+                Nepal DMC
               </span>
             </div>
           </Link>
@@ -244,11 +244,11 @@ export function Navbar() {
 
             {/* Phone Icon - Desktop */}
             <a
-              href="tel: +917363933945"
+              href="tel: +977 970-4502011"
               className="hidden lg:flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors"
             >
               <Phone className="w-5 h-5" />
-              <span>(+91) 73639 33945</span>
+              <span>(+977) 970-4502011</span>
             </a>
 
             {/* ===== AGENT LOGIN - ALWAYS VISIBLE AT TOP RIGHT ON ALL DEVICES ===== */}
@@ -478,11 +478,11 @@ export function Navbar() {
 
                   {/* PHONE & CONTACT */}
                   <a
-                    href="tel: +917363933945"
+                    href="tel: +977 970-4502011"
                     className="flex items-center gap-2 text-sm text-foreground px-4 py-3 rounded-lg hover:bg-muted transition-colors"
                   >
                     <Phone className="w-4 h-4" />
-                    <span>(+91) 73639 33945</span>
+                    <span>(+977) 970-4502011</span>
                   </a>
                   <Link to="/contact" onClick={() => setMobileOpen(false)}>
                     <Button className="w-full rounded-lg">Plan Your Trip</Button>
