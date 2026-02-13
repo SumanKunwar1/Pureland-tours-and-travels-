@@ -176,7 +176,7 @@ export function Navbar() {
     >
       {/* Top announcement bar */}
       <Link to="/dalai-lama-darshan" className="block bg-primary text-primary-foreground py-2 text-center text-sm hover:bg-primary/90 transition-colors cursor-pointer">
-        <span className="font-medium">Sacred Darshan of His Holiness the Dalai Lama Early Bird – Save up to ₹5,000 🎉</span>
+        <span className="font-medium">Secret Audience of His Holiness 14th Dalai Lama - Book An Appointment</span>
       </Link>
 
       <nav className="container-custom">
