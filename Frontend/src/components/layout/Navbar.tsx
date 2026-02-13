@@ -185,7 +185,7 @@ export function Navbar() {
           {/* Logo and Brand Name */}
           <Link to="/" className="flex items-center gap-3 flex-shrink-0">
             <img 
-              src="" 
+              src="https://res.cloudinary.com/dihev9qxc/image/upload/v1770224880/54852__1_-removebg-preview_rkyiuc.png" 
               alt="Pure Land Tours & Travels" 
               className="h-28 w-auto"
             />
