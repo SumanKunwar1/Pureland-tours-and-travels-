@@ -54,7 +54,7 @@ export default function AgentLogin() {
         id: "agent-" + Date.now(),
         name: "Agent User",
         email: formData.email,
-        phone: "+91 98765 43210",
+        phone: "+9779704502011",
         role: "agent", // ⭐ CRITICAL
         agencyName: "Agent Agency",
         city: "Delhi",

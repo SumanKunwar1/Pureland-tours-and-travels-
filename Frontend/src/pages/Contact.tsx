@@ -12,13 +12,13 @@ const contactInfo = [
   {
     icon: Phone,
     title: "Phone",
-    details: ["(+977) 986-3593271"],
+    details: ["(+977) 97045 02011"],
     color: "text-primary",
   },
   {
     icon: Mail,
     title: "Email",
-    details: ["info@purelandtours.com", "bookings@purelandtours.com"],
+    details: ["info@purelandtravels.com.np", "bookings@purelandtravels.com.np"],
     color: "text-amber-500",
   },
   {
@@ -30,7 +30,7 @@ const contactInfo = [
   {
     icon: Clock,
     title: "Working Hours",
-    details: ["Mon - Sat: 9:00 AM - 7:00 PM", "Sunday: 10:00 AM - 5:00 PM"],
+    details: ["Sun - Fri: 9:00 AM - 7:00 PM", "Saturday: 10:00 AM - 5:00 PM"],
     color: "text-sky-500",
   },
 ];

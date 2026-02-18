@@ -341,7 +341,7 @@ export default function AgentSignup() {
                         onChange={handleChange}
                         onFocus={() => setFocusedField("phone")}
                         onBlur={() => setFocusedField(null)}
-                        placeholder="+91 XXXXX XXXXX"
+                        placeholder="+977 XXXXX XXXXX"
                         className={cn(
                           "h-12 transition-all duration-200",
                           focusedField === "phone" && "ring-2 ring-primary/20 border-primary"
@@ -547,12 +547,12 @@ export default function AgentSignup() {
           >
             <p className="text-sm text-muted-foreground">
               Need help? Contact our partner team at{" "}
-              <a href="mailto:partners@padmasambhavatrips.com" className="text-primary hover:underline">
-                partners@padmasambhavatrips.com
+              <a href="mailto:info@purelandtravels.com.np" className="text-primary hover:underline">
+                info@purelandtravels.com.np
               </a>{" "}
               or call{" "}
-              <a href="tel:+917363933945" className="text-primary hover:underline">
-                (+91) 73639 33945
+              <a href="tel:+9779704502011" className="text-primary hover:underline">
+                (+977) 97045 02011
               </a>
             </p>
           </motion.div>

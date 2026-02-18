@@ -22,7 +22,7 @@ export function DalaiLamaDarshan() {
             <div className="relative rounded-2xl overflow-hidden shadow-lg">
               {/* Main Image */}
               <img
-                src="https://i1.himalayas.life/c/u/f67894297b6134a6b759b3a9ec15b6cb/2019/01/30042912/dalai-lama.jpg"
+                src="https://res.cloudinary.com/dcsgax3ld/image/upload/v1771326166/615407781_25649516711325385_1794480527887579625_n_1_wx0j4q.jpg"
                 alt="His Holiness the Dalai Lama"
                 className="w-full h-80 md:h-96 object-cover"
               />
@@ -143,7 +143,7 @@ export function DalaiLamaDarshan() {
                 </Button>
               </Link>
               <a
-                href="https://wa.me/919876543210?text=Hi!%20I%27m%20interested%20in%20the%20Dalai%20Lama%20Darshan%20pilgrimage"
+                href="https://wa.me/9704502011?text=Hi!%20I%27m%20interested%20in%20the%20Dalai%20Lama%20Darshan%20pilgrimage"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1"

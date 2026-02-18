@@ -190,7 +190,7 @@ export const PRICING_DETAILS = [
 ];
 
 // WhatsApp contact
-export const WHATSAPP_CONTACT = "+917501610109";
+export const WHATSAPP_CONTACT = "+9779704502011";
 
 // Function to get trip data by ID (can be extended for multiple trips)
 export function getTripDataById(id: string): TripDetail | null {
