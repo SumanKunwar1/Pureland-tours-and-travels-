@@ -29,7 +29,6 @@ import EMITrips from "./pages/EMITrips";
 import Healings from "./pages/Healing";
 import DalaiLamaDarshanPage from "./pages/DalaiLamaDarshan";
 
-
 // Auth Pages
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
@@ -40,6 +39,16 @@ import Documentation from "./pages/Documentation";
 import Dashboard from "./pages/Dashboard";
 import Insurance from "./pages/Insurance";
 import AgentSignup from "./pages/AgentSignup";
+import AgentLogin from "./pages/AgentLogin";
+
+// Agent Dashboard Pages
+import AgentDashboard from "./pages/agent/AgentDashboard";
+import AgentBookings from "./pages/agent/AgentBookings";
+import AgentProfile from "./pages/agent/AgentProfile";
+import AgentCommissions from "./pages/agent/AgentCommissions";
+
+// Protection Components
+import ProtectedAgentRoute from "./components/agent/ProtectedAgentRoute";
 
 // Admin Pages
 import AdminLogin from "./pages/admin/AdminLogin";
@@ -57,7 +66,7 @@ import AdminCustomTrips from "./pages/admin/AdminCustomTrips";
 import AdminDocumentation from "./pages/admin/AdminDocumentation";
 import AdminInsurance from "./pages/admin/AdminInsurance";
 import AdminAgents from "./pages/admin/AdminAgents";
-import  { AdminTestimonials } from "./pages/admin/AdminTestimonials";
+import { AdminTestimonials } from "./pages/admin/AdminTestimonials";
 import AdminDalaiLamaBookings from "./pages/admin/AdminDalaiLamaBookings";
 
 // Admin Homepage Management Pages
@@ -83,17 +92,51 @@ const App = () => (
             {/* Main Pages */}
             <Route path="/" element={<Index />} />
             <Route path="/trip/:id" element={<TripDetail />} />
-            
+
             {/* Authentication Routes */}
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            
+
             {/* Visa & Documentation Routes */}
             <Route path="/visa-application" element={<VisaApplication />} />
             <Route path="/documentation" element={<Documentation />} />
             <Route path="/insurance" element={<Insurance />} />
-            
+
+            {/* Agent Dashboard Routes (Protected - Only for Agents) */}
+            <Route
+              path="/agent/dashboard"
+              element={
+                <ProtectedAgentRoute>
+                  <AgentDashboard />
+                </ProtectedAgentRoute>
+              }
+            />
+            <Route
+              path="/agent/bookings"
+              element={
+                <ProtectedAgentRoute>
+                  <AgentBookings />
+                </ProtectedAgentRoute>
+              }
+            />
+            <Route
+              path="/agent/profile"
+              element={
+                <ProtectedAgentRoute>
+                  <AgentProfile />
+                </ProtectedAgentRoute>
+              }
+            />
+            <Route
+              path="/agent/commissions"
+              element={
+                <ProtectedAgentRoute>
+                  <AgentCommissions />
+                </ProtectedAgentRoute>
+              }
+            />
+
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route
@@ -114,10 +157,10 @@ const App = () => (
                 </ProtectedAdminRoute>
               }
             />
-            <Route 
+            <Route
               path="/admin/dalai-lama-bookings"
               element={
-                <ProtectedAdminRoute>   
+                <ProtectedAdminRoute>
                   <AdminDalaiLamaBookings />
                 </ProtectedAdminRoute>
               }
@@ -273,7 +316,7 @@ const App = () => (
                 </ProtectedAdminRoute>
               }
             />
-            
+
             {/* Trip Category Pages */}
             <Route path="/group-trips" element={<GroupTrips />} />
             <Route path="/trips/upcoming" element={<GroupTrips />} />
@@ -288,26 +331,26 @@ const App = () => (
             <Route path="/trips/emi" element={<EMITrips />} />
             <Route path="/trips/cruise" element={<CruiseTrips />} />
             <Route path="/dalai-lama-darshan" element={<DalaiLamaDarshanPage />} />
-            
+
             {/* Destination Routes */}
             <Route path="/destination/:slug" element={<TripDetail />} />
-            
+
             {/* Retreats */}
             <Route path="/retreats" element={<Retreats />} />
             <Route path="/retreats/meditation" element={<Retreats />} />
             <Route path="/retreats/spiritual" element={<Retreats />} />
             <Route path="/retreats/wellness" element={<Healings />} />
             <Route path="/retreats/yoga" element={<Retreats />} />
-            
+
             {/* Customised Trips */}
             <Route path="/custom" element={<CustomisedTrips />} />
             <Route path="/customised-trips" element={<CustomisedTrips />} />
-            
+
             {/* Deals Pages */}
             <Route path="/deals/seasonal" element={<SeasonalDeals />} />
             <Route path="/deals/limited" element={<SeasonalDeals />} />
             <Route path="/deals/limited-time" element={<SeasonalDeals />} />
-            
+
             {/* Travel Styles */}
             <Route path="/travel-styles/pilgrimage" element={<PilgrimageTrips />} />
             <Route path="/style/solo" element={<GroupTrips />} />
@@ -319,7 +362,7 @@ const App = () => (
 
             {/* Combo Trips */}
             <Route path="/trips/combo" element={<ComboTrips />} />
-            
+
             {/* Contact & More */}
             <Route path="/contact" element={<Contact />} />
             <Route path="/about" element={<AboutUs />} />
@@ -330,7 +373,8 @@ const App = () => (
             <Route path="/terms" element={<Contact />} />
             <Route path="/corporate" element={<Contact />} />
             <Route path="/agent-signup" element={<AgentSignup />} />
-            
+            <Route path="/agent/login" element={<AgentLogin />} />
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

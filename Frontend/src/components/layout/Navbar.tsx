@@ -69,10 +69,11 @@ const navItems: NavItem[] = [
     icon: <Plane className="w-4 h-4 text-sky-500" />,
   },
   {
-    label: "India Trips",
-    href: "/domestic-trips",
-    icon: <span className="text-base">🇮🇳</span>,
-  },
+  label: "Nepal Trips",
+  href: "/domestic-trips",
+  icon: <span className="text-base">🇳🇵</span>,
+},
+
   {
     label: "Deals",
     icon: <Tag className="w-4 h-4 text-amber-500" />,
