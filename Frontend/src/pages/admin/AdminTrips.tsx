@@ -129,7 +129,7 @@ export default function AdminTrips() {
     "All",
     "emi-trips",
     "international-trips",
-    "india-trips",
+    "nepal-trips",
     "deals",
     "travel-styles",
     "combo-trips",

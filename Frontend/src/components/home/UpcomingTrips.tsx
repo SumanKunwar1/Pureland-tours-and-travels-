@@ -24,6 +24,7 @@ interface Trip {
 
 const categories = [
   "All",
+  "Nepal",
   "Sikkim",
   "Darjeeling",
   "Tsopema Himalchal",
@@ -45,9 +46,6 @@ const categories = [
   "Egypt", 
   "Saudi Arabia", 
   "Qatar", 
-  "Tanzania",  
-  "Mandeep", 
-  "Nepal", 
   "Korea", 
   "Taiwan", 
   "Malaysia",

@@ -97,7 +97,7 @@ const tripSchema = new Schema<ITrip>(
           const allowedCategories = [
             'emi-trips',
             'international-trips',
-            'india-trips',
+            'nepal-trips',
             'deals',
             'travel-styles',
             'combo-trips',
