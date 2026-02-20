@@ -3,8 +3,8 @@ import TripListingPage from "@/components/trips/TripListingPage";
 import destLadakh from "@/assets/dest-ladakh.jpg";
 
 const destinations = [
-  "All", "Spiti Valley", "Ladakh", "Meghalaya", "Himachal Pradesh", "Kashmir", 
-  "Rajasthan", "Kerala", "Goa", "Andaman", "Northeast"
+  "All", "Kathmandu", "Bhaktapur", "Lalitpur", "Pokhara", "Mukhtinath", "Lumbini", "Chitwan", "Nagarkot", "Bandipur", "Dhulikhel", "Gosaikunda", "Rara Lake",
+  "Everest Region"
 ];
 
 const DomesticTrips = () => {

@@ -38,8 +38,8 @@ const TRIP_CATEGORIES = {
       { label: "International Packages", value: "international-package", route: "/international-trips" },
     ],
   },
-  "Nepal Trips": {
-    value: "nepal-trips",
+  "India Trips": {
+    value: "india-trips",
     subcategories: [
       { label: "Domestic Packages", value: "domestic-package", route: "/domestic-trips" },
     ],

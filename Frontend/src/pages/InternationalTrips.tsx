@@ -4,6 +4,7 @@ import destBali from "@/assets/dest-bali.jpg";
 
 const destinations = [
   "All",
+  "India",
   "Canada",
   "USA",
   "Australia",
@@ -21,10 +22,7 @@ const destinations = [
   "Turkey", 
   "Egypt", 
   "Saudi Arabia", 
-  "Qatar", 
-  "Tanzania",  
-  "Mandeep", 
-  "Nepal", 
+  "Qatar",  
   "Korea", 
   "Taiwan", 
   "Malaysia",
