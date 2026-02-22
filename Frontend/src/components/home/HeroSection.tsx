@@ -74,7 +74,7 @@ export function HeroSection() {
 
   if (isLoading) {
     return (
-      <section className="relative min-h-[90vh] flex items-center justify-center bg-gray-100">
+      <section className="relative min-h-[70vh] flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Loading...</p>

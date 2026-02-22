@@ -45,7 +45,7 @@ export default function AdminTrendingDestinations() {
   const fetchDestinations = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("adminToken");
       const response = await fetch(`${API_BASE_URL}/trending-destinations`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -79,7 +79,7 @@ export default function AdminTrendingDestinations() {
 
   const handleSubmit = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("adminToken");
 
       if (editingDest) {
         const response = await fetch(`${API_BASE_URL}/trending-destinations/${editingDest._id}`, {
@@ -134,7 +134,7 @@ export default function AdminTrendingDestinations() {
     if (!confirm("Are you sure you want to delete this destination?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("adminToken");
       const response = await fetch(`${API_BASE_URL}/trending-destinations/${id}`, {
         method: "DELETE",
         headers: {
@@ -162,7 +162,7 @@ export default function AdminTrendingDestinations() {
 
   const handleToggleActive = async (id: string) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("adminToken");
       const response = await fetch(`${API_BASE_URL}/trending-destinations/${id}/toggle-active`, {
         method: "PATCH",
         headers: {

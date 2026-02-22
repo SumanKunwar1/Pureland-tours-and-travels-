@@ -24,7 +24,7 @@ export interface TrendingDestinationInput {
 
 class TrendingDestinationService {
   private getAuthHeaders() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('adminToken');
     return {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
