@@ -42,10 +42,7 @@ import AgentSignup from "./pages/AgentSignup";
 import AgentLogin from "./pages/AgentLogin";
 
 // Agent Dashboard Pages
-import AgentDashboard from "./pages/agent/AgentDashboard";
-import AgentBookings from "./pages/agent/AgentBookings";
-import AgentProfile from "./pages/agent/AgentProfile";
-import AgentCommissions from "./pages/agent/AgentCommissions";
+
 
 // Protection Components
 import ProtectedAgentRoute from "./components/agent/ProtectedAgentRoute";
@@ -103,39 +100,7 @@ const App = () => (
             <Route path="/documentation" element={<Documentation />} />
             <Route path="/insurance" element={<Insurance />} />
 
-            {/* Agent Dashboard Routes (Protected - Only for Agents) */}
-            <Route
-              path="/agent/dashboard"
-              element={
-                <ProtectedAgentRoute>
-                  <AgentDashboard />
-                </ProtectedAgentRoute>
-              }
-            />
-            <Route
-              path="/agent/bookings"
-              element={
-                <ProtectedAgentRoute>
-                  <AgentBookings />
-                </ProtectedAgentRoute>
-              }
-            />
-            <Route
-              path="/agent/profile"
-              element={
-                <ProtectedAgentRoute>
-                  <AgentProfile />
-                </ProtectedAgentRoute>
-              }
-            />
-            <Route
-              path="/agent/commissions"
-              element={
-                <ProtectedAgentRoute>
-                  <AgentCommissions />
-                </ProtectedAgentRoute>
-              }
-            />
+           
 
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />

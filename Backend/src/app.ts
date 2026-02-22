@@ -20,7 +20,6 @@ import heroImageRoutes from './routes/heroImage.routes';
 import exploreDestinationRoutes from './routes/exploreDestination.routes';
 import trendingDestinationRoutes from './routes/trendingDestination.routes';
 import insuranceRoutes from './routes/insurance.routes';
-import agentRoutes from './routes/agent.routes';
 import testimonialRoutes from './routes/testimonial.routes';
 import dalaiLamaBookingRoutes from './routes/dalaiLamaBooking.routes';
 
@@ -164,7 +163,6 @@ app.use('/api/v1/hero-images', heroImageRoutes);
 app.use('/api/v1/explore-destinations', exploreDestinationRoutes);
 app.use('/api/v1/trending-destinations', trendingDestinationRoutes);
 app.use('/api/v1/insurance', insuranceRoutes);
-app.use('/api/v1/agents', agentRoutes);
 app.use('/api/v1/testimonials', testimonialRoutes);
 app.use('/api/v1/dalai-lama-bookings', dalaiLamaBookingRoutes);
 
