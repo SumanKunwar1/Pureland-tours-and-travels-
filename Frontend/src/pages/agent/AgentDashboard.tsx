@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { agentTripsService, AgentTrip } from "@/services/agentTrips";
 import {
   Search,
   Filter,
@@ -28,144 +29,12 @@ import {
 } from "@/components/ui/collapsible";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-
-interface Trip {
-  _id: string;
-  name: string;
-  destination: string;
-  image: string;
-  duration: string;
-  price: number;
-  b2bPrice: number;
-  originalPrice: number;
-  discount: number;
-  commission: number;
-  dates: Array<{ date: string; price: number }>;
-  hasGoodies: boolean;
-  tripCategory: string;
-  tripType: string;
-}
-
-const MOCK_TRIPS: Trip[] = [
-  {
-    _id: "1",
-    name: "Mystical Bhutan - Land of Thunder Dragon",
-    destination: "Bhutan",
-    image: "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=800&h=600&fit=crop",
-    duration: "6 Days / 5 Nights",
-    price: 45000,
-    b2bPrice: 38000,
-    originalPrice: 55000,
-    discount: 10000,
-    commission: 15,
-    dates: [
-      { date: "2026-03-15", price: 45000 },
-      { date: "2026-04-10", price: 47000 },
-    ],
-    hasGoodies: true,
-    tripCategory: "travel-styles",
-    tripType: "pilgrimage",
-  },
-  {
-    _id: "2",
-    name: "Nepal Heritage Tour - Temples & Mountains",
-    destination: "Kathmandu",
-    image: "https://images.unsplash.com/photo-1507743403345-8ebf43e39f1c?w=800&h=600&fit=crop",
-    duration: "5 Days / 4 Nights",
-    price: 28000,
-    b2bPrice: 23000,
-    originalPrice: 35000,
-    discount: 7000,
-    commission: 12,
-    dates: [
-      { date: "2026-03-20", price: 28000 },
-      { date: "2026-04-15", price: 29000 },
-    ],
-    hasGoodies: false,
-    tripCategory: "india-trips",
-    tripType: "",
-  },
-  {
-    _id: "3",
-    name: "Pokhara Lakeside Retreat",
-    destination: "Pokhara",
-    image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&h=600&fit=crop",
-    duration: "4 Days / 3 Nights",
-    price: 22000,
-    b2bPrice: 18500,
-    originalPrice: 28000,
-    discount: 6000,
-    commission: 10,
-    dates: [
-      { date: "2026-03-25", price: 22000 },
-      { date: "2026-04-20", price: 23000 },
-    ],
-    hasGoodies: true,
-    tripCategory: "india-trips",
-    tripType: "",
-  },
-  {
-    _id: "4",
-    name: "Lumbini Spiritual Journey",
-    destination: "Lumbini",
-    image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&h=600&fit=crop",
-    duration: "3 Days / 2 Nights",
-    price: 18000,
-    b2bPrice: 15000,
-    originalPrice: 23000,
-    discount: 5000,
-    commission: 12,
-    dates: [
-      { date: "2026-03-18", price: 18000 },
-      { date: "2026-04-12", price: 19000 },
-    ],
-    hasGoodies: false,
-    tripCategory: "travel-styles",
-    tripType: "pilgrimage",
-  },
-  {
-    _id: "5",
-    name: "Everest Base Camp Trek",
-    destination: "Everest Region",
-    image: "https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?w=800&h=600&fit=crop",
-    duration: "12 Days / 11 Nights",
-    price: 95000,
-    b2bPrice: 78000,
-    originalPrice: 115000,
-    discount: 20000,
-    commission: 18,
-    dates: [
-      { date: "2026-04-05", price: 95000 },
-      { date: "2026-05-10", price: 98000 },
-    ],
-    hasGoodies: true,
-    tripCategory: "travel-styles",
-    tripType: "adventure",
-  },
-  {
-    _id: "6",
-    name: "Chitwan Wildlife Safari",
-    destination: "Chitwan",
-    image: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800&h=600&fit=crop",
-    duration: "3 Days / 2 Nights",
-    price: 24000,
-    b2bPrice: 20000,
-    originalPrice: 30000,
-    discount: 6000,
-    commission: 12,
-    dates: [
-      { date: "2026-03-22", price: 24000 },
-      { date: "2026-04-18", price: 25000 },
-    ],
-    hasGoodies: false,
-    tripCategory: "india-trips",
-    tripType: "",
-  },
-];
+import { toast } from "react-toastify";
 
 export default function AgentDashboard() {
   const navigate = useNavigate();
-  const [trips, setTrips] = useState<Trip[]>(MOCK_TRIPS);
+  const [trips, setTrips] = useState<AgentTrip[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [isBudgetOpen, setIsBudgetOpen] = useState(false);
@@ -189,7 +58,27 @@ export default function AgentDashboard() {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+    fetchTrips();
   }, []);
+
+  const fetchTrips = async () => {
+    try {
+      setLoading(true);
+      const response = await agentTripsService.getAllTrips({
+        limit: 100, // Get all trips
+      });
+      
+      if (response.status === 'success') {
+        setTrips(response.data.trips);
+        toast.success('Trips loaded successfully');
+      }
+    } catch (error: any) {
+      console.error('Error fetching trips:', error);
+      toast.error(error.response?.data?.message || 'Failed to load trips');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -198,7 +87,7 @@ export default function AgentDashboard() {
     navigate("/agent/login");
   };
 
-  const filterTripsByBudget = (trip: Trip, budgetRange: string): boolean => {
+  const filterTripsByBudget = (trip: AgentTrip, budgetRange: string): boolean => {
     const price = trip.b2bPrice;
     switch (budgetRange) {
       case "Under ₹20,000":
@@ -240,7 +129,7 @@ export default function AgentDashboard() {
     const matchesCategory =
       activeCategory === "All" ||
       trip.name.toLowerCase().includes(activeCategory.toLowerCase()) ||
-      trip.tripType.toLowerCase().includes(activeCategory.toLowerCase());
+      (trip.tripType && trip.tripType.toLowerCase().includes(activeCategory.toLowerCase()));
 
     const matchesBudget =
       selectedBudgets.length === 0 ||
@@ -500,7 +389,13 @@ export default function AgentDashboard() {
 
             {/* Trip Cards Grid */}
             <div className="flex-1 p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {loading ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {filteredTrips.map((trip, index) => (
                   <motion.div
                     key={trip._id}
@@ -584,12 +479,14 @@ export default function AgentDashboard() {
                 ))}
               </div>
 
-              {filteredTrips.length === 0 && (
+              {filteredTrips.length === 0 && !loading && (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">
                     No trips found matching your criteria.
                   </p>
                 </div>
+              )}
+              </>
               )}
             </div>
           </div>

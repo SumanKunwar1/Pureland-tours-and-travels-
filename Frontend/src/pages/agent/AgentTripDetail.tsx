@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { BookingFormModal } from "@/components/shared/BookingFormModal";
+import { agentTripsService, AgentTrip as AgentTripType } from "@/services/agentTrips";
 
 const TRIP_TABS = ["Itinerary", "Inclusions", "B2B Pricing", "Notes"];
 
@@ -35,153 +36,7 @@ const PRICING_DETAILS = [
   { sharing: "Extra Bed", priceOffset: 1500, isSupplementary: true },
 ];
 
-interface TripDate {
-  date: string;
-  price: number;
-  available: number;
-}
-
-interface ItineraryDay {
-  day: number;
-  title: string;
-  highlights: string[];
-}
-
-interface Trip {
-  _id: string;
-  name: string;
-  destination: string;
-  duration: string;
-  description: string;
-  price: number;
-  b2bPrice: number;
-  originalPrice: number;
-  discount: number;
-  commission: number;
-  image: string;
-  inclusions: string[];
-  exclusions: string[];
-  notes: string[];
-  itinerary: ItineraryDay[];
-  dates: TripDate[];
-  hasGoodies: boolean;
-}
-
-// Mock trip data
-const MOCK_TRIP: Trip = {
-  _id: "1",
-  name: "Mystical Bhutan - Land of Thunder Dragon",
-  destination: "Bhutan",
-  duration: "6 Days / 5 Nights",
-  description:
-    "Experience the magical kingdom of Bhutan, where ancient Buddhist culture meets stunning Himalayan landscapes. Visit iconic monasteries, witness colorful festivals, and immerse yourself in the happiness that defines this extraordinary nation.",
-  price: 45000,
-  b2bPrice: 38000,
-  originalPrice: 55000,
-  discount: 10000,
-  commission: 15,
-  image:
-    "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=1200&h=600&fit=crop",
-  hasGoodies: true,
-  inclusions: [
-    "5 Nights accommodation in 3-star hotels",
-    "Daily breakfast and dinner",
-    "Airport transfers in private vehicle",
-    "English speaking guide throughout",
-    "All sightseeing as per itinerary",
-    "Monument entrance fees",
-    "Sustainable Development Fee (SDF)",
-    "Bhutan Visa fees",
-    "Travel insurance (basic coverage)",
-  ],
-  exclusions: [
-    "International flights to/from Paro",
-    "Lunch during the trip",
-    "Personal expenses and tips",
-    "Additional sightseeing not mentioned",
-    "Any items not mentioned in inclusions",
-  ],
-  notes: [
-    "Valid passport with minimum 6 months validity required",
-    "Bhutan visa will be arranged by us",
-    "Comfortable walking shoes recommended",
-    "Carry warm clothes, even in summer",
-    "Photography restrictions apply at some monasteries",
-    "Minimum 2 passengers required for tour confirmation",
-  ],
-  itinerary: [
-    {
-      day: 1,
-      title: "Arrival in Paro - Transfer to Thimphu",
-      highlights: [
-        "Scenic flight into Paro with Himalayan views",
-        "Visit Paro Rinpung Dzong",
-        "Drive to Thimphu (1.5 hours)",
-        "Evening stroll at Thimphu town",
-      ],
-    },
-    {
-      day: 2,
-      title: "Thimphu Sightseeing",
-      highlights: [
-        "Visit Buddha Dordenma Statue",
-        "Explore Tashichho Dzong",
-        "National Memorial Chorten",
-        "Folk Heritage Museum",
-        "Traditional paper making factory",
-      ],
-    },
-    {
-      day: 3,
-      title: "Thimphu to Punakha",
-      highlights: [
-        "Drive via Dochula Pass (3,100m)",
-        "108 Druk Wangyal Chortens",
-        "Visit Punakha Dzong",
-        "Suspension bridge walk",
-        "Explore local village",
-      ],
-    },
-    {
-      day: 4,
-      title: "Punakha to Paro",
-      highlights: [
-        "Morning at Punakha valley",
-        "Chimi Lhakhang temple visit",
-        "Scenic drive back to Paro",
-        "Visit Paro town market",
-        "Traditional hot stone bath (optional)",
-      ],
-    },
-    {
-      day: 5,
-      title: "Tigers Nest Monastery Hike",
-      highlights: [
-        "Early morning hike to Taktsang (Tigers Nest)",
-        "3-4 hours trek to the monastery",
-        "Breathtaking views and spiritual experience",
-        "Afternoon visit to Kyichu Lhakhang",
-        "Evening free for shopping",
-      ],
-    },
-    {
-      day: 6,
-      title: "Departure",
-      highlights: [
-        "Breakfast at hotel",
-        "Last minute shopping",
-        "Transfer to Paro airport",
-        "Departure with memories",
-      ],
-    },
-  ],
-  dates: [
-    { date: "2026-03-15", price: 45000, available: 8 },
-    { date: "2026-04-10", price: 47000, available: 12 },
-    { date: "2026-05-05", price: 46000, available: 6 },
-    { date: "2026-06-12", price: 48000, available: 10 },
-  ],
-};
+// Using AgentTripType from agentTrips service (imported above)
 
 export default function AgentTripDetail() {
   const { id } = useParams();
@@ -189,17 +44,35 @@ export default function AgentTripDetail() {
   const [activeTab, setActiveTab] = useState("Itinerary");
   const [expandedDays, setExpandedDays] = useState<number[]>([0]);
   const [travelers, setTravelers] = useState(1);
-  const [selectedDate, setSelectedDate] = useState<TripDate | null>(null);
+  const [selectedDate, setSelectedDate] = useState<AgentTripType["dates"][0] | null>(null);
   const [isSticky, setIsSticky] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [tripData] = useState<Trip>(MOCK_TRIP);
+  const [tripData, setTripData] = useState<AgentTripType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
 
+  // Fetch trip from API
   useEffect(() => {
-    if (tripData.dates && tripData.dates.length > 0) {
-      setSelectedDate(tripData.dates[0]);
-    }
-  }, []);
+    const fetchTrip = async () => {
+      if (!id) return;
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await agentTripsService.getTrip(id);
+        const trip: AgentTripType = response.data.trip;
+        setTripData(trip);
+        if (trip.dates && trip.dates.length > 0) {
+          setSelectedDate(trip.dates[0]);
+        }
+      } catch (err: any) {
+        setError(err?.response?.data?.message || "Failed to load trip details. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTrip();
+  }, [id]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -229,11 +102,40 @@ export default function AgentTripDetail() {
     );
   };
 
-  const b2bPriceWithDate = selectedDate ? tripData.b2bPrice : tripData.b2bPrice;
-  const retailPriceWithDate = selectedDate ? selectedDate.price : tripData.price;
+  const b2bPriceWithDate = tripData ? tripData.b2bPrice : 0;
+  const retailPriceWithDate = selectedDate ? selectedDate.price : (tripData?.price ?? 0);
   const totalB2BAmount = b2bPriceWithDate * travelers;
   const totalRetailAmount = retailPriceWithDate * travelers;
   const yourEarning = totalRetailAmount - totalB2BAmount;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground font-medium">Loading trip details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !tripData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <X className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-xl font-bold text-foreground mb-2">Trip Not Found</h2>
+          <p className="text-muted-foreground mb-6">{error || "This trip could not be loaded."}</p>
+          <Button onClick={() => navigate("/agent/dashboard")} className="gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">

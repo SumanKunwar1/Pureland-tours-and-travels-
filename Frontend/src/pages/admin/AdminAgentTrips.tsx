@@ -1,6 +1,7 @@
 // src/pages/admin/AdminAgentTrips.tsx
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { agentTripsService, AgentTrip, CreateAgentTripData } from "@/services/agentTrips";
 import {
   Plus,
   Search,
@@ -28,12 +29,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "react-toastify";
-
-interface TripDate {
-  date: string;
-  price: number;
-  available: number;
-}
+import AdminLayout from "@/components/admin/AdminLayout";
 
 interface ItineraryDay {
   day: number;
@@ -41,92 +37,16 @@ interface ItineraryDay {
   highlights: string[];
 }
 
-interface Trip {
-  _id: string;
-  name: string;
-  destination: string;
-  duration: string;
-  description: string;
+interface TripDate {
+  date: string;
   price: number;
-  b2bPrice: number;
-  originalPrice: number;
-  discount: number;
-  commission: number;
-  image: string;
-  inclusions: string[];
-  exclusions: string[];
-  notes: string[];
-  itinerary: ItineraryDay[];
-  dates: TripDate[];
-  hasGoodies: boolean;
-  tripCategory: string;
-  tripType: string;
+  available: number;
 }
 
-// Mock data
-const MOCK_TRIPS: Trip[] = [
-  {
-    _id: "1",
-    name: "Mystical Bhutan - Land of Thunder Dragon",
-    destination: "Bhutan",
-    duration: "6 Days / 5 Nights",
-    description: "Experience the magical kingdom of Bhutan with ancient Buddhist culture.",
-    price: 45000,
-    b2bPrice: 38000,
-    originalPrice: 55000,
-    discount: 10000,
-    commission: 15,
-    image: "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=800&h=600&fit=crop",
-    inclusions: ["Accommodation", "Meals", "Transportation", "Guide"],
-    exclusions: ["International flights", "Personal expenses"],
-    notes: ["Valid passport required", "Minimum 2 passengers"],
-    itinerary: [
-      {
-        day: 1,
-        title: "Arrival in Paro",
-        highlights: ["Airport pickup", "Hotel check-in", "Evening walk"],
-      },
-    ],
-    dates: [
-      { date: "2026-03-15", price: 45000, available: 8 },
-      { date: "2026-04-10", price: 47000, available: 12 },
-    ],
-    hasGoodies: true,
-    tripCategory: "travel-styles",
-    tripType: "pilgrimage",
-  },
-  {
-    _id: "2",
-    name: "Nepal Heritage Tour",
-    destination: "Kathmandu",
-    duration: "5 Days / 4 Nights",
-    description: "Explore the ancient temples and heritage sites of Nepal.",
-    price: 28000,
-    b2bPrice: 23000,
-    originalPrice: 35000,
-    discount: 7000,
-    commission: 12,
-    image: "https://images.unsplash.com/photo-1507743403345-8ebf43e39f1c?w=800&h=600&fit=crop",
-    inclusions: ["Accommodation", "Breakfast", "Guide"],
-    exclusions: ["Lunch and Dinner", "Monument fees"],
-    notes: ["Comfortable walking shoes recommended"],
-    itinerary: [
-      {
-        day: 1,
-        title: "Kathmandu Arrival",
-        highlights: ["Airport transfer", "Hotel check-in"],
-      },
-    ],
-    dates: [
-      { date: "2026-03-20", price: 28000, available: 10 },
-    ],
-    hasGoodies: false,
-    tripCategory: "india-trips",
-    tripType: "",
-  },
-];
-
-const EMPTY_TRIP: Omit<Trip, "_id"> = {
+const EMPTY_TRIP: Omit<CreateAgentTripData, "price" | "b2bPrice"> & {
+  price: number;
+  b2bPrice: number;
+} = {
   name: "",
   destination: "",
   duration: "",
@@ -148,11 +68,12 @@ const EMPTY_TRIP: Omit<Trip, "_id"> = {
 };
 
 export default function AdminAgentTrips() {
-  const [trips, setTrips] = useState<Trip[]>(MOCK_TRIPS);
+  const [trips, setTrips] = useState<AgentTrip[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
-  const [formData, setFormData] = useState<Omit<Trip, "_id">>(EMPTY_TRIP);
+  const [editingTrip, setEditingTrip] = useState<AgentTrip | null>(null);
+  const [formData, setFormData] = useState<typeof EMPTY_TRIP>(EMPTY_TRIP);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     basic: true,
@@ -169,6 +90,26 @@ export default function AdminAgentTrips() {
   const [highlightInput, setHighlightInput] = useState("");
   const [currentDayIndex, setCurrentDayIndex] = useState<number | null>(null);
 
+  useEffect(() => {
+    fetchTrips();
+  }, []);
+
+  const fetchTrips = async () => {
+    try {
+      setLoading(true);
+      const response = await agentTripsService.getAllTrips({ limit: 100 });
+      
+      if (response.status === 'success') {
+        setTrips(response.data.trips);
+      }
+    } catch (error: any) {
+      console.error('Error fetching trips:', error);
+      toast.error(error.response?.data?.message || 'Failed to load trips');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredTrips = trips.filter(
     (trip) =>
       trip.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -181,7 +122,7 @@ export default function AdminAgentTrips() {
     setIsModalOpen(true);
   };
 
-  const handleEdit = (trip: Trip) => {
+  const handleEdit = (trip: AgentTrip) => {
     setEditingTrip(trip);
     setFormData({
       name: trip.name,
@@ -206,10 +147,16 @@ export default function AdminAgentTrips() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this trip?")) {
-      setTrips(trips.filter((trip) => trip._id !== id));
-      toast.success("Trip deleted successfully!");
+      try {
+        await agentTripsService.deleteTrip(id);
+        setTrips(trips.filter((trip) => trip._id !== id));
+        toast.success("Trip deleted successfully!");
+      } catch (error: any) {
+        console.error('Error deleting trip:', error);
+        toast.error(error.response?.data?.message || 'Failed to delete trip');
+      }
     }
   };
 
@@ -224,35 +171,41 @@ export default function AdminAgentTrips() {
       return;
     }
 
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (!formData.price || !formData.b2bPrice) {
+      toast.error("Please provide both retail and B2B prices");
+      setIsSubmitting(false);
+      return;
+    }
 
+    try {
       if (editingTrip) {
         // Update existing trip
-        setTrips(
-          trips.map((trip) =>
-            trip._id === editingTrip._id
-              ? { ...formData, _id: editingTrip._id }
-              : trip
-          )
-        );
-        toast.success("Trip updated successfully!");
+        const response = await agentTripsService.updateTrip(editingTrip._id, formData);
+        
+        if (response.status === 'success') {
+          setTrips(
+            trips.map((trip) =>
+              trip._id === editingTrip._id ? response.data.trip : trip
+            )
+          );
+          toast.success("Trip updated successfully!");
+        }
       } else {
         // Create new trip
-        const newTrip: Trip = {
-          ...formData,
-          _id: Date.now().toString(),
-        };
-        setTrips([newTrip, ...trips]);
-        toast.success("Trip created successfully!");
+        const response = await agentTripsService.createTrip(formData as CreateAgentTripData);
+        
+        if (response.status === 'success') {
+          setTrips([response.data.trip, ...trips]);
+          toast.success("Trip created successfully!");
+        }
       }
 
       setIsModalOpen(false);
       setFormData(EMPTY_TRIP);
       setEditingTrip(null);
-    } catch (error) {
-      toast.error("Failed to save trip. Please try again.");
+    } catch (error: any) {
+      console.error('Error saving trip:', error);
+      toast.error(error.response?.data?.message || 'Failed to save trip. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -399,6 +352,7 @@ export default function AdminAgentTrips() {
   }, [formData.price, formData.b2bPrice]);
 
   return (
+    <AdminLayout>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -1239,5 +1193,6 @@ export default function AdminAgentTrips() {
         )}
       </AnimatePresence>
     </div>
+    </AdminLayout>
   );
 }
