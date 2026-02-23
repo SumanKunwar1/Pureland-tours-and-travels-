@@ -29,13 +29,6 @@ import { agentTripsService, AgentTrip as AgentTripType } from "@/services/agentT
 
 const TRIP_TABS = ["Itinerary", "Inclusions", "B2B Pricing", "Notes"];
 
-const PRICING_DETAILS = [
-  { sharing: "Triple Sharing", priceOffset: 0, isSupplementary: false },
-  { sharing: "Double Sharing", priceOffset: 2000, isSupplementary: false },
-  { sharing: "Single Occupancy", priceOffset: 5000, isSupplementary: false },
-  { sharing: "Extra Bed", priceOffset: 1500, isSupplementary: true },
-];
-
 // Using AgentTripType from agentTrips service (imported above)
 
 export default function AgentTripDetail() {
@@ -390,54 +383,57 @@ export default function AgentTripDetail() {
                       <h3 className="font-semibold text-foreground mb-4">
                         Pricing by Occupancy Type
                       </h3>
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead className="bg-slate-100">
-                            <tr>
-                              <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">
-                                Sharing Type
-                              </th>
-                              <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
-                                B2B Price
-                              </th>
-                              <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
-                                Retail Price
-                              </th>
-                              <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
-                                Your Earning
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-200">
-                            {PRICING_DETAILS.map((pricing) => {
-                              const b2b = b2bPriceWithDate + pricing.priceOffset;
-                              const retail = retailPriceWithDate + pricing.priceOffset;
-                              const earning = retail - b2b;
-                              return (
-                                <tr key={pricing.sharing} className="hover:bg-slate-50">
+                      {tripData.occupancyPricing && tripData.occupancyPricing.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="w-full">
+                            <thead className="bg-slate-100">
+                              <tr>
+                                <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">
+                                  Sharing Type
+                                </th>
+                                <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
+                                  B2B Price
+                                </th>
+                                <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
+                                  Retail Price
+                                </th>
+                                <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
+                                  Your Earning
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200">
+                              {tripData.occupancyPricing.map((row) => (
+                                <tr key={row.type} className="hover:bg-slate-50">
                                   <td className="px-4 py-3 text-sm text-foreground">
-                                    {pricing.sharing}
-                                    {pricing.isSupplementary && (
+                                    {row.type}
+                                    {row.isSupplementary && (
                                       <span className="ml-2 text-xs text-muted-foreground">
                                         (Supplementary)
                                       </span>
                                     )}
                                   </td>
                                   <td className="px-4 py-3 text-sm text-right font-medium text-primary">
-                                    ₹{b2b.toLocaleString()}
+                                    ₹{row.b2bPrice.toLocaleString()}
                                   </td>
                                   <td className="px-4 py-3 text-sm text-right font-medium">
-                                    ₹{retail.toLocaleString()}
+                                    ₹{row.retailPrice.toLocaleString()}
                                   </td>
                                   <td className="px-4 py-3 text-sm text-right font-medium text-green-600">
-                                    ₹{earning.toLocaleString()}
+                                    ₹{(row.retailPrice - row.b2bPrice).toLocaleString()}
                                   </td>
                                 </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 bg-slate-50 rounded-lg border border-dashed border-slate-300">
+                          <p className="text-muted-foreground text-sm">
+                            No occupancy pricing configured for this trip.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Payment Terms */}

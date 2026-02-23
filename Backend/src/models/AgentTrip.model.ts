@@ -1,6 +1,13 @@
 // models/AgentTrip.model.ts
 import mongoose, { Document, Schema } from 'mongoose';
 
+export interface IOccupancyPrice {
+  type: string;      // e.g. "Triple Sharing", "Double Sharing", "Single Occupancy", "Extra Bed"
+  b2bPrice: number;
+  retailPrice: number;
+  isSupplementary: boolean;
+}
+
 export interface ITripDate {
   date: string;
   price: number;
@@ -29,6 +36,7 @@ export interface IAgentTrip extends Document {
   notes: string[];
   itinerary: IItineraryDay[];
   dates: ITripDate[];
+  occupancyPricing: IOccupancyPrice[];
   hasGoodies: boolean;
   tripCategory: string;
   tripType: string;
@@ -36,6 +44,28 @@ export interface IAgentTrip extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
+const occupancyPriceSchema = new Schema({
+  type: {
+    type: String,
+    required: [true, 'Occupancy type is required'],
+    trim: true,
+  },
+  b2bPrice: {
+    type: Number,
+    required: [true, 'B2B price is required'],
+    min: [0, 'B2B price must be positive'],
+  },
+  retailPrice: {
+    type: Number,
+    required: [true, 'Retail price is required'],
+    min: [0, 'Retail price must be positive'],
+  },
+  isSupplementary: {
+    type: Boolean,
+    default: false,
+  },
+}, { _id: false });
 
 const tripDateSchema = new Schema({
   date: {
@@ -142,6 +172,10 @@ const agentTripSchema = new Schema<IAgentTrip>(
     },
     dates: {
       type: [tripDateSchema],
+      default: [],
+    },
+    occupancyPricing: {
+      type: [occupancyPriceSchema],
       default: [],
     },
     hasGoodies: {

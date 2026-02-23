@@ -1,6 +1,13 @@
 // src/services/agentTrips.ts
 import axiosInstance from '@/lib/axios';
 
+export interface OccupancyPrice {
+  type: string;
+  b2bPrice: number;
+  retailPrice: number;
+  isSupplementary: boolean;
+}
+
 export interface TripDate {
   date: string;
   price: number;
@@ -30,6 +37,7 @@ export interface AgentTrip {
   notes: string[];
   itinerary: ItineraryDay[];
   dates: TripDate[];
+  occupancyPricing: OccupancyPrice[];
   hasGoodies: boolean;
   tripCategory: string;
   tripType: string;
@@ -54,6 +62,7 @@ export interface CreateAgentTripData {
   notes?: string[];
   itinerary?: ItineraryDay[];
   dates?: TripDate[];
+  occupancyPricing?: OccupancyPrice[];
   hasGoodies?: boolean;
   tripCategory?: string;
   tripType?: string;

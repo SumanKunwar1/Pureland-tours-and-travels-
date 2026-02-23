@@ -29,6 +29,7 @@ export const createAgentTrip = catchAsync(
       hasGoodies,
       tripCategory,
       tripType,
+      occupancyPricing,
     } = req.body;
 
     // Validate required fields
@@ -67,6 +68,7 @@ export const createAgentTrip = catchAsync(
       notes: notes || [],
       itinerary: itinerary || [],
       dates: dates || [],
+      occupancyPricing: occupancyPricing || [],
       hasGoodies: hasGoodies || false,
       tripCategory: tripCategory || 'india-trips',
       tripType: tripType || '',
@@ -207,6 +209,7 @@ export const updateAgentTrip = catchAsync(
       tripCategory,
       tripType,
       isActive,
+      occupancyPricing,
     } = req.body;
 
     // Validate B2B price if both prices are being updated
@@ -246,6 +249,7 @@ export const updateAgentTrip = catchAsync(
     if (notes) trip.notes = notes;
     if (itinerary) trip.itinerary = itinerary;
     if (dates) trip.dates = dates;
+    if (occupancyPricing) trip.occupancyPricing = occupancyPricing;
     if (hasGoodies !== undefined) trip.hasGoodies = hasGoodies;
     if (tripCategory) trip.tripCategory = tripCategory;
     if (tripType !== undefined) trip.tripType = tripType;

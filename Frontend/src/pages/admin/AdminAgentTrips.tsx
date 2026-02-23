@@ -1,7 +1,7 @@
 // src/pages/admin/AdminAgentTrips.tsx
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { agentTripsService, AgentTrip, CreateAgentTripData } from "@/services/agentTrips";
+import { agentTripsService, AgentTrip, CreateAgentTripData, OccupancyPrice } from "@/services/agentTrips";
 import {
   Plus,
   Search,
@@ -43,6 +43,13 @@ interface TripDate {
   available: number;
 }
 
+const DEFAULT_OCCUPANCY_TYPES = [
+  "Triple Sharing",
+  "Double Sharing",
+  "Single Occupancy",
+  "Extra Bed",
+];
+
 const EMPTY_TRIP: Omit<CreateAgentTripData, "price" | "b2bPrice"> & {
   price: number;
   b2bPrice: number;
@@ -62,6 +69,7 @@ const EMPTY_TRIP: Omit<CreateAgentTripData, "price" | "b2bPrice"> & {
   notes: [],
   itinerary: [],
   dates: [],
+  occupancyPricing: [],
   hasGoodies: false,
   tripCategory: "india-trips",
   tripType: "",
@@ -78,6 +86,7 @@ export default function AdminAgentTrips() {
   const [expandedSections, setExpandedSections] = useState({
     basic: true,
     pricing: true,
+    occupancy: true,
     details: false,
     itinerary: false,
     dates: false,
@@ -140,6 +149,7 @@ export default function AdminAgentTrips() {
       notes: [...trip.notes],
       itinerary: [...trip.itinerary],
       dates: [...trip.dates],
+      occupancyPricing: trip.occupancyPricing ? [...trip.occupancyPricing] : [],
       hasGoodies: trip.hasGoodies,
       tripCategory: trip.tripCategory,
       tripType: trip.tripType,
@@ -338,6 +348,31 @@ export default function AdminAgentTrips() {
     setFormData({
       ...formData,
       dates: formData.dates.filter((_, i) => i !== index),
+    });
+  };
+
+  const addOccupancyRow = () => {
+    const usedTypes = (formData.occupancyPricing || []).map((o) => o.type);
+    const nextType = DEFAULT_OCCUPANCY_TYPES.find((t) => !usedTypes.includes(t)) || "Custom";
+    const newRow: OccupancyPrice = {
+      type: nextType,
+      b2bPrice: formData.b2bPrice || 0,
+      retailPrice: formData.price || 0,
+      isSupplementary: nextType === "Extra Bed",
+    };
+    setFormData({ ...formData, occupancyPricing: [...(formData.occupancyPricing || []), newRow] });
+  };
+
+  const updateOccupancyRow = (index: number, field: keyof OccupancyPrice, value: string | number | boolean) => {
+    const updated = [...(formData.occupancyPricing || [])];
+    updated[index] = { ...updated[index], [field]: value };
+    setFormData({ ...formData, occupancyPricing: updated });
+  };
+
+  const removeOccupancyRow = (index: number) => {
+    setFormData({
+      ...formData,
+      occupancyPricing: (formData.occupancyPricing || []).filter((_, i) => i !== index),
     });
   };
 
@@ -806,12 +841,139 @@ export default function AdminAgentTrips() {
                       )}
                     </div>
 
+                    {/* Occupancy Pricing */}
+                    <div className="bg-slate-50 rounded-lg p-4">
+                      <button
+                        type="button"
+                        onClick={() => toggleSection("occupancy")}
+                        className="flex items-center justify-between w-full mb-4"
+                      >
+                        <div>
+                          <h3 className="text-lg font-semibold text-foreground text-left">
+                            Occupancy Pricing
+                          </h3>
+                          <p className="text-xs text-muted-foreground text-left mt-0.5">
+                            Set specific B2B &amp; retail prices per room/bed type
+                          </p>
+                        </div>
+                        {expandedSections.occupancy ? (
+                          <ChevronUp className="w-5 h-5 shrink-0" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 shrink-0" />
+                        )}
+                      </button>
+
+                      {expandedSections.occupancy && (
+                        <div className="space-y-3">
+                          <Button
+                            type="button"
+                            onClick={addOccupancyRow}
+                            variant="outline"
+                            className="w-full"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Occupancy Type
+                          </Button>
+
+                          {(formData.occupancyPricing || []).length === 0 && (
+                            <p className="text-sm text-center text-muted-foreground py-3 bg-white rounded-lg border border-dashed border-slate-300">
+                              No occupancy pricing added. Click above to add types like Triple Sharing, Double Sharing, etc.
+                            </p>
+                          )}
+
+                          {(formData.occupancyPricing || []).map((row, idx) => (
+                            <div key={idx} className="bg-white rounded-lg p-4 border border-slate-200">
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-sm font-semibold text-foreground">
+                                  Occupancy {idx + 1}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => removeOccupancyRow(idx)}
+                                  className="text-red-500 hover:text-red-700"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                <div>
+                                  <Label className="text-sm">Type Name</Label>
+                                  <select
+                                    value={row.type}
+                                    onChange={(e) => updateOccupancyRow(idx, "type", e.target.value)}
+                                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm mt-1"
+                                  >
+                                    {DEFAULT_OCCUPANCY_TYPES.map((t) => (
+                                      <option key={t} value={t}>{t}</option>
+                                    ))}
+                                    <option value="Custom">Custom...</option>
+                                  </select>
+                                </div>
+                                <div className="flex items-end gap-2">
+                                  <label className="flex items-center gap-2 cursor-pointer mt-5">
+                                    <input
+                                      type="checkbox"
+                                      checked={row.isSupplementary}
+                                      onChange={(e) => updateOccupancyRow(idx, "isSupplementary", e.target.checked)}
+                                      className="w-4 h-4 rounded border-slate-300"
+                                    />
+                                    <span className="text-sm text-muted-foreground">Mark as Supplementary</span>
+                                  </label>
+                                </div>
+                              </div>
+
+                              {row.type === "Custom" && (
+                                <div className="mb-3">
+                                  <Label className="text-sm">Custom Type Name</Label>
+                                  <Input
+                                    value={row.type === "Custom" ? "" : row.type}
+                                    onChange={(e) => updateOccupancyRow(idx, "type", e.target.value)}
+                                    placeholder="E.g., Family Room"
+                                    className="mt-1"
+                                  />
+                                </div>
+                              )}
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                  <Label className="text-sm">B2B Price (Agent Cost) ₹</Label>
+                                  <Input
+                                    type="number"
+                                    value={row.b2bPrice}
+                                    onChange={(e) => updateOccupancyRow(idx, "b2bPrice", Number(e.target.value))}
+                                    placeholder="0"
+                                    className="mt-1"
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-sm">Retail Price (Selling Price) ₹</Label>
+                                  <Input
+                                    type="number"
+                                    value={row.retailPrice}
+                                    onChange={(e) => updateOccupancyRow(idx, "retailPrice", Number(e.target.value))}
+                                    placeholder="0"
+                                    className="mt-1"
+                                  />
+                                </div>
+                              </div>
+
+                              {row.b2bPrice > 0 && row.retailPrice > 0 && (
+                                <div className="mt-3 bg-green-50 rounded-md px-3 py-2 text-sm text-green-800">
+                                  Agent earns <strong>₹{(row.retailPrice - row.b2bPrice).toLocaleString()}</strong> per person for {row.type}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
                     {/* Inclusions & Exclusions */}
                     <div className="bg-slate-50 rounded-lg p-4">
                       <button
                         type="button"
-                        onClick={() => toggleSection("details")}
-                        className="flex items-center justify-between w-full mb-4"
+                        onClick={() => toggleSection("details")}                        className="flex items-center justify-between w-full mb-4"
                       >
                         <h3 className="text-lg font-semibold text-foreground">
                           Inclusions, Exclusions & Notes
