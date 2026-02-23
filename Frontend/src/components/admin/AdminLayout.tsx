@@ -61,6 +61,7 @@ const menuItems = [
     icon: MapPin,
     path: "/admin/trips",
   },
+  {title: "Agent Trips", icon: Route, path: "/admin/agent-trips"},
   {
     title: "Bookings",
     icon: Calendar,

@@ -66,6 +66,7 @@ import AdminInsurance from "./pages/admin/AdminInsurance";
 import AdminAgents from "./pages/admin/AdminAgents";
 import { AdminTestimonials } from "./pages/admin/AdminTestimonials";
 import AdminDalaiLamaBookings from "./pages/admin/AdminDalaiLamaBookings";
+import AdminAgentTrips from "./pages/admin/AdminAgentTrips";
 
 // Admin Homepage Management Pages
 import AdminHeroSection from "./pages/admin/AdminHeroSection";
@@ -173,6 +174,14 @@ const App = () => (
               element={
                 <ProtectedAdminRoute>
                   <AdminTrips />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/agent-trips"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminAgentTrips />
                 </ProtectedAdminRoute>
               }
             />
