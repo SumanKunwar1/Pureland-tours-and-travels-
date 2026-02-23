@@ -42,7 +42,8 @@ import AgentSignup from "./pages/AgentSignup";
 import AgentLogin from "./pages/AgentLogin";
 
 // Agent Dashboard Pages
-
+import AgentDashboard from "./pages/agent/AgentDashboard";
+import AgentTripDetail from "./pages/agent/AgentTripDetail";
 
 // Protection Components
 import ProtectedAgentRoute from "./components/agent/ProtectedAgentRoute";
@@ -99,6 +100,24 @@ const App = () => (
             <Route path="/visa-application" element={<VisaApplication />} />
             <Route path="/documentation" element={<Documentation />} />
             <Route path="/insurance" element={<Insurance />} />
+
+            {/* Agent Routes */}
+            <Route
+              path="/agent/dashboard"
+              element={
+                <ProtectedAgentRoute>
+                  <AgentDashboard />
+                </ProtectedAgentRoute>
+              }
+            />
+            <Route
+              path="/agent/trip/:id"
+              element={
+                <ProtectedAgentRoute>
+                  <AgentTripDetail />
+                </ProtectedAgentRoute>
+              }
+            />
 
            
 
