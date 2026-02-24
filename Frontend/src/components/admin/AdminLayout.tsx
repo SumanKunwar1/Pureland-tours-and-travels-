@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { title } from "process";
+import path from "path";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -66,6 +67,11 @@ const menuItems = [
     title: "Bookings",
     icon: Calendar,
     path: "/admin/bookings",
+  },
+  {
+    title: "Agent Bookings",
+    icon: Calendar, 
+    path: "/admin/agent-bookings",
   },
   {title: "Dalai Lama Bookings", icon: Calendar, path: "/admin/dalai-lama-bookings"},
   {
