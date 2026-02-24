@@ -346,7 +346,7 @@ export default function AgentTripDetail() {
                             {tripData.commission}% Commission Rate
                           </h3>
                           <p className="text-sm text-green-700">
-                            Earn ₹{yourEarning.toLocaleString()} on this booking
+                            Earn Rs{yourEarning.toLocaleString()} on this booking
                           </p>
                         </div>
                       </div>
@@ -359,7 +359,7 @@ export default function AgentTripDetail() {
                           Your B2B Price
                         </p>
                         <p className="text-3xl font-bold text-primary">
-                          ₹{b2bPriceWithDate.toLocaleString()}
+                          Rs{b2bPriceWithDate.toLocaleString()}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           Per person (what you pay)
@@ -370,7 +370,7 @@ export default function AgentTripDetail() {
                           Retail Price
                         </p>
                         <p className="text-3xl font-bold text-foreground">
-                          ₹{retailPriceWithDate.toLocaleString()}
+                          Rs{retailPriceWithDate.toLocaleString()}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           Per person (suggested selling price)
@@ -414,13 +414,13 @@ export default function AgentTripDetail() {
                                     )}
                                   </td>
                                   <td className="px-4 py-3 text-sm text-right font-medium text-primary">
-                                    ₹{row.b2bPrice.toLocaleString()}
+                                    Rs{row.b2bPrice.toLocaleString()}
                                   </td>
                                   <td className="px-4 py-3 text-sm text-right font-medium">
-                                    ₹{row.retailPrice.toLocaleString()}
+                                    Rs{row.retailPrice.toLocaleString()}
                                   </td>
                                   <td className="px-4 py-3 text-sm text-right font-medium text-green-600">
-                                    ₹{(row.retailPrice - row.b2bPrice).toLocaleString()}
+                                    Rs{(row.retailPrice - row.b2bPrice).toLocaleString()}
                                   </td>
                                 </tr>
                               ))}
@@ -484,13 +484,13 @@ export default function AgentTripDetail() {
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-4xl font-bold">
-                    ₹{b2bPriceWithDate.toLocaleString()}
+                    Rs{b2bPriceWithDate.toLocaleString()}
                   </span>
                   <span className="text-white/80 text-sm">per person</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-white/90">
                   <span className="line-through">
-                    ₹{retailPriceWithDate.toLocaleString()}
+                    Rs{retailPriceWithDate.toLocaleString()}
                   </span>
                   <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs font-medium">
                     {tripData.commission}% off
@@ -564,13 +564,13 @@ export default function AgentTripDetail() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">B2B Price × {travelers}</span>
                     <span className="font-medium">
-                      ₹{totalB2BAmount.toLocaleString()}
+                      Rs{totalB2BAmount.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Suggested Retail</span>
                     <span className="font-medium">
-                      ₹{totalRetailAmount.toLocaleString()}
+                      Rs{totalRetailAmount.toLocaleString()}
                     </span>
                   </div>
                   <div className="pt-2 border-t border-slate-200">
@@ -579,7 +579,7 @@ export default function AgentTripDetail() {
                         Your Earning
                       </span>
                       <span className="font-bold text-green-600 text-lg">
-                        ₹{yourEarning.toLocaleString()}
+                        Rs{yourEarning.toLocaleString()}
                       </span>
                     </div>
                   </div>

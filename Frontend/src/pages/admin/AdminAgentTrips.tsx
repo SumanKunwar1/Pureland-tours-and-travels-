@@ -485,12 +485,12 @@ export default function AdminAgentTrips() {
                     </td>
                     <td className="px-6 py-4">
                       <p className="font-semibold text-primary">
-                        ₹{trip.b2bPrice.toLocaleString()}
+                        Rs {trip.b2bPrice.toLocaleString()}
                       </p>
                     </td>
                     <td className="px-6 py-4">
                       <p className="font-medium">
-                        ₹{trip.price.toLocaleString()}
+                        Rs {trip.price.toLocaleString()}
                       </p>
                     </td>
                     <td className="px-6 py-4">
@@ -831,7 +831,7 @@ export default function AdminAgentTrips() {
                           {formData.price > 0 && formData.b2bPrice > 0 && (
                             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                               <p className="text-sm text-green-800">
-                                <strong>Agent Earning:</strong> ₹
+                                <strong>Agent Earning:</strong> Rs 
                                 {(formData.price - formData.b2bPrice).toLocaleString()}{" "}
                                 per booking
                               </p>
@@ -937,7 +937,7 @@ export default function AdminAgentTrips() {
 
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div>
-                                  <Label className="text-sm">B2B Price (Agent Cost) ₹</Label>
+                                  <Label className="text-sm">B2B Price (Agent Cost) Rs </Label>
                                   <Input
                                     type="number"
                                     value={row.b2bPrice}
@@ -947,7 +947,7 @@ export default function AdminAgentTrips() {
                                   />
                                 </div>
                                 <div>
-                                  <Label className="text-sm">Retail Price (Selling Price) ₹</Label>
+                                  <Label className="text-sm">Retail Price (Selling Price) Rs </Label>
                                   <Input
                                     type="number"
                                     value={row.retailPrice}
@@ -960,7 +960,7 @@ export default function AdminAgentTrips() {
 
                               {row.b2bPrice > 0 && row.retailPrice > 0 && (
                                 <div className="mt-3 bg-green-50 rounded-md px-3 py-2 text-sm text-green-800">
-                                  Agent earns <strong>₹{(row.retailPrice - row.b2bPrice).toLocaleString()}</strong> per person for {row.type}
+                                  Agent earns <strong>Rs {(row.retailPrice - row.b2bPrice).toLocaleString()}</strong> per person for {row.type}
                                 </div>
                               )}
                             </div>
