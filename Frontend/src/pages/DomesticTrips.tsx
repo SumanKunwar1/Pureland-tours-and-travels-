@@ -11,10 +11,10 @@ const DomesticTrips = () => {
   return (
     <TripListingPage
       title="Explore all Domestic Tour Packages"
-      tagline="Discover Incredible India"
-      subtitle="From mountains to beaches, explore the beauty of our homeland."
-      description="India is a land of diverse landscapes, rich culture, and endless adventures. Our domestic trips take you to the most breathtaking destinations across the country. Whether it's the snow-capped peaks of the Himalayas, the serene backwaters of Kerala, or the golden deserts of Rajasthan - experience the best of India."
-      heroImage={destLadakh}
+      tagline="Discover Incredible Nepal with us"
+      subtitle="From mountains to lakes, explore the beauty of our homeland."
+      description="Nepal is a land of diverse landscapes, rich culture, and endless adventures. Our domestic trips take you to the most breathtaking destinations across the country. Whether it's the snow-capped peaks of the Himalayas, the serene backwaters of Kerala, or the golden deserts of Rajasthan - experience the best of India."
+      heroImage="https://www.relaxgetaways.com/uploads/media/Most%20Visited%20Places%20in%20Nepal/Most%20Visited%20Places%20in%20Nepal%20Intero.jpg"
       filterDestinations={destinations}
       tripCategory="india-trips"
     />
