@@ -63,11 +63,11 @@ const TripListingPage = ({
 
   const tripTypes = ["Domestic", "International", "Pilgrimage", "Adventure", "Retreat"];
   const budgetRanges = [
-    "Under ₹20,000",
-    "₹20,000 - ₹40,000",
-    "₹40,000 - ₹60,000",
-    "₹60,000 - ₹80,000",
-    "Above ₹80,000",
+    "Under Rs 20,000",
+    "Rs 20,000 - Rs 40,000",
+    "Rs 40,000 - Rs 60,000",
+    "Rs 60,000 - Rs 80,000",
+    "Above Rs 80,000",
   ];
 
   useEffect(() => {
@@ -101,15 +101,15 @@ const TripListingPage = ({
   const filterTripsByBudget = (trip: Trip, budgetRange: string): boolean => {
     const price = trip.price;
     switch (budgetRange) {
-      case "Under ₹20,000":
+      case "Under Rs 20,000":
         return price < 20000;
-      case "₹20,000 - ₹40,000":
+      case "Rs 20,000 - Rs 40,000":
         return price >= 20000 && price < 40000;
-      case "₹40,000 - ₹60,000":
+      case "Rs 40,000 - Rs 60,000":
         return price >= 40000 && price < 60000;
-      case "₹60,000 - ₹80,000":
+      case "Rs 60,000 - Rs 80,000":
         return price >= 60000 && price < 80000;
-      case "Above ₹80,000":
+      case "Above Rs 80,000":
         return price >= 80000;
       default:
         return true;
@@ -368,13 +368,13 @@ const TripListingPage = ({
                           {/* Price */}
                           <div className="flex items-center gap-2 mb-3">
                             <span className="text-lg font-bold text-foreground">
-                              ₹{trip.price.toLocaleString()}
+                              Rs {trip.price.toLocaleString()}
                             </span>
                             <span className="text-sm text-muted-foreground line-through">
-                              ₹{trip.originalPrice.toLocaleString()}
+                              Rs {trip.originalPrice.toLocaleString()}
                             </span>
                             <span className="text-xs text-destructive font-medium">
-                              ₹{trip.discount.toLocaleString()} Off
+                              Rs {trip.discount.toLocaleString()} Off
                             </span>
                           </div>
 
