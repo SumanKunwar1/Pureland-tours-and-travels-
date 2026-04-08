@@ -229,7 +229,7 @@ export function Navbar() {
                 Pure Land Tours & Travels
               </span>
               <span className="text-sm text-muted-foreground font-medium">
-                Nepal DMC
+                Nepal · Tibet · Bhutan · India DMC
               </span>
             </div>
           </Link>
