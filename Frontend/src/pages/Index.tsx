@@ -19,7 +19,7 @@ const Index = () => {
       <main>
         <HeroSection />
         {/* 🙏 NEW SECTION - DALAI LAMA DARSHAN */}
-        <DalaiLamaDarshan />
+        {/* <DalaiLamaDarshan /> */}
         {/* ↑ Place this section where you want it to appear on homepage */}
         
         <ExploreDestinations />
