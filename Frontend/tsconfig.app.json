@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
     "types": ["vitest/globals"],
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -23,7 +22,7 @@
     "noImplicitAny": false,
     "noFallthroughCasesInSwitch": false,
 
-    "baseUrl": ".",
+    /* paths are resolved relative to this file - baseUrl is deprecated */
     "paths": {
       "@/*": ["./src/*"]
     }

@@ -19,6 +19,10 @@ export interface ITripDate {
 export interface ITrip extends Document {
   name: string;
   destination: string;
+  // Countries this trip belongs to, referencing the Explore Destinations list.
+  // Independent of tripCategory: this drives /destination/:slug grouping only
+  // and has no effect on navbar placement.
+  destinations: mongoose.Types.ObjectId[];
   tripCategory: string[]; // CHANGED: Now an array of strings
   tripType: string;
   tripRoute: string;
@@ -84,6 +88,10 @@ const tripSchema = new Schema<ITrip>(
       required: [true, 'Destination is required'],
       trim: true,
     },
+    destinations: {
+      type: [{ type: Schema.Types.ObjectId, ref: 'ExploreDestination' }],
+      default: [],
+    },
     tripCategory: {
       type: [String], // CHANGED: Now accepts array of strings
       required: [true, 'At least one trip category is required'],
@@ -97,7 +105,7 @@ const tripSchema = new Schema<ITrip>(
           const allowedCategories = [
             'emi-trips',
             'international-trips',
-            'india-trips',
+            'nepal-trips',
             'deals',
             'travel-styles',
             'combo-trips',
@@ -191,6 +199,7 @@ const tripSchema = new Schema<ITrip>(
 tripSchema.index({ name: 'text', destination: 'text', tags: 'text' });
 tripSchema.index({ tripCategory: 1, tripType: 1 });
 tripSchema.index({ status: 1 });
+tripSchema.index({ destinations: 1, status: 1 });
 
 const Trip = mongoose.model<ITrip>('Trip', tripSchema);
 

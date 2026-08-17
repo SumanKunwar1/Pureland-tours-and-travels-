@@ -71,7 +71,7 @@ const EMPTY_TRIP: Omit<CreateAgentTripData, "price" | "b2bPrice"> & {
   dates: [],
   occupancyPricing: [],
   hasGoodies: false,
-  tripCategory: "india-trips",
+  tripCategory: "nepal-trips",
   tripType: "",
 };
 
@@ -687,7 +687,7 @@ export default function AdminAgentTrips() {
                                 }
                                 className="w-full h-10 px-3 rounded-md border border-input bg-background"
                               >
-                                <option value="india-trips">India Trips</option>
+                                <option value="nepal-trips">Nepal Trips</option>
                                 <option value="travel-styles">Travel Styles</option>
                                 <option value="international">International</option>
                               </select>
