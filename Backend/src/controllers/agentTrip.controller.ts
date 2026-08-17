@@ -70,7 +70,7 @@ export const createAgentTrip = catchAsync(
       dates: dates || [],
       occupancyPricing: occupancyPricing || [],
       hasGoodies: hasGoodies || false,
-      tripCategory: tripCategory || 'india-trips',
+      tripCategory: tripCategory || 'nepal-trips',
       tripType: tripType || '',
     });
 

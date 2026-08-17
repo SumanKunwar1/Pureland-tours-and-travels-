@@ -184,8 +184,8 @@ const agentTripSchema = new Schema<IAgentTrip>(
     },
     tripCategory: {
       type: String,
-      enum: ['india-trips', 'travel-styles', 'international'],
-      default: 'india-trips',
+      enum: ['nepal-trips', 'travel-styles', 'international'],
+      default: 'nepal-trips',
     },
     tripType: {
       type: String,

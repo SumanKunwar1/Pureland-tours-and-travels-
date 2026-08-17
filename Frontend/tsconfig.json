@@ -2,10 +2,14 @@
   "files": [],
   "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
   "compilerOptions": {
-    "baseUrl": ".",
+    /* paths are resolved relative to this file - baseUrl is deprecated */
     "paths": {
       "@/*": ["./src/*"]
     },
+    /* Match the bundler setup used by tsconfig.app.json / tsconfig.node.json.
+       Without these, this config falls back to the deprecated node10 resolution. */
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "noImplicitAny": false,
     "noUnusedParameters": false,
     "skipLibCheck": true,
