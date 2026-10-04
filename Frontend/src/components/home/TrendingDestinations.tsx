@@ -5,11 +5,14 @@ import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { API_BASE_URL } from "@/lib/api-config";
 import axios from "axios";
+import { Price } from "@/components/shared/Price";
 
 interface TrendingDestination {
   _id: string;
   name: string;
   price: number;
+  priceUSD?: number;
+  priceINR?: number;
   image: string;
   url: string;
   order: number;
@@ -153,7 +156,11 @@ export function TrendingDestinations() {
                       {destination.name}
                     </h3>
                     <p className="text-xs sm:text-sm text-primary-foreground/80 font-semibold">
-                      ₹{destination.price.toLocaleString('en-IN')}
+                      <Price
+                        amount={destination.price}
+                        priceUSD={destination.priceUSD}
+                        priceINR={destination.priceINR}
+                      />
                     </p>
                   </div>
                 </Link>

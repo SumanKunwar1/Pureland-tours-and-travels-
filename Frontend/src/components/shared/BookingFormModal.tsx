@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { bookingService } from "@/services/bookings";
+import { Price } from "@/components/shared/Price";
 
 interface BookingFormModalProps {
   isOpen: boolean;
@@ -178,7 +179,7 @@ export function BookingFormModal({
                       )}
                       <div className="flex justify-between text-base font-semibold pt-2 border-t border-border">
                         <span>Total Amount:</span>
-                        <span>₹{totalAmount.toLocaleString()}</span>
+                        <Price amount={totalAmount} />
                       </div>
                     </div>
                   )}

@@ -28,7 +28,12 @@ export interface ITrip extends Document {
   tripRoute: string;
   duration: string;
   description: string;
+  /** Base price, always in NPR. Required. */
   price: number;
+  /** Manual USD price. Left unset, the storefront converts from `price`. */
+  priceUSD?: number;
+  /** Manual INR price. Left unset, the storefront converts from `price`. */
+  priceINR?: number;
   originalPrice: number;
   discount: number;
   status: 'Active' | 'Inactive' | 'Draft';
@@ -135,6 +140,18 @@ const tripSchema = new Schema<ITrip>(
     price: {
       type: Number,
       required: [true, 'Price is required'],
+    },
+    // Optional manual prices. A currency left blank is converted from `price`
+    // at the day's rate; a currency filled in here wins over any conversion.
+    priceUSD: {
+      type: Number,
+      min: [0, 'Price cannot be negative'],
+      default: undefined,
+    },
+    priceINR: {
+      type: Number,
+      min: [0, 'Price cannot be negative'],
+      default: undefined,
     },
     originalPrice: {
       type: Number,

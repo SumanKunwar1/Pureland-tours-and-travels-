@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { agentBookingService } from "@/services/agentBookings";
+import { Price } from "@/components/shared/Price";
 
 interface AgentBookingFormModalProps {
   isOpen: boolean;
@@ -223,7 +224,7 @@ export function AgentBookingFormModal({
                       )}
                       <div className="flex justify-between text-base font-semibold pt-2 border-t border-border">
                         <span>B2B Total:</span>
-                        <span>₹{totalAmount.toLocaleString()}</span>
+                        <Price amount={totalAmount} />
                       </div>
                     </div>
                   )}

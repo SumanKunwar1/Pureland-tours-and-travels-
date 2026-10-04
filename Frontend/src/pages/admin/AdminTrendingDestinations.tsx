@@ -1,5 +1,5 @@
 // src/pages/admin/AdminTrendingDestinations.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Plus, Search, Edit, Trash2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,11 +8,15 @@ import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { API_BASE_URL } from "@/lib/api-config";
 import { trendingDestinationService } from "@/services/trendingDestination.service";
+import { useCurrency } from "@/context/CurrencyContext";
+import { formatPrice, resolvePrice } from "@/lib/currency";
 
 interface TrendingDestination {
   _id: string;
   name: string;
   price: number;
+  priceUSD?: number | null;
+  priceINR?: number | null;
   image: string;
   url: string;
   order: number;
@@ -31,11 +35,24 @@ export default function AdminTrendingDestinations() {
   const [formData, setFormData] = useState({
     name: "",
     price: 0,
+    priceUSD: "" as string | number,
+    priceINR: "" as string | number,
     image: "",
     url: "",
     order: 0,
     isActive: true,
   });
+
+  // Shows what an empty currency box will render as today.
+  const { rates } = useCurrency();
+  const autoPricePreview = useMemo(() => {
+    const base = Number(formData.price);
+    if (!Number.isFinite(base) || base <= 0) return { USD: "", INR: "" };
+    return {
+      USD: formatPrice(resolvePrice(base, {}, "USD", rates).amount, "USD"),
+      INR: formatPrice(resolvePrice(base, {}, "INR", rates).amount, "INR"),
+    };
+  }, [formData.price, rates]);
 
   useEffect(() => {
     fetchDestinations();
@@ -188,6 +205,8 @@ export default function AdminTrendingDestinations() {
     setFormData({
       name: "",
       price: 0,
+      priceUSD: "",
+      priceINR: "",
       image: "",
       url: "",
       order: 0,
@@ -252,7 +271,7 @@ export default function AdminTrendingDestinations() {
             <div className="bg-card rounded-lg border border-border p-4">
               <p className="text-sm text-muted-foreground">Avg Price</p>
               <p className="text-2xl font-bold">
-                ₹{Math.round(stats.priceStats.average).toLocaleString()}
+                Rs {Math.round(stats.priceStats.average).toLocaleString()}
               </p>
             </div>
           </div>
@@ -289,8 +308,16 @@ export default function AdminTrendingDestinations() {
                   <h3 className="font-semibold text-lg mb-2">{dest.name}</h3>
                   <div className="space-y-2 mb-4 text-sm text-muted-foreground">
                     <p>
-                      <span className="font-medium">Price:</span> ₹
+                      <span className="font-medium">Price:</span> Rs{" "}
                       {dest.price.toLocaleString()}
+                      {(dest.priceUSD || dest.priceINR) && (
+                        <span className="ml-1 text-xs text-primary">
+                          (+{[dest.priceUSD ? "USD" : null, dest.priceINR ? "INR" : null]
+                            .filter(Boolean)
+                            .join(", ")}{" "}
+                          set)
+                        </span>
+                      )}
                     </p>
                     <p>
                       <span className="font-medium">Order:</span> {dest.order}
@@ -327,6 +354,8 @@ export default function AdminTrendingDestinations() {
                         setFormData({
                           name: dest.name,
                           price: dest.price,
+                          priceUSD: dest.priceUSD ?? "",
+                          priceINR: dest.priceINR ?? "",
                           image: dest.image,
                           url: dest.url,
                           order: dest.order,
@@ -371,15 +400,65 @@ export default function AdminTrendingDestinations() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Price *</label>
+                <label className="block text-sm font-medium mb-2">
+                  Price (Rs, NPR) *
+                </label>
                 <Input
                   type="number"
                   value={formData.price}
                   onChange={(e) =>
                     setFormData({ ...formData, price: Number(e.target.value) })
                   }
-                  placeholder="Price"
+                  placeholder="Price in Nepali Rupees"
                 />
+              </div>
+
+              {/* Per-currency prices */}
+              <div className="rounded-lg border border-border bg-muted/30 p-3 sm:p-4 space-y-3">
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Leave these empty and the site converts the NPR price at that
+                  day&apos;s rate. Type a price and visitors see exactly that.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      US Dollar ($)
+                    </label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.priceUSD}
+                      onChange={(e) =>
+                        setFormData({ ...formData, priceUSD: e.target.value })
+                      }
+                      placeholder={
+                        autoPricePreview.USD
+                          ? `Auto: ${autoPricePreview.USD}`
+                          : "Auto-convert"
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Indian Rupee (₹)
+                    </label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.priceINR}
+                      onChange={(e) =>
+                        setFormData({ ...formData, priceINR: e.target.value })
+                      }
+                      placeholder={
+                        autoPricePreview.INR
+                          ? `Auto: ${autoPricePreview.INR}`
+                          : "Auto-convert"
+                      }
+                    />
+                  </div>
+                </div>
               </div>
 
               <div>

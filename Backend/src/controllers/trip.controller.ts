@@ -8,6 +8,17 @@ import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary';
 
 // Normalises a destinations payload (JSON string, single id, or array) into a
 // clean array of id strings.
+/**
+ * Normalises an optional manual price. Blank, null, zero and junk all collapse
+ * to `undefined`, which the storefront reads as "convert from the NPR price".
+ * A stored 0 would otherwise read as a genuine free-of-charge price.
+ */
+const optionalPrice = (value: unknown): number | undefined => {
+  if (value === undefined || value === null || value === '') return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+};
+
 const parseDestinations = (raw: any): string[] => {
   let value = raw;
 
@@ -209,6 +220,8 @@ export const createTrip = catchAsync(
       tripCategory, // Use the parsed/array version
       destinations: parseDestinations(req.body.destinations),
       image: imageUrl,
+      priceUSD: optionalPrice(req.body.priceUSD),
+      priceINR: optionalPrice(req.body.priceINR),
       discount,
       inclusions,
       exclusions,
@@ -303,6 +316,10 @@ export const updateTrip = catchAsync(
             ? parseDestinations(req.body.destinations)
             : trip.destinations,
         image: imageUrl,
+        // A blank box means "convert from NPR", so it must clear the stored
+        // override rather than persist an empty string or a zero.
+        priceUSD: optionalPrice(req.body.priceUSD) ?? null,
+        priceINR: optionalPrice(req.body.priceINR) ?? null,
         discount,
         inclusions,
         exclusions,

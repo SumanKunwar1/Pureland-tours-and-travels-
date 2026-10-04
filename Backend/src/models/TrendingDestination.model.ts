@@ -3,7 +3,12 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ITrendingDestination extends Document {
   name: string;
+  /** Base price, always in NPR. Required. */
   price: number;
+  /** Manual USD price. Left unset, the storefront converts from `price`. */
+  priceUSD?: number;
+  /** Manual INR price. Left unset, the storefront converts from `price`. */
+  priceINR?: number;
   image: string;
   url: string;
   order: number;
@@ -24,6 +29,18 @@ const trendingDestinationSchema = new Schema<ITrendingDestination>(
       type: Number,
       required: [true, 'Price is required'],
       min: [0, 'Price cannot be negative'],
+    },
+    // Optional manual prices. A currency left blank is converted from `price`
+    // at the day's rate; a currency filled in here wins over any conversion.
+    priceUSD: {
+      type: Number,
+      min: [0, 'Price cannot be negative'],
+      default: undefined,
+    },
+    priceINR: {
+      type: Number,
+      min: [0, 'Price cannot be negative'],
+      default: undefined,
     },
     image: {
       type: String,

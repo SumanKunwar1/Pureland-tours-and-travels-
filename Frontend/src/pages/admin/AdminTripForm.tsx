@@ -1,5 +1,5 @@
 // src/pages/admin/AdminTripForm.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -18,6 +18,8 @@ import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { cn } from "@/lib/utils";
 import axiosInstance from "@/lib/axios";
+import { useCurrency } from "@/context/CurrencyContext";
+import { formatPrice, resolvePrice } from "@/lib/currency";
 
 
 interface ItineraryDay {
@@ -102,6 +104,8 @@ export default function AdminTripForm() {
     duration: "",
     description: "",
     price: "",
+    priceUSD: "",
+    priceINR: "",
     originalPrice: "",
     discount: "",
     status: "Active",
@@ -116,6 +120,18 @@ export default function AdminTripForm() {
   });
 
   const [currentTab, setCurrentTab] = useState(0);
+
+  // Shows the admin what an empty currency box will actually render as today,
+  // so "leave it blank" is not a leap of faith.
+  const { rates } = useCurrency();
+  const autoPricePreview = useMemo(() => {
+    const base = parseFloat(formData.price);
+    if (!Number.isFinite(base) || base <= 0) return { USD: "", INR: "" };
+    return {
+      USD: formatPrice(resolvePrice(base, {}, "USD", rates).amount, "USD"),
+      INR: formatPrice(resolvePrice(base, {}, "INR", rates).amount, "INR"),
+    };
+  }, [formData.price, rates]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]); // Changed to array
   const [availableTypes, setAvailableTypes] = useState<any[]>([]);
   const [availableDestinations, setAvailableDestinations] = useState<any[]>([]);
@@ -171,6 +187,8 @@ export default function AdminTripForm() {
           duration: trip.duration,
           description: trip.description,
           price: trip.price.toString(),
+          priceUSD: trip.priceUSD != null ? trip.priceUSD.toString() : "",
+          priceINR: trip.priceINR != null ? trip.priceINR.toString() : "",
           originalPrice: trip.originalPrice.toString(),
           discount: trip.discount.toString(),
           status: trip.status,
@@ -401,6 +419,9 @@ export default function AdminTripForm() {
         })),
         dates: formData.dates.filter((date) => date.date !== ""),
         price: parseFloat(formData.price),
+        // Empty means "convert at the day's rate", so send null rather than 0.
+        priceUSD: formData.priceUSD === "" ? null : parseFloat(formData.priceUSD),
+        priceINR: formData.priceINR === "" ? null : parseFloat(formData.priceINR),
         originalPrice: parseFloat(formData.originalPrice),
         discount: parseFloat(formData.discount),
       };
@@ -718,7 +739,7 @@ export default function AdminTripForm() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Current Price (₹) *
+                      Current Price (Rs, NPR) *
                     </label>
                     <Input
                       name="price"
@@ -731,7 +752,7 @@ export default function AdminTripForm() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Original Price (₹)
+                      Original Price (Rs, NPR)
                     </label>
                     <Input
                       name="originalPrice"
@@ -758,6 +779,74 @@ export default function AdminTripForm() {
                       disabled
                       className="bg-muted"
                     />
+                  </div>
+                </div>
+
+                {/* Per-currency prices */}
+                <div className="rounded-xl border border-border bg-muted/30 p-4 sm:p-5 space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-sm sm:text-base">
+                      Prices in other currencies
+                    </h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                      Leave a box empty and the site converts the NPR price at
+                      that day&apos;s exchange rate. Type a price and visitors
+                      see exactly that number instead.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        US Dollar price ($)
+                      </label>
+                      <Input
+                        name="priceUSD"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.priceUSD}
+                        onChange={handleInputChange}
+                        placeholder={
+                          autoPricePreview.USD
+                            ? `Auto: ${autoPricePreview.USD}`
+                            : "Leave blank to auto-convert"
+                        }
+                      />
+                      <p className="text-xs text-muted-foreground mt-1.5">
+                        {formData.priceUSD
+                          ? "Manual price — shown exactly as typed."
+                          : autoPricePreview.USD
+                            ? `Will show as ${autoPricePreview.USD} today.`
+                            : "Will be converted automatically."}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Indian Rupee price (₹)
+                      </label>
+                      <Input
+                        name="priceINR"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.priceINR}
+                        onChange={handleInputChange}
+                        placeholder={
+                          autoPricePreview.INR
+                            ? `Auto: ${autoPricePreview.INR}`
+                            : "Leave blank to auto-convert"
+                        }
+                      />
+                      <p className="text-xs text-muted-foreground mt-1.5">
+                        {formData.priceINR
+                          ? "Manual price — shown exactly as typed."
+                          : autoPricePreview.INR
+                            ? `Will show as ${autoPricePreview.INR} today.`
+                            : "Will be converted automatically."}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

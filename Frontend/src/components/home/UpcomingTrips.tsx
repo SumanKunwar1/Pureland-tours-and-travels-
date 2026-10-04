@@ -6,6 +6,7 @@ import { Calendar, Gift, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import axios from "axios";
+import { Price } from "@/components/shared/Price";
 import { API_BASE_URL } from "@/lib/api-config";
 
 
@@ -15,6 +16,8 @@ interface Trip {
   image: string;
   duration: string;
   price: number;
+  priceUSD?: number;
+  priceINR?: number;
   originalPrice: number;
   discount: number;
   dates: Array<{ date: string; price: number }>;
@@ -183,15 +186,30 @@ export function UpcomingTrips() {
                     </h3>
 
                     {/* Price */}
-                    <div className="flex items-baseline gap-2 mb-3">
-                      <span className="text-xl font-bold text-foreground">
-                        ₹{trip.price.toLocaleString()}
-                      </span>
-                      <span className="price-original">
-                        ₹{trip.originalPrice.toLocaleString()}
-                      </span>
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 mb-3">
+                      <Price
+                        amount={trip.price}
+                        priceUSD={trip.priceUSD}
+                        priceINR={trip.priceINR}
+                        className="text-lg sm:text-xl font-bold text-foreground"
+                      />
+                      <Price
+                        amount={trip.originalPrice}
+                        relatedTo={trip.price}
+                        priceUSD={trip.priceUSD}
+                        priceINR={trip.priceINR}
+                        showApprox={false}
+                        className="price-original"
+                      />
                       <span className="price-discount">
-                        ₹{trip.discount.toLocaleString()} Off
+                        <Price
+                          amount={trip.discount}
+                          relatedTo={trip.price}
+                          priceUSD={trip.priceUSD}
+                          priceINR={trip.priceINR}
+                          showApprox={false}
+                        />{" "}
+                        Off
                       </span>
                     </div>
 
