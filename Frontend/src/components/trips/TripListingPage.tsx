@@ -1,6 +1,6 @@
 // src/pages/TripListingPage.tsx
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Calendar, Filter, ChevronDown, Clock, CalendarDays, Gift, Search } from "lucide-react";
 import {
   Collapsible,
@@ -14,6 +14,7 @@ import { Footer } from "@/components/layout/Footer";
 import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
 import axiosInstance from "@/lib/axios";
 import { Price } from "@/components/shared/Price";
+import { canonicalRouteFor } from "@/lib/trip-taxonomy";
 
 interface Trip {
   _id: string;
@@ -28,8 +29,10 @@ interface Trip {
   discount: number;
   dates: Array<{ date: string; price: number }>;
   hasGoodies: boolean;
-  tripCategory: string;
-  tripType: string;
+  tripCategory: string[] | string;
+  // Arrays now; legacy rows still hold a bare string.
+  tripType: string[] | string;
+  tripRoute?: string[] | string;
 }
 
 interface TripListingPageProps {
@@ -41,6 +44,11 @@ interface TripListingPageProps {
   filterDestinations?: string[];
   tripCategory?: string;
   tripType?: string;
+  /**
+   * The listing URL to filter by. Defaults to the page's own path, which is
+   * what makes a trip with several types appear on every one of its listings.
+   */
+  tripRoute?: string;
   /** Explore-destination slug, e.g. "nepal" - groups trips by country */
   destinationSlug?: string;
 }
@@ -54,8 +62,17 @@ const TripListingPage = ({
   filterDestinations = ["All"],
   tripCategory,
   tripType,
+  tripRoute,
   destinationSlug,
 }: TripListingPageProps) => {
+  const location = useLocation();
+
+  // A trip stores one route per selected type, so asking for the current URL
+  // returns every trip that opted into this listing — no matter how many other
+  // types it also carries. Destination pages keep their own filter.
+  const routeFilter = destinationSlug
+    ? null
+    : (tripRoute ?? canonicalRouteFor(location.pathname));
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeDestination, setActiveDestination] = useState("All");
@@ -78,18 +95,25 @@ const TripListingPage = ({
 
   useEffect(() => {
     fetchTrips();
-  }, [tripCategory, tripType, destinationSlug]);
+  }, [tripCategory, tripType, routeFilter, destinationSlug]);
 
   const fetchTrips = async () => {
     try {
       setLoading(true);
       let endpoint = '/trips?';
-      
-      if (tripCategory) {
-        endpoint += `tripCategory=${tripCategory}&`;
-      }
-      if (tripType) {
-        endpoint += `tripType=${tripType}&`;
+
+      if (routeFilter) {
+        // Route filtering stands alone. Narrowing it further by the page's
+        // category would hide a trip that opted into this listing through a
+        // type belonging to some other category.
+        endpoint += `tripRoute=${encodeURIComponent(routeFilter)}&`;
+      } else {
+        if (tripCategory) {
+          endpoint += `tripCategory=${tripCategory}&`;
+        }
+        if (tripType) {
+          endpoint += `tripType=${tripType}&`;
+        }
       }
       if (destinationSlug) {
         endpoint += `destinationSlug=${encodeURIComponent(destinationSlug)}&`;

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import axios from "axios";
 import { Price } from "@/components/shared/Price";
 import { API_BASE_URL } from "@/lib/api-config";
+import { toRouteList } from "@/lib/trip-taxonomy";
 
 
 interface Trip {
@@ -23,7 +24,16 @@ interface Trip {
   dates: Array<{ date: string; price: number }>;
   destination: string;
   hasGoodies: boolean;
+  // Arrays since a trip can sit under several types; legacy rows hold a
+  // bare string, so every read goes through toRouteList().
+  tripRoute?: string[] | string;
 }
+
+// This section is reserved for Group Trips. A trip appears here only when an
+// admin explicitly ticks that type, never by being recent.
+const GROUP_TRIPS_ROUTE = "/trips/group";
+
+
 
 const categories = [
   "All",
@@ -73,10 +83,19 @@ export function UpcomingTrips() {
     try {
       setLoading(true);
       // Fetch only 4 active trips, sorted by creation date (newest first)
-      const response = await axios.get(`${API_BASE_URL}/trips?limit=4&sort=-createdAt`);
-      
+      // Ask the API for group trips only. The client-side filter below is a
+      // backstop in case the query param is ignored.
+      const response = await axios.get(
+        `${API_BASE_URL}/trips?tripRoute=${encodeURIComponent(
+          GROUP_TRIPS_ROUTE
+        )}&limit=12&sort=-createdAt`
+      );
+
       if (response.data.status === 'success') {
-        setTrips(response.data.data.trips);
+        const groupTrips = (response.data.data.trips as Trip[]).filter((trip) =>
+          toRouteList(trip.tripRoute).includes(GROUP_TRIPS_ROUTE)
+        );
+        setTrips(groupTrips);
       }
     } catch (error) {
       console.error("Error fetching upcoming trips:", error);
@@ -110,7 +129,7 @@ export function UpcomingTrips() {
           <h2 className="text-3xl sm:text-4xl font-display font-bold">
             Upcoming Group Trips
           </h2>
-          <Link to="/group-trips">
+          <Link to={GROUP_TRIPS_ROUTE}>
             <Button variant="outline" className="self-start sm:self-center">
               See All
               <ArrowRight className="ml-2 w-4 h-4" />

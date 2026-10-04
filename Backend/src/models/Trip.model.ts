@@ -24,8 +24,8 @@ export interface ITrip extends Document {
   // and has no effect on navbar placement.
   destinations: mongoose.Types.ObjectId[];
   tripCategory: string[]; // CHANGED: Now an array of strings
-  tripType: string;
-  tripRoute: string;
+  tripType: string[]; // CHANGED: a trip can sit under several types
+  tripRoute: string[]; // CHANGED: one route per selected type
   duration: string;
   description: string;
   /** Base price, always in NPR. Required. */
@@ -122,12 +122,20 @@ const tripSchema = new Schema<ITrip>(
       }
     },
     tripType: {
-      type: String,
-      required: [true, 'Trip type is required'],
+      type: [String], // CHANGED: now accepts an array of types
+      required: [true, 'At least one trip type is required'],
+      validate: {
+        validator: function (types: string[]) {
+          return Array.isArray(types) && types.length > 0;
+        },
+        message: 'At least one trip type is required',
+      },
     },
     tripRoute: {
-      type: String,
-      required: [true, 'Trip route is required'],
+      // One route per selected type. Derived from tripType in the admin form,
+      // and what the homepage filters on (e.g. only '/trips/group').
+      type: [String],
+      default: [],
     },
     duration: {
       type: String,
@@ -214,7 +222,13 @@ const tripSchema = new Schema<ITrip>(
 
 // Create indexes for better search performance
 tripSchema.index({ name: 'text', destination: 'text', tags: 'text' });
-tripSchema.index({ tripCategory: 1, tripType: 1 });
+// tripCategory and tripType are BOTH arrays now, and MongoDB refuses to build a
+// compound index spanning two array fields ("cannot index parallel arrays").
+// Two single-field multikey indexes are allowed and serve the same queries,
+// since nothing filters on the pair together.
+tripSchema.index({ tripCategory: 1 });
+tripSchema.index({ tripType: 1 });
+tripSchema.index({ tripRoute: 1 });
 tripSchema.index({ status: 1 });
 tripSchema.index({ destinations: 1, status: 1 });
 
