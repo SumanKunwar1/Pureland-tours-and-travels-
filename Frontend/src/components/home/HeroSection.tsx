@@ -225,26 +225,32 @@ export function HeroSection() {
           </div>
         )}
 
-        {/* Image Indicators — dots stay small, the tap target stays 44px tall */}
+        {/* Slide indicators. Parked bottom-right in a frosted capsule: these
+            banners run their headline across the bottom-centre, so a centred
+            row of dots lands straight on top of the artwork's own type. The
+            capsule also keeps the markers legible over light scenery. */}
         {heroImages.length > 1 && (
           <div
-            className="absolute bottom-1 sm:bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-0.5 sm:gap-1 z-10"
-            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+            className="absolute z-20 bottom-2.5 right-2.5 sm:bottom-4 sm:right-5 md:bottom-6 md:right-8 flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/30 ring-1 ring-white/15 backdrop-blur-md px-2.5 py-1.5 sm:px-3 sm:py-2"
+            style={{ marginBottom: "env(safe-area-inset-bottom)" }}
           >
             {heroImages.map((image, index) => (
               <button
                 key={image._id || index}
                 onClick={() => goToSlide(index)}
-                className="flex items-center justify-center h-11 w-8 sm:w-11 touch-manipulation"
+                /* py-4/-my-4 grows the tap area well past the slim bar
+                   without making the capsule any taller. */
+                className="group py-4 -my-4 px-1 -mx-1 touch-manipulation focus-visible:outline-none"
                 aria-label={`Go to slide ${index + 1} of ${heroImages.length}`}
                 aria-current={currentImageIndex === index}
               >
                 <span
                   className={cn(
-                    "block h-1.5 sm:h-2.5 rounded-full transition-all duration-500",
+                    "block h-1 sm:h-1.5 rounded-full transition-all duration-500 ease-out",
+                    "group-focus-visible:ring-2 group-focus-visible:ring-white group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-black/40",
                     currentImageIndex === index
-                      ? "w-6 sm:w-10 bg-white shadow-lg"
-                      : "w-1.5 sm:w-2.5 bg-white/60"
+                      ? "w-6 sm:w-8 bg-white"
+                      : "w-1.5 sm:w-2 bg-white/50 group-hover:bg-white/90"
                   )}
                 />
               </button>
