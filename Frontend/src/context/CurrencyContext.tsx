@@ -17,7 +17,10 @@ import {
   type RateTable,
 } from "@/lib/currency";
 
-const STORAGE_KEY = "pureland.currency";
+// Bumped when DEFAULT_CURRENCY changed to USD: the old key holds choices
+// visitors made under the previous default, and reading those back would
+// keep showing them a currency the site no longer leads with.
+const STORAGE_KEY = "pureland.currency.v2";
 
 interface CurrencyContextValue {
   currency: Currency;
