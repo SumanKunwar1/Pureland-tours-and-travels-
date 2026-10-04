@@ -384,12 +384,14 @@ export default function AdminTrendingDestinations() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-card rounded-lg max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold mb-4">
+          <div className="bg-card rounded-lg max-w-md w-full max-h-[90svh] flex flex-col overflow-hidden">
+            <h2 className="text-2xl font-bold px-6 pt-6 pb-4 shrink-0">
               {editingDest ? "Edit Destination" : "Add New Destination"}
             </h2>
 
-            <div className="space-y-4">
+            {/* Only the fields scroll, so Cancel/Update stay reachable however
+                long the form gets. */}
+            <div className="space-y-4 flex-1 overflow-y-auto px-6 pb-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Name *</label>
                 <Input
@@ -513,23 +515,23 @@ export default function AdminTrendingDestinations() {
                 />
                 <span className="text-sm">Active</span>
               </label>
+            </div>
 
-              <div className="flex gap-3 pt-4 border-t border-border">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => {
-                    setShowModal(false);
-                    setEditingDest(null);
-                    resetForm();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button className="flex-1" onClick={handleSubmit}>
-                  {editingDest ? "Update" : "Create"}
-                </Button>
-              </div>
+            <div className="flex gap-3 p-6 border-t border-border shrink-0 bg-card">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setShowModal(false);
+                  setEditingDest(null);
+                  resetForm();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button className="flex-1" onClick={handleSubmit}>
+                {editingDest ? "Update" : "Create"}
+              </Button>
             </div>
           </div>
         </div>

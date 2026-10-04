@@ -11,7 +11,7 @@ export const CURRENCIES: Currency[] = ["NPR", "USD", "INR"];
 export const BASE_CURRENCY: Currency = "NPR";
 
 /** What a first-time visitor sees before they pick anything. */
-export const DEFAULT_CURRENCY: Currency = "NPR";
+export const DEFAULT_CURRENCY: Currency = "USD";
 
 export const CURRENCY_META: Record<
   Currency,

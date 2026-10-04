@@ -401,12 +401,14 @@ const TripListingPage = ({
                           {/* Price */}
                           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 mb-3">
                             <Price
+                              currency="USD"
                               amount={trip.price}
                               priceUSD={trip.priceUSD}
                               priceINR={trip.priceINR}
                               className="text-lg font-bold text-foreground"
                             />
                             <Price
+                              currency="USD"
                               amount={trip.originalPrice}
                               relatedTo={trip.price}
                               priceUSD={trip.priceUSD}
@@ -416,6 +418,7 @@ const TripListingPage = ({
                             />
                             <span className="text-xs text-destructive font-medium">
                               <Price
+                                currency="USD"
                                 amount={trip.discount}
                                 relatedTo={trip.price}
                                 priceUSD={trip.priceUSD}

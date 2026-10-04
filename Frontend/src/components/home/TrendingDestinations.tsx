@@ -157,6 +157,7 @@ export function TrendingDestinations() {
                     </h3>
                     <p className="text-xs sm:text-sm text-primary-foreground/80 font-semibold">
                       <Price
+                        currency="USD"
                         amount={destination.price}
                         priceUSD={destination.priceUSD}
                         priceINR={destination.priceINR}

@@ -106,7 +106,7 @@ export function BookingFormModal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              className="pointer-events-auto w-full max-w-md max-h-[90vh] bg-background rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+              className="pointer-events-auto w-full max-w-md max-h-[90svh] bg-background rounded-2xl shadow-2xl overflow-hidden flex flex-col"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-border shrink-0">

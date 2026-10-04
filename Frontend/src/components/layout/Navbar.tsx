@@ -424,7 +424,7 @@ export function Navbar() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="lg:hidden border-t border-border overflow-hidden max-h-[80vh] overflow-y-auto"
+              className="lg:hidden border-t border-border overflow-hidden max-h-[80svh] overflow-y-auto"
             >
               <div className="py-4 space-y-1 px-2">
                 {/* ALL NAVIGATION ITEMS */}

@@ -5,6 +5,7 @@ import {
   formatPrice,
   resolvePrice,
   resolveRelatedPrice,
+  type Currency,
   type PriceOverrides,
 } from "@/lib/currency";
 
@@ -24,6 +25,12 @@ interface PriceProps extends PriceOverrides {
    * conversion of it.
    */
   showApprox?: boolean;
+  /**
+   * Pin this amount to one currency, ignoring the visitor's selection.
+   * Used everywhere outside the trip detail price card, so browsing shows
+   * one consistent currency and only that card follows the toggle.
+   */
+  currency?: Currency;
 }
 
 /**
@@ -36,8 +43,10 @@ export function Price({
   priceINR,
   className,
   showApprox = true,
+  currency: fixedCurrency,
 }: PriceProps) {
-  const { currency, rates } = useCurrency();
+  const { currency: selectedCurrency, rates } = useCurrency();
+  const currency = fixedCurrency ?? selectedCurrency;
   const overrides = { priceUSD, priceINR };
 
   const resolved =
