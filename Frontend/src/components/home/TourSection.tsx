@@ -41,9 +41,9 @@ export function TourSection({
 
     const fetchTrips = async () => {
       try {
-        const response = await axios.get(
-          `${API_BASE_URL}/trips?tripRoute=${encodeURIComponent(route)}&limit=12&sort=-createdAt`
-        );
+        // Returns the section's trips in the order arranged under
+        // Admin > Homepage > Tour Sections.
+        const response = await axios.get(`${API_BASE_URL}/home-sections/${id}`);
 
         if (!cancelled && response.data.status === "success") {
           // The client-side filter is a backstop in case the query param is ignored.
@@ -65,7 +65,7 @@ export function TourSection({
     return () => {
       cancelled = true;
     };
-  }, [route, title]);
+  }, [id, route, title]);
 
   return (
     <section

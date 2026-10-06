@@ -695,7 +695,8 @@ export default function AdminTripForm() {
                       World Peace Prayer, Empowerment &amp; Teachings, Trip by
                       Activities) are under the <strong>Homepage Sections</strong>{" "}
                       category, and Pilgrimage Tours uses{" "}
-                      <strong>Pilgrimage Trips</strong>.
+                      <strong>Pilgrimage Trips</strong>. You can also fill and
+                      reorder those sections from Homepage → Tour Sections.
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                       {availableTypes.map((type) => (

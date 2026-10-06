@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import axios from "axios";
 import { API_BASE_URL } from "@/lib/api-config";
 import { toRouteList } from "@/lib/trip-taxonomy";
+import { UPCOMING_GROUP_SECTION } from "@/lib/home-sections";
 import { TourGrid } from "@/components/home/TourGrid";
 import type { TourTrip } from "@/components/home/TourCard";
 
@@ -15,7 +16,7 @@ type Trip = TourTrip & { destination: string };
 
 // This section is reserved for Group Trips. A trip appears here only when an
 // admin explicitly ticks that type, never by being recent.
-const GROUP_TRIPS_ROUTE = "/trips/group";
+const GROUP_TRIPS_ROUTE = UPCOMING_GROUP_SECTION.route;
 
 
 
@@ -66,14 +67,9 @@ export function UpcomingTrips() {
   const fetchUpcomingTrips = async () => {
     try {
       setLoading(true);
-      // Fetch only 4 active trips, sorted by creation date (newest first)
-      // Ask the API for group trips only. The client-side filter below is a
-      // backstop in case the query param is ignored.
-      const response = await axios.get(
-        `${API_BASE_URL}/trips?tripRoute=${encodeURIComponent(
-          GROUP_TRIPS_ROUTE
-        )}&limit=12&sort=-createdAt`
-      );
+      // Group trips, in the order arranged under Admin > Homepage > Tour
+      // Sections. The client-side filter below is a backstop.
+      const response = await axios.get(`${API_BASE_URL}/home-sections/${UPCOMING_GROUP_SECTION.id}`);
 
       if (response.data.status === 'success') {
         const groupTrips = (response.data.data.trips as Trip[]).filter((trip) =>
@@ -110,8 +106,8 @@ export function UpcomingTrips() {
       <div className="container-custom">
         <SectionHeading
           id="upcoming-trips-heading"
-          title="Upcoming Group Trips"
-          description="Join our fixed-departure group journeys and travel with like-minded companions."
+          title={UPCOMING_GROUP_SECTION.title}
+          description={UPCOMING_GROUP_SECTION.description}
         />
 
         {/* Category Pills */}

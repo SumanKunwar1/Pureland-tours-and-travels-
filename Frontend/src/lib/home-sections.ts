@@ -1,9 +1,10 @@
 // src/lib/home-sections.ts
 //
 // The tour sections on the homepage, in display order. Each one lists the trips
-// whose tripRoute contains its `route` — i.e. the trips an admin ticked that
-// type for in the trip form (Categories & Type tab), the same way Group Trips
-// works. To add a section: add a type in trip-taxonomy.ts and an entry here.
+// whose tripRoute contains its `route`. Admins fill them from existing trips
+// under Homepage > Tour Sections (or by ticking the type in the trip form).
+// To add a section: add a type in trip-taxonomy.ts, an entry here, and a
+// matching entry in the backend's HomeSection model.
 
 export interface HomeTourSectionConfig {
   id: string;
@@ -60,6 +61,24 @@ export const HOME_TOUR_SECTIONS: HomeTourSectionConfig[] = [
     route: "/trips/activities",
   },
 ];
+
+// Upcoming Group Trips has its own component (it adds destination filters) but
+// is filled the same way, from the existing "Group Trips" type.
+export const UPCOMING_GROUP_SECTION: HomeTourSectionConfig = {
+  id: "upcoming-group",
+  title: "Upcoming Group Trips",
+  description: "Join our fixed-departure group journeys and travel with like-minded companions.",
+  route: "/trips/group",
+};
+
+/**
+ * Every section an admin can fill under Homepage > Tour Sections, in homepage
+ * order. The ids must match HOME_SECTIONS in the backend's HomeSection model.
+ */
+export const HOME_MANAGED_SECTIONS: HomeTourSectionConfig[] = [UPCOMING_GROUP_SECTION, ...HOME_TOUR_SECTIONS];
+
+/** How many trips a section shows on the homepage before "View All". */
+export const HOME_SECTION_VISIBLE_TRIPS = 4;
 
 // Links and media used by the lower homepage sections.
 export const GOOGLE_REVIEWS_URL =

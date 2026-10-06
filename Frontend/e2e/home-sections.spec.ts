@@ -26,7 +26,7 @@ const TRIPS = [
   makeTrip("p1", "World Peace Prayer at Borobudur", ["/trips/world-peace-prayer"]),
   makeTrip("g1", "Pilgrimage with Venerable Rinpoche", ["/trips/pilgrimage"]),
   makeTrip("d1", "Kalachakra Empowerment", ["/trips/dharma-events"]),
-  // Nothing is ticked for /trips/activities, so that section must stay hidden.
+  // Nothing is assigned to /trips/activities, so that section shows its empty state.
 ];
 
 const DESTINATIONS = ["Nepal", "Bhutan", "Tibet", "India", "Sri Lanka", "Thailand", "Japan", "Cambodia", "Vietnam", "China"].map(
@@ -42,9 +42,35 @@ const DESTINATIONS = ["Nepal", "Bhutan", "Tibet", "India", "Sri Lanka", "Thailan
   })
 );
 
+// Section key -> listing route, as defined in the backend's HomeSection model.
+const SECTION_ROUTES: Record<string, string> = {
+  "upcoming-group": "/trips/group",
+  "kailash-tibet": "/trips/kailash-tibet",
+  "wellness-tours": "/trips/wellness",
+  "world-peace-prayer": "/trips/world-peace-prayer",
+  "pilgrimage-tours": "/trips/pilgrimage",
+  "dharma-events": "/trips/dharma-events",
+  activities: "/trips/activities",
+};
+
+// GET /home-sections/:key for every section, answering from the given trips.
+function homeSectionHandlers(trips: typeof TRIPS): Parameters<typeof mockApi>[1] {
+  return Object.fromEntries(
+    Object.entries(SECTION_ROUTES).map(([key, sectionRoute]) => [
+      `GET /home-sections/${key}`,
+      (route) => {
+        const sectionTrips = trips.filter((trip) => trip.tripRoute.includes(sectionRoute));
+        return fulfillJson(route, { status: "success", results: sectionTrips.length, data: { key, trips: sectionTrips } });
+      },
+    ])
+  );
+}
+
 async function openHome(page: Page, extra: Parameters<typeof mockApi>[1] = {}) {
   await mockBannerImages(page);
   await mockApi(page, {
+    ...homeSectionHandlers(TRIPS),
+    // Still used by the "View All" listing pages.
     "GET /trips": (route, request) => {
       const wanted = new URL(request.url()).searchParams.get("tripRoute");
       const trips = TRIPS.filter((trip) => !wanted || trip.tripRoute.includes(wanted));
@@ -103,9 +129,7 @@ test.describe("Homepage sections on desktop", () => {  test.use({ viewport: { wi
   });
 
   test("every tour section from the brief shows even before any trip is assigned", async ({ page }) => {
-    await mockApi(page, {
-      "GET /trips": (route) => fulfillJson(route, { status: "success", results: 0, data: { trips: [] } }),
-    });
+    await mockApi(page, homeSectionHandlers([]));
     await page.goto("/");
 
     const sections = {

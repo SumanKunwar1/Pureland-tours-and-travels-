@@ -75,6 +75,7 @@ import AdminAgentBookings from "./pages/admin/AdminAgentBookings";
 import AdminHeroSection from "./pages/admin/AdminHeroSection";
 import AdminTrendingDestinations from "./pages/admin/AdminTrendingDestinations";
 import AdminExploreDestinations from "./pages/admin/AdminExploreDestinations";
+import AdminHomeSections from "./pages/admin/AdminHomeSections";
 
 // Admin Components
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
@@ -170,6 +171,15 @@ const App = () => (
               element={
                 <ProtectedAdminRoute>
                   <AdminExploreDestinations />
+                </ProtectedAdminRoute>
+              }
+            />
+
+            <Route
+              path="/admin/homepage/sections"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminHomeSections />
                 </ProtectedAdminRoute>
               }
             />

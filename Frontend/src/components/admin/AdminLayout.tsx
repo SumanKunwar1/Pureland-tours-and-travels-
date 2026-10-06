@@ -19,6 +19,7 @@ import {
   TrendingUp,
   Compass,
   Shield,
+  LayoutList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -54,6 +55,11 @@ const menuItems = [
         title: "Explore Destinations",
         icon: Compass,
         path: "/admin/homepage/explore",
+      },
+      {
+        title: "Tour Sections",
+        icon: LayoutList,
+        path: "/admin/homepage/sections",
       },
     ],
   },
