@@ -177,7 +177,6 @@ test.describe("Homepage sections on desktop", () => {  test.use({ viewport: { wi
     const wanted = [
       "Explore Destinations",
       "Trending Destinations",
-      "Book with Confidence",
       "Upcoming Group Trips",
       "Top Selling Kailash Mansarovar & Tibet Trip Packages",
       "Wellness Tours",
@@ -221,10 +220,20 @@ test.describe("Homepage sections on desktop", () => {  test.use({ viewport: { wi
     await page.getByPlaceholder("Your Name *").fill("Test Traveller");
     await page.getByPlaceholder("Email Address *").fill("traveller@example.com");
     await page.getByPlaceholder("Phone Number *").fill("9800000000");
+    // The form shows the tour's price before the visitor commits.
+    await expect(page.getByText("Total Amount:")).toBeVisible();
     await page.getByRole("button", { name: "Submit Booking Request" }).click();
 
     await expect(page.getByText("Booking Request Sent!").first()).toBeVisible();
-    expect(booking).toMatchObject({ tripId: "w1", tripName: "Vipassana Weekend Retreat", customerName: "Test Traveller" });
+    // The booking carries the tour's real price, not 0.
+    expect(booking).toMatchObject({
+      tripId: "w1",
+      tripName: "Vipassana Weekend Retreat",
+      customerName: "Test Traveller",
+      travelers: 1,
+      selectedPrice: 200000,
+      totalAmount: 200000,
+    });
   });
 
   test("partner banners lead to agent sign up and login", async ({ page }) => {
@@ -257,7 +266,8 @@ test.describe("Homepage sections on desktop", () => {  test.use({ viewport: { wi
 
     await expect(page.getByTestId("watch-our-trip").getByRole("link", { name: "Watch on Instagram" })).toHaveAttribute("href", /instagram\.com/);
     await expect(page.getByTestId("google-review").getByRole("link", { name: /Google Review/ })).toHaveAttribute("href", /google\.com\/maps/);
-    await expect(page.getByTestId("book-with-confidence")).toBeVisible();
+    // Removed from the homepage on every screen size.
+    await expect(page.getByRole("heading", { name: "Book with Confidence" })).toHaveCount(0);
   });
 
   test("the inquiry form sends the message to the team", async ({ page }) => {
@@ -309,10 +319,10 @@ test.describe("Homepage sections on desktop", () => {  test.use({ viewport: { wi
 test.describe("Homepage sections on mobile", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
-  test("hides Book with Confidence", async ({ page }) => {
+  test("does not show Book with Confidence", async ({ page }) => {
     await openHome(page);
 
-    await expect(page.getByTestId("book-with-confidence")).toBeHidden();
+    await expect(page.getByRole("heading", { name: "Book with Confidence" })).toHaveCount(0);
   });
 
   test("explore destinations wrap instead of scrolling sideways", async ({ page }) => {

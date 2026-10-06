@@ -18,6 +18,9 @@ interface BookingFormModalProps {
   selectedDate?: string;
   selectedPrice?: number;
   totalAmount?: number;
+  /** The trip's manual USD / INR prices, so the total shown matches the trip card. */
+  priceUSD?: number;
+  priceINR?: number;
 }
 
 export function BookingFormModal({ 
@@ -29,6 +32,8 @@ export function BookingFormModal({
   selectedDate,
   selectedPrice,
   totalAmount,
+  priceUSD,
+  priceINR,
 }: BookingFormModalProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -179,7 +184,7 @@ export function BookingFormModal({
                       )}
                       <div className="flex justify-between text-base font-semibold pt-2 border-t border-border">
                         <span>Total Amount:</span>
-                        <Price amount={totalAmount} />
+                        <Price amount={totalAmount} priceUSD={priceUSD} priceINR={priceINR} />
                       </div>
                     </div>
                   )}

@@ -5,7 +5,6 @@ import { DalaiLamaDarshan } from "@/components/home/DalaiLamaDarshan"; // ← NE
 import { ExploreDestinations } from "@/components/home/ExploreDestinations";
 import { TrendingDestinations } from "@/components/home/TrendingDestinations";
 import { UpcomingTrips } from "@/components/home/UpcomingTrips";
-import { BookWithConfidence } from "@/components/home/BookWithConfidence";
 import { TourSection } from "@/components/home/TourSection";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import { CorePartners } from "@/components/home/CorePartners";
@@ -32,7 +31,6 @@ const Index = () => {
         <ExploreDestinations />
         <TrendingDestinations />
 
-        <BookWithConfidence />
         <UpcomingTrips />
 
         {/* Tour sections - each lists the trips ticked for it in the admin trip form */}

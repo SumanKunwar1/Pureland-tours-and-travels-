@@ -37,6 +37,11 @@ export function TourGrid({ trips, imageShape }: TourGridProps) {
         tripId={bookingTrip?._id}
         tripName={bookingTrip?.name}
         selectedPrice={bookingTrip?.price}
+        // One traveller at the trip's price, so the booking reaches the admin
+        // panel with the real amount instead of 0.
+        totalAmount={bookingTrip?.price}
+        priceUSD={bookingTrip?.priceUSD}
+        priceINR={bookingTrip?.priceINR}
       />
     </>
   );

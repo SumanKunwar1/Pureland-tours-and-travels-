@@ -1,7 +1,7 @@
 // src/pages/admin/AdminBookings.tsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Trash2, Check, X, RotateCcw } from "lucide-react";
+import { Search, Trash2, Check, X, RotateCcw, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -262,6 +262,7 @@ export default function AdminBookings() {
               <thead className="bg-muted border-b border-border">
                 <tr>
                   <th className="text-left p-4 font-semibold text-sm">Customer</th>
+                  <th className="text-left p-4 font-semibold text-sm">Phone</th>
                   <th className="text-left p-4 font-semibold text-sm">Trip</th>
                   <th className="text-left p-4 font-semibold text-sm">Amount</th>
                   <th className="text-left p-4 font-semibold text-sm">Date</th>
@@ -272,13 +273,13 @@ export default function AdminBookings() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center">
+                    <td colSpan={7} className="p-8 text-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                     </td>
                   </tr>
                 ) : bookings.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                    <td colSpan={7} className="p-8 text-center text-muted-foreground">
                       No bookings found
                     </td>
                   </tr>
@@ -296,6 +297,19 @@ export default function AdminBookings() {
                           <p className="font-semibold text-sm">{booking.customerName}</p>
                           <p className="text-xs text-muted-foreground">{booking.email}</p>
                         </div>
+                      </td>
+                      <td className="p-4 text-sm whitespace-nowrap">
+                        {booking.phone ? (
+                          <a
+                            href={`tel:${booking.phone.replace(/[^\d+]/g, "")}`}
+                            className="inline-flex items-center gap-1.5 font-medium hover:text-primary transition-colors"
+                          >
+                            <Phone className="w-3.5 h-3.5 text-muted-foreground" />
+                            {booking.phone}
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </td>
                       <td className="p-4 text-sm">{booking.tripName}</td>
                       <td className="p-4 font-semibold">₹{booking.totalAmount.toLocaleString()}</td>
