@@ -134,6 +134,7 @@ export default function AdminTrips() {
     "travel-styles",
     "combo-trips",
     "retreats",
+    "homepage-sections",
   ];
 
   const formatCategoryName = (category: string) => {

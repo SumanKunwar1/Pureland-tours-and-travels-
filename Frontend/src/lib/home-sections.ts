@@ -1,0 +1,80 @@
+// src/lib/home-sections.ts
+//
+// The tour sections on the homepage, in display order. Each one lists the trips
+// whose tripRoute contains its `route` — i.e. the trips an admin ticked that
+// type for in the trip form (Categories & Type tab), the same way Group Trips
+// works. To add a section: add a type in trip-taxonomy.ts and an entry here.
+
+export interface HomeTourSectionConfig {
+  id: string;
+  title: string;
+  description: string;
+  /** Optional second line, e.g. the programs or places covered. */
+  highlights?: string;
+  /** Listing route to filter by; also where "View All" goes. */
+  route: string;
+  /** Square pictures suit event posters; landscape suits trip photos. */
+  imageShape?: "landscape" | "square";
+}
+
+export const HOME_TOUR_SECTIONS: HomeTourSectionConfig[] = [
+  {
+    id: "kailash-tibet",
+    title: "Top Selling Kailash Mansarovar & Tibet Trip Packages",
+    description: "Explore our top-selling packages and book your seat today.",
+    route: "/trips/kailash-tibet",
+  },
+  {
+    id: "wellness-tours",
+    title: "Wellness Tours",
+    description: "Discover your wellness journey in Nepal. Choose a weekly 2-day program from:",
+    highlights: "Ngyungne Retreat • Vipassana Meditation • Healing • Teachings • Puja • Guided Meditation in Pilgrimage",
+    route: "/trips/wellness",
+  },
+  {
+    id: "world-peace-prayer",
+    title: "World Peace Prayer",
+    description: "Join us for the International World Peace Prayers.",
+    highlights: "Sacred gatherings in Sri Lanka, Borobudur, Nepal, China & India",
+    route: "/trips/world-peace-prayer",
+  },
+  {
+    id: "pilgrimage-tours",
+    title: "Pilgrimage Tours",
+    description: "Embark on a meaningful pilgrimage with Venerable Rinpoches.",
+    highlights: "Sacred Visits • Teachings • Meditation • Puja",
+    route: "/trips/pilgrimage",
+  },
+  {
+    id: "dharma-events",
+    title: "Empowerment, Transmission, Teachings & Puja",
+    description:
+      "Join sacred Vajrayana Buddhist events led by His Holinesses and Venerable Rinpoches from all schools of Tibetan Buddhism.",
+    route: "/trips/dharma-events",
+    imageShape: "square",
+  },
+  {
+    id: "activities",
+    title: "Trip by Activities",
+    description: "Live Fully • Travel Together • Create Happy Memories",
+    route: "/trips/activities",
+  },
+];
+
+// Links and media used by the lower homepage sections.
+export const GOOGLE_REVIEWS_URL =
+  "https://www.google.com/maps/place/Pure+Land+Tours+and+Travels/@27.7374167,85.3377777,17z/data=!3m1!4b1!4m6!3m5!1s0x39eb190078010057:0x712221afbf890915!8m2!3d27.7374167!4d85.3403526!16s%2Fg%2F11y848mkx2";
+
+export const SOCIAL_LINKS = {
+  instagram: "https://www.instagram.com/purelandtours/",
+  facebook: "https://www.facebook.com/purelandtours",
+};
+
+export interface HomeVideo {
+  title: string;
+  /** The id from a YouTube link: youtube.com/watch?v=<youtubeId> */
+  youtubeId: string;
+}
+
+// Videos shown under "Watch Our Trip". Add entries here to show them.
+export const HOME_VIDEOS: HomeVideo[] = [];

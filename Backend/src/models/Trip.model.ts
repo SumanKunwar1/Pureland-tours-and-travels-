@@ -115,6 +115,7 @@ const tripSchema = new Schema<ITrip>(
             'travel-styles',
             'combo-trips',
             'retreats',
+            'homepage-sections',
           ];
           return categories.every(cat => allowedCategories.includes(cat));
         },

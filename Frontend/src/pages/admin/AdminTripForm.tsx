@@ -690,7 +690,12 @@ export default function AdminTripForm() {
                     <p className="text-xs text-muted-foreground mb-3">
                       Each type adds the trip to that section of the site. The
                       homepage&apos;s &quot;Upcoming Trips&quot; shows only trips
-                      with <strong>Group Trips</strong> selected.
+                      with <strong>Group Trips</strong> selected. The other
+                      homepage sections (Kailash &amp; Tibet, Wellness Tours,
+                      World Peace Prayer, Empowerment &amp; Teachings, Trip by
+                      Activities) are under the <strong>Homepage Sections</strong>{" "}
+                      category, and Pilgrimage Tours uses{" "}
+                      <strong>Pilgrimage Trips</strong>.
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                       {availableTypes.map((type) => (

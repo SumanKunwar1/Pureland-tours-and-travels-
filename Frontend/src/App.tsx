@@ -79,6 +79,8 @@ import AdminExploreDestinations from "./pages/admin/AdminExploreDestinations";
 // Admin Components
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import ComboTrips from "./pages/Combotrips";
+import HomeSectionTrips from "./pages/HomeSectionTrips";
+import { HOME_TOUR_SECTIONS } from "@/lib/home-sections";
 
 const queryClient = new QueryClient();
 
@@ -338,6 +340,16 @@ const App = () => (
             <Route path="/trips/emi" element={<EMITrips />} />
             <Route path="/trips/cruise" element={<CruiseTrips />} />
             <Route path="/dalai-lama-darshan" element={<DalaiLamaDarshanPage />} />
+
+            {/* "View All" pages for the homepage tour sections. Pilgrimage keeps
+                its existing page above. */}
+            {HOME_TOUR_SECTIONS.filter((section) => section.route !== "/trips/pilgrimage").map((section) => (
+              <Route
+                key={section.id}
+                path={section.route}
+                element={<HomeSectionTrips section={section} />}
+              />
+            ))}
 
             {/* Destination Routes - groups trips by Explore Destination country */}
             <Route path="/destination/:slug" element={<DestinationTrips />} />

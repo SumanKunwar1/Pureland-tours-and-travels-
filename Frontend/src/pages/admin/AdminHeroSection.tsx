@@ -1,23 +1,60 @@
 // src/pages/admin/AdminHeroSection.tsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trash2, Edit2, Eye, EyeOff, Upload, Image as ImageIcon } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Edit2,
+  Eye,
+  EyeOff,
+  Upload,
+  Image as ImageIcon,
+  Smartphone,
+  MousePointerClick,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { HeroCtaButton } from "@/components/home/HeroCtaButton";
 import { cn } from "@/lib/utils";
 import axiosInstance from "@/lib/axios"; // ✅ Import the configured axios instance
+import {
+  createEmptyCta,
+  DEFAULT_CTA_BG,
+  DEFAULT_CTA_TEXT,
+  HERO_CTA_URL_REGEX,
+  HEX_COLOR_REGEX,
+  type HeroCta,
+  type HeroCtaStyle,
+  type HeroImage,
+} from "@/lib/hero-banner";
 
-interface HeroImage {
-  _id: string;
+type ImageField = "imageUrl" | "mobileImageUrl";
+
+interface HeroFormData {
   imageUrl: string;
-  title?: string;
-  subtitle?: string;
+  mobileImageUrl: string;
+  title: string;
+  subtitle: string;
+  ctas: HeroCta[];
   order: number;
   isActive: boolean;
-  createdAt: string;
 }
+
+// Quick picks next to the color pickers: brand green, amber, deep red, charcoal, white.
+const COLOR_PRESETS = ["#188558", "#F59E0B", "#B91C1C", "#1F2937", "#FFFFFF"];
+
+// <input type="color"> only understands 6-digit hex.
+const toPickerHex = (value: string, fallback: string) => {
+  if (!HEX_COLOR_REGEX.test(value)) return fallback;
+  if (value.length === 4) {
+    return `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}`;
+  }
+  return value;
+};
 
 export default function AdminHeroSection() {
   const { toast } = useToast();
@@ -25,12 +62,13 @@ export default function AdminHeroSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingImage, setEditingImage] = useState<HeroImage | null>(null);
-  const [previewImage, setPreviewImage] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<HeroFormData>({
     imageUrl: "",
+    mobileImageUrl: "",
     title: "",
     subtitle: "",
+    ctas: [],
     order: 1,
     isActive: true,
   });
@@ -48,13 +86,13 @@ export default function AdminHeroSection() {
       const response = await axiosInstance.get('/hero-images');
 
       console.log("✅ Hero images loaded:", response.data.results);
-      
+
       if (response.data.status === "success") {
         setHeroImages(response.data.data.heroImages);
       }
     } catch (error: any) {
       console.error("❌ Error loading hero images:", error);
-      
+
       // Check if it's an auth error (axios interceptor handles 401)
       if (error.response?.status === 401) {
         toast({
@@ -81,12 +119,13 @@ export default function AdminHeroSection() {
     setEditingImage(null);
     setFormData({
       imageUrl: "",
+      mobileImageUrl: "",
       title: "",
       subtitle: "",
+      ctas: [],
       order: heroImages.length + 1,
       isActive: true,
     });
-    setPreviewImage("");
     setShowModal(true);
   };
 
@@ -94,16 +133,17 @@ export default function AdminHeroSection() {
     setEditingImage(image);
     setFormData({
       imageUrl: image.imageUrl,
+      mobileImageUrl: image.mobileImageUrl || "",
       title: image.title || "",
       subtitle: image.subtitle || "",
+      ctas: (image.ctas || []).map((cta) => ({ ...createEmptyCta(), ...cta })),
       order: image.order,
       isActive: image.isActive,
     });
-    setPreviewImage(image.imageUrl);
     setShowModal(true);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (field: ImageField) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       // Validate file size (max 5MB)
@@ -129,8 +169,7 @@ export default function AdminHeroSection() {
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
-        setPreviewImage(result);
-        setFormData({ ...formData, imageUrl: result });
+        setFormData((prev) => ({ ...prev, [field]: result }));
       };
       reader.readAsDataURL(file);
 
@@ -139,6 +178,60 @@ export default function AdminHeroSection() {
         description: "Image preview created. For production, implement cloud upload (Cloudinary/AWS S3).",
       });
     }
+  };
+
+  const addCta = () => {
+    setFormData((prev) => ({ ...prev, ctas: [...prev.ctas, createEmptyCta()] }));
+  };
+
+  const updateCta = (index: number, changes: Partial<HeroCta>) => {
+    setFormData((prev) => ({
+      ...prev,
+      ctas: prev.ctas.map((cta, i) => (i === index ? { ...cta, ...changes } : cta)),
+    }));
+  };
+
+  const removeCta = (index: number) => {
+    setFormData((prev) => ({ ...prev, ctas: prev.ctas.filter((_, i) => i !== index) }));
+  };
+
+  const moveCta = (index: number, direction: -1 | 1) => {
+    setFormData((prev) => {
+      const target = index + direction;
+      if (target < 0 || target >= prev.ctas.length) return prev;
+      const ctas = [...prev.ctas];
+      [ctas[index], ctas[target]] = [ctas[target], ctas[index]];
+      return { ...prev, ctas };
+    });
+  };
+
+  // Buttons are optional: untouched rows are dropped, half-filled ones are reported.
+  const validateCtas = (): { ctas: HeroCta[]; error?: string } => {
+    const ctas: HeroCta[] = [];
+
+    for (let i = 0; i < formData.ctas.length; i++) {
+      const cta = formData.ctas[i];
+      const label = cta.label.trim();
+      const url = cta.url.trim();
+
+      if (!label && !url) continue;
+      if (!label || !url) {
+        return { ctas, error: `Button ${i + 1} needs both a label and a link` };
+      }
+      if (!HERO_CTA_URL_REGEX.test(url)) {
+        return {
+          ctas,
+          error: `Button ${i + 1} link must be a page path like /contact or a full URL like https://example.com`,
+        };
+      }
+      if (!HEX_COLOR_REGEX.test(cta.bgColor) || !HEX_COLOR_REGEX.test(cta.textColor)) {
+        return { ctas, error: `Button ${i + 1} colors must be hex values like #188558` };
+      }
+
+      ctas.push({ ...cta, label, url });
+    }
+
+    return { ctas };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -153,18 +246,30 @@ export default function AdminHeroSection() {
       return;
     }
 
+    const { ctas, error } = validateCtas();
+    if (error) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
 
     try {
+      const payload = { ...formData, ctas };
+
       // ✅ Use axios instance
       if (editingImage) {
-        await axiosInstance.patch(`/hero-images/${editingImage._id}`, formData);
+        await axiosInstance.patch(`/hero-images/${editingImage._id}`, payload);
         toast({
           title: "Success",
           description: "Hero image updated successfully",
         });
       } else {
-        await axiosInstance.post('/hero-images', formData);
+        await axiosInstance.post('/hero-images', payload);
         toast({
           title: "Success",
           description: "Hero image created successfully",
@@ -189,12 +294,12 @@ export default function AdminHeroSection() {
     try {
       // ✅ Use axios instance
       await axiosInstance.patch(`/hero-images/${id}/toggle-active`);
-      
+
       toast({
         title: "Success",
         description: "Hero image status updated",
       });
-      
+
       loadHeroImages();
     } catch (error: any) {
       console.error("❌ Error toggling hero image:", error);
@@ -214,12 +319,12 @@ export default function AdminHeroSection() {
     try {
       // ✅ Use axios instance
       await axiosInstance.delete(`/hero-images/${id}`);
-      
+
       toast({
         title: "Success",
         description: "Hero image deleted successfully",
       });
-      
+
       loadHeroImages();
     } catch (error: any) {
       console.error("❌ Error deleting hero image:", error);
@@ -230,6 +335,8 @@ export default function AdminHeroSection() {
       });
     }
   };
+
+  const previewCtas = formData.ctas.filter((cta) => cta.label.trim());
 
   return (
     <AdminLayout>
@@ -317,7 +424,24 @@ export default function AdminHeroSection() {
                   </div>
                 </div>
 
-                <div className="p-4">
+                <div className="p-4 space-y-3">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-full px-2 py-1",
+                        image.mobileImageUrl
+                          ? "bg-primary/10 text-primary"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      <Smartphone className="w-3 h-3" />
+                      {image.mobileImageUrl ? "Mobile banner" : "No mobile banner"}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-muted-foreground">
+                      <MousePointerClick className="w-3 h-3" />
+                      {image.ctas?.length || 0} {image.ctas?.length === 1 ? "button" : "buttons"}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
@@ -370,51 +494,109 @@ export default function AdminHeroSection() {
                 {/* Image Upload */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Hero Image *
+                    Hero Image (Desktop) *
                   </label>
                   <div className="space-y-4">
                     <div className="flex items-center gap-4">
                       <Input
                         type="file"
                         accept="image/*"
-                        onChange={handleImageUpload}
+                        onChange={handleImageUpload("imageUrl")}
                         className="cursor-pointer"
                         disabled={isSaving}
+                        aria-label="Desktop banner image"
                       />
                       <Upload className="w-5 h-5 text-muted-foreground" />
                     </div>
-                    
-                    {previewImage && (
+
+                    {formData.imageUrl && (
                       <div className="relative aspect-video rounded-lg overflow-hidden border">
                         <img
-                          src={previewImage}
+                          src={formData.imageUrl}
                           alt="Preview"
                           className="w-full h-full object-cover"
                         />
                       </div>
                     )}
-                    
+
                     <p className="text-sm text-muted-foreground">
                       Or enter image URL:
                     </p>
                     <Input
                       placeholder="https://example.com/image.jpg"
                       value={formData.imageUrl}
-                      onChange={(e) => {
-                        setFormData({ ...formData, imageUrl: e.target.value });
-                        setPreviewImage(e.target.value);
-                      }}
+                      onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                       disabled={isSaving}
+                      aria-label="Desktop banner image URL"
                     />
+                  </div>
+                </div>
+
+                {/* Mobile Image Upload */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Mobile Banner (Optional)
+                  </label>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Portrait image shown on phones instead of the desktop banner. Use a
+                    4:5 image (e.g. 1080 × 1350 px). Leave empty to show the desktop banner on phones too.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="w-32 shrink-0">
+                      <div className="relative aspect-[4/5] rounded-lg overflow-hidden border bg-muted flex items-center justify-center">
+                        {formData.mobileImageUrl ? (
+                          <img
+                            src={formData.mobileImageUrl}
+                            alt="Mobile preview"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-center text-muted-foreground px-2">
+                            <Smartphone className="w-6 h-6 mx-auto mb-1" />
+                            <span className="text-[11px]">4:5</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-1 space-y-3">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload("mobileImageUrl")}
+                        className="cursor-pointer"
+                        disabled={isSaving}
+                        aria-label="Mobile banner image"
+                      />
+                      <Input
+                        placeholder="Or enter image URL: https://example.com/mobile.jpg"
+                        value={formData.mobileImageUrl}
+                        onChange={(e) => setFormData({ ...formData, mobileImageUrl: e.target.value })}
+                        disabled={isSaving}
+                        aria-label="Mobile banner image URL"
+                      />
+                      {formData.mobileImageUrl && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setFormData({ ...formData, mobileImageUrl: "" })}
+                          disabled={isSaving}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Remove mobile banner
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Title (Optional)
+                  <label htmlFor="hero-title" className="block text-sm font-medium mb-2">
+                    Main Tagline (Optional)
                   </label>
                   <Input
+                    id="hero-title"
                     placeholder="e.g., Sacred Pilgrimages"
                     value={formData.title}
                     onChange={(e) =>
@@ -430,10 +612,11 @@ export default function AdminHeroSection() {
 
                 {/* Subtitle */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Subtitle (Optional)
+                  <label htmlFor="hero-subtitle" className="block text-sm font-medium mb-2">
+                    Sub Line (Optional)
                   </label>
                   <Input
+                    id="hero-subtitle"
                     placeholder="e.g., Journey to Divine Destinations"
                     value={formData.subtitle}
                     onChange={(e) =>
@@ -443,8 +626,218 @@ export default function AdminHeroSection() {
                     disabled={isSaving}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Subheading displayed below the title
+                    Subheading displayed below the main tagline
                   </p>
+                </div>
+
+                {/* CTA Buttons */}
+                <div>
+                  <div className="flex items-center justify-between gap-3 mb-2">
+                    <div>
+                      <span className="block text-sm font-medium">Buttons (Optional)</span>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Add as many call-to-action buttons as you need. Each one gets its own link and colors.
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addCta}
+                      disabled={isSaving}
+                      className="shrink-0"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Button
+                    </Button>
+                  </div>
+
+                  {formData.ctas.length > 0 && (
+                    <div className="space-y-3">
+                      {formData.ctas.map((cta, index) => {
+                        const n = index + 1;
+                        return (
+                          <div
+                            key={index}
+                            className="rounded-lg border border-border bg-muted/40 p-4 space-y-3"
+                            data-testid={`hero-cta-row-${n}`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-semibold">Button {n}</span>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => moveCta(index, -1)}
+                                  disabled={isSaving || index === 0}
+                                  aria-label={`Move button ${n} up`}
+                                >
+                                  <ArrowUp />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => moveCta(index, 1)}
+                                  disabled={isSaving || index === formData.ctas.length - 1}
+                                  aria-label={`Move button ${n} down`}
+                                >
+                                  <ArrowDown />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:text-destructive"
+                                  onClick={() => removeCta(index)}
+                                  disabled={isSaving}
+                                  aria-label={`Remove button ${n}`}
+                                >
+                                  <Trash2 />
+                                </Button>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-xs font-medium mb-1" htmlFor={`cta-label-${index}`}>
+                                  Label
+                                </label>
+                                <Input
+                                  id={`cta-label-${index}`}
+                                  placeholder="e.g., Explore Trips"
+                                  value={cta.label}
+                                  onChange={(e) => updateCta(index, { label: e.target.value })}
+                                  maxLength={40}
+                                  disabled={isSaving}
+                                  aria-label={`Button ${n} label`}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1" htmlFor={`cta-url-${index}`}>
+                                  Link
+                                </label>
+                                <Input
+                                  id={`cta-url-${index}`}
+                                  placeholder="/group-trips or https://example.com"
+                                  value={cta.url}
+                                  onChange={(e) => updateCta(index, { url: e.target.value })}
+                                  maxLength={500}
+                                  disabled={isSaving}
+                                  aria-label={`Button ${n} link`}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <div>
+                                <label className="block text-xs font-medium mb-1" htmlFor={`cta-style-${index}`}>
+                                  Style
+                                </label>
+                                <select
+                                  id={`cta-style-${index}`}
+                                  value={cta.style}
+                                  onChange={(e) => updateCta(index, { style: e.target.value as HeroCtaStyle })}
+                                  disabled={isSaving}
+                                  aria-label={`Button ${n} style`}
+                                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                  <option value="solid">Filled</option>
+                                  <option value="outline">Outline</option>
+                                </select>
+                              </div>
+
+                              {(
+                                [
+                                  {
+                                    key: "bgColor",
+                                    title: cta.style === "outline" ? "Border color" : "Button color",
+                                    name: "color",
+                                    fallback: DEFAULT_CTA_BG,
+                                  },
+                                  { key: "textColor", title: "Text color", name: "text color", fallback: DEFAULT_CTA_TEXT },
+                                ] as const
+                              ).map((field) => (
+                                <div key={field.key}>
+                                  <span className="block text-xs font-medium mb-1">{field.title}</span>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="color"
+                                      value={toPickerHex(cta[field.key], field.fallback)}
+                                      onChange={(e) => updateCta(index, { [field.key]: e.target.value.toUpperCase() })}
+                                      disabled={isSaving}
+                                      aria-label={`Button ${n} ${field.name} picker`}
+                                      className="h-10 w-10 shrink-0 cursor-pointer rounded-md border border-input bg-background p-1"
+                                    />
+                                    <Input
+                                      value={cta[field.key]}
+                                      onChange={(e) => updateCta(index, { [field.key]: e.target.value.trim() })}
+                                      maxLength={7}
+                                      disabled={isSaving}
+                                      aria-label={`Button ${n} ${field.name}`}
+                                      className={cn(
+                                        "font-mono uppercase",
+                                        !HEX_COLOR_REGEX.test(cta[field.key]) && "border-destructive"
+                                      )}
+                                    />
+                                  </div>
+                                  <div className="flex gap-1.5 mt-2">
+                                    {COLOR_PRESETS.map((preset) => (
+                                      <button
+                                        key={preset}
+                                        type="button"
+                                        onClick={() => updateCta(index, { [field.key]: preset })}
+                                        disabled={isSaving}
+                                        title={preset}
+                                        aria-label={`Set button ${n} ${field.name} to ${preset}`}
+                                        className={cn(
+                                          "h-5 w-5 rounded-full border border-border transition-transform hover:scale-110",
+                                          cta[field.key].toUpperCase() === preset && "ring-2 ring-ring ring-offset-1"
+                                        )}
+                                        style={{ backgroundColor: preset }}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                id={`cta-newtab-${index}`}
+                                checked={cta.openInNewTab}
+                                onChange={(e) => updateCta(index, { openInNewTab: e.target.checked })}
+                                className="w-4 h-4"
+                                disabled={isSaving}
+                              />
+                              <label htmlFor={`cta-newtab-${index}`} className="text-xs font-medium cursor-pointer">
+                                Open button {n} in a new tab (recommended for other websites)
+                              </label>
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* Button preview, on a backdrop close to the real banner */}
+                      {previewCtas.length > 0 && (
+                        <div
+                          className="rounded-lg p-5 bg-gradient-to-r from-charcoal via-slate-700 to-slate-500"
+                          data-testid="hero-cta-preview"
+                        >
+                          <p className="text-[11px] uppercase tracking-widest text-white/60 mb-3">Preview</p>
+                          <div className="flex flex-wrap gap-3">
+                            {previewCtas.map((cta, index) => (
+                              <HeroCtaButton key={index} cta={cta} preview />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Order */}

@@ -115,8 +115,10 @@ export function ExploreDestinations() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto hide-scrollbar -mx-4 px-4">
-            <div className="flex gap-6 pb-4 min-w-max lg:grid lg:grid-cols-8 lg:min-w-0">
+          /* Wraps onto as many rows as it needs, so every destination is
+             visible without sideways scrolling on a phone. */
+          <div data-testid="explore-destinations-grid">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-x-4 gap-y-6 sm:gap-6">
               {filteredDestinations.map((destination, index) => (
                 <motion.div
                   key={destination._id}
@@ -133,14 +135,14 @@ export function ExploreDestinations() {
                     }
                     className="flex flex-col items-center gap-3 cursor-pointer group"
                   >
-                    <div className="destination-circle w-24 h-24 lg:w-full lg:h-auto lg:aspect-square shadow-md">
+                    <div className="destination-circle w-full max-w-[7rem] lg:max-w-none shadow-md">
                       <img
                         src={destination.image}
                         alt={destination.name}
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                    <span className="text-xs sm:text-sm text-center font-medium text-foreground group-hover:text-primary transition-colors">
                       {destination.name}
                     </span>
                   </Link>

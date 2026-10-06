@@ -2,32 +2,16 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Calendar, Gift, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import axios from "axios";
-import { Price } from "@/components/shared/Price";
 import { API_BASE_URL } from "@/lib/api-config";
 import { toRouteList } from "@/lib/trip-taxonomy";
+import { TourGrid } from "@/components/home/TourGrid";
+import type { TourTrip } from "@/components/home/TourCard";
 
-
-interface Trip {
-  _id: string;
-  name: string;
-  image: string;
-  duration: string;
-  price: number;
-  priceUSD?: number;
-  priceINR?: number;
-  originalPrice: number;
-  discount: number;
-  dates: Array<{ date: string; price: number }>;
-  destination: string;
-  hasGoodies: boolean;
-  // Arrays since a trip can sit under several types; legacy rows hold a
-  // bare string, so every read goes through toRouteList().
-  tripRoute?: string[] | string;
-}
+type Trip = TourTrip & { destination: string };
 
 // This section is reserved for Group Trips. A trip appears here only when an
 // admin explicitly ticks that type, never by being recent.
@@ -167,89 +151,7 @@ export function UpcomingTrips() {
             </p>
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {displayTrips.map((trip, index) => (
-              <motion.div
-                key={trip._id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Link
-                  to={`/trip/${trip._id}`}
-                  className="block bg-card rounded-2xl overflow-hidden card-hover group"
-                >
-                  {/* Image */}
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <img
-                      src={trip.image}
-                      alt={trip.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    {trip.hasGoodies && (
-                      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-primary text-primary-foreground px-3 py-1.5 rounded-full text-xs font-medium">
-                        <Gift className="w-3 h-3" />
-                        Free Goodies
-                      </div>
-                    )}
-                    <div className="absolute bottom-3 left-3 bg-charcoal/80 backdrop-blur-sm text-primary-foreground px-2.5 py-1 rounded-md text-xs font-medium">
-                      🗓 {trip.duration}
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4">
-                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-3">
-                      {trip.name}
-                    </h3>
-
-                    {/* Price */}
-                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 mb-3">
-                      <Price
-                        currency="USD"
-                        amount={trip.price}
-                        priceUSD={trip.priceUSD}
-                        priceINR={trip.priceINR}
-                        className="text-lg sm:text-xl font-bold text-foreground"
-                      />
-                      <Price
-                        currency="USD"
-                        amount={trip.originalPrice}
-                        relatedTo={trip.price}
-                        priceUSD={trip.priceUSD}
-                        priceINR={trip.priceINR}
-                        showApprox={false}
-                        className="price-original"
-                      />
-                      <span className="price-discount">
-                        <Price
-                          currency="USD"
-                          amount={trip.discount}
-                          relatedTo={trip.price}
-                          priceUSD={trip.priceUSD}
-                          priceINR={trip.priceINR}
-                          showApprox={false}
-                        />{" "}
-                        Off
-                      </span>
-                    </div>
-
-                    {/* Dates */}
-                    {trip.dates && trip.dates.length > 0 && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="w-4 h-4" />
-                        <span className="line-clamp-1">
-                          {trip.dates.slice(0, 3).map(d => d.date).join(", ")}
-                          {trip.dates.length > 3 && " +more"}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+          <TourGrid trips={displayTrips} />
         )}
       </div>
     </section>
