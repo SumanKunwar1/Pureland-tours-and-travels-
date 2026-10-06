@@ -1,7 +1,7 @@
 // src/components/sections/UpcomingTrips.tsx
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { SectionHeading } from "@/components/home/SectionHeading";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -102,24 +102,17 @@ export function UpcomingTrips() {
   const displayTrips = filteredTrips.slice(0, 4);
 
   return (
-    <section className="section-padding bg-muted">
+    <section
+      className="py-12 md:py-16 lg:py-20 bg-muted"
+      aria-labelledby="upcoming-trips-heading"
+      data-testid="upcoming-trips"
+    >
       <div className="container-custom">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
-        >
-          <h2 className="text-3xl sm:text-4xl font-display font-bold">
-            Upcoming Group Trips
-          </h2>
-          <Link to={GROUP_TRIPS_ROUTE}>
-            <Button variant="outline" className="self-start sm:self-center">
-              See All
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
-          </Link>
-        </motion.div>
+        <SectionHeading
+          id="upcoming-trips-heading"
+          title="Upcoming Group Trips"
+          description="Join our fixed-departure group journeys and travel with like-minded companions."
+        />
 
         {/* Category Pills */}
         <div className="overflow-x-auto hide-scrollbar -mx-4 px-4 mb-8">
@@ -153,6 +146,15 @@ export function UpcomingTrips() {
         ) : (
           <TourGrid trips={displayTrips} />
         )}
+
+        <div className="mt-8 text-center">
+          <Button asChild variant="outline">
+            <Link to={GROUP_TRIPS_ROUTE} aria-label="View all Upcoming Group Trips">
+              View All
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Link>
+          </Button>
+        </div>
       </div>
     </section>
   );

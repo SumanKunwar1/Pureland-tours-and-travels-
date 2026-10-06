@@ -92,8 +92,58 @@ test.describe("Homepage sections on desktop", () => {  test.use({ viewport: { wi
     await expect(page.getByTestId("tour-section-pilgrimage-tours").getByText("Pilgrimage with Venerable Rinpoche", { exact: true })).toBeVisible();
     await expect(page.getByTestId("tour-section-dharma-events").getByText("Kalachakra Empowerment")).toBeVisible();
 
-    // A section with no trips is not rendered at all.
-    await expect(page.getByTestId("tour-section-activities")).toHaveCount(0);
+    // A section with no trips still shows, inviting visitors to enquire.
+    const activities = page.getByTestId("tour-section-activities");
+    await expect(activities.getByRole("heading", { level: 2 })).toHaveText("Trip by Activities");
+    await expect(activities.getByText("Live Fully • Travel Together • Create Happy Memories")).toBeVisible();
+    await expect(activities.getByTestId("tour-card")).toHaveCount(0);
+    await expect(activities.getByText("New departures coming soon")).toBeVisible();
+    await expect(activities.getByRole("link", { name: "Enquire Now" })).toHaveAttribute("href", "/contact");
+    await expect(activities.getByRole("link", { name: /View all/ })).toHaveCount(0);
+  });
+
+  test("every tour section from the brief shows even before any trip is assigned", async ({ page }) => {
+    await mockApi(page, {
+      "GET /trips": (route) => fulfillJson(route, { status: "success", results: 0, data: { trips: [] } }),
+    });
+    await page.goto("/");
+
+    const sections = {
+      "kailash-tibet": "Top Selling Kailash Mansarovar & Tibet Trip Packages",
+      "wellness-tours": "Wellness Tours",
+      "world-peace-prayer": "World Peace Prayer",
+      "pilgrimage-tours": "Pilgrimage Tours",
+      "dharma-events": "Empowerment, Transmission, Teachings & Puja",
+      activities: "Trip by Activities",
+    };
+    for (const [id, title] of Object.entries(sections)) {
+      const section = page.getByTestId(`tour-section-${id}`);
+      await expect(section.getByRole("heading", { level: 2 })).toHaveText(title);
+      await expect(section.getByTestId("tour-section-empty")).toBeVisible();
+    }
+  });
+
+  test("listing sections share one heading style, and Vibe with Us is gone", async ({ page }) => {
+    await openHome(page);
+
+    const upcoming = page.getByTestId("upcoming-trips");
+    await expect(upcoming.getByText("Join our fixed-departure group journeys and travel with like-minded companions.")).toBeVisible();
+    await expect(page.getByTestId("trending-destinations").getByText("The journeys our travellers are booking most right now.")).toBeVisible();
+
+    // Same size, weight and alignment as a tour section heading.
+    const reference = page.getByTestId("tour-section-wellness-tours").getByRole("heading", { level: 2 });
+    for (const heading of [
+      upcoming.getByRole("heading", { level: 2 }),
+      page.getByTestId("trending-destinations").getByRole("heading", { level: 2 }),
+      page.getByRole("heading", { level: 2, name: "Explore Destinations" }),
+    ]) {
+      for (const property of ["font-size", "font-weight", "text-align", "font-family"]) {
+        const expected = await reference.evaluate((el, prop) => getComputedStyle(el).getPropertyValue(prop), property);
+        await expect(heading).toHaveCSS(property, expected);
+      }
+    }
+
+    await expect(page.getByRole("heading", { name: "Vibe with Us" })).toHaveCount(0);
   });
 
   test("the sections appear in the requested order", async ({ page }) => {
@@ -102,12 +152,15 @@ test.describe("Homepage sections on desktop", () => {  test.use({ viewport: { wi
     const order = await page.locator("main h2").allTextContents();
     const wanted = [
       "Explore Destinations",
+      "Trending Destinations",
       "Book with Confidence",
+      "Upcoming Group Trips",
       "Top Selling Kailash Mansarovar & Tibet Trip Packages",
       "Wellness Tours",
       "World Peace Prayer",
       "Pilgrimage Tours",
       "Empowerment, Transmission, Teachings & Puja",
+      "Trip by Activities",
       "Book Everything in One Place",
       "Our Core Partners",
       "Become Our B2B Travel Partner",

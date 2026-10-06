@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { SectionHeading } from "@/components/home/SectionHeading";
 import { API_BASE_URL } from "@/lib/api-config";
 import axios from "axios";
 
@@ -79,33 +80,27 @@ export function ExploreDestinations() {
   return (
     <section className="section-padding bg-background">
       <div className="container-custom">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-10"
-        >
-          <h2 className="text-3xl sm:text-4xl font-display font-bold mb-6">
-            Explore Destinations
-          </h2>
+        <SectionHeading
+          title="Explore Destinations"
+          description="Find your next journey by country or travel style."
+        />
 
-          {/* Filter Tabs */}
-          <div className="flex flex-wrap gap-3">
-            {filters.map((filter) => (
-              <button
-                key={filter.value}
-                onClick={() => setActiveFilter(filter.value)}
-                className={cn(
-                  "filter-pill",
-                  activeFilter === filter.value && "filter-pill-active"
-                )}
-              >
-                <span className="mr-1.5">{filter.icon}</span>
-                {filter.label}
-              </button>
-            ))}
-          </div>
-        </motion.div>
+        {/* Filter Tabs */}
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 md:mb-10">
+          {filters.map((filter) => (
+            <button
+              key={filter.value}
+              onClick={() => setActiveFilter(filter.value)}
+              className={cn(
+                "filter-pill",
+                activeFilter === filter.value && "filter-pill-active"
+              )}
+            >
+              <span className="mr-1.5">{filter.icon}</span>
+              {filter.label}
+            </button>
+          ))}
+        </div>
 
         {/* Destinations Grid - Clickable */}
         {filteredDestinations.length === 0 ? (

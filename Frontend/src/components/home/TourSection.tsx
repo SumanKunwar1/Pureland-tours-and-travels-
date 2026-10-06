@@ -1,10 +1,10 @@
 // src/components/home/TourSection.tsx
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CalendarClock } from "lucide-react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
+import { SectionHeading } from "@/components/home/SectionHeading";
 import { TourGrid } from "@/components/home/TourGrid";
 import type { TourTrip } from "@/components/home/TourCard";
 import { API_BASE_URL } from "@/lib/api-config";
@@ -20,8 +20,8 @@ interface TourSectionProps extends HomeTourSectionConfig {
 
 /**
  * One homepage tour section: heading, description, and the trips an admin
- * assigned to it. Renders nothing until it has at least one trip, so the
- * homepage never shows an empty shelf.
+ * assigned to it. The section always shows; until it has a trip it invites
+ * visitors to enquire instead.
  */
 export function TourSection({
   id,
@@ -34,6 +34,7 @@ export function TourSection({
   tone = "background",
 }: TourSectionProps) {
   const [trips, setTrips] = useState<TourTrip[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,6 +55,8 @@ export function TourSection({
         }
       } catch (error) {
         console.error(`Error fetching trips for "${title}":`, error);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     };
 
@@ -64,8 +67,6 @@ export function TourSection({
     };
   }, [route, title]);
 
-  if (trips.length === 0) return null;
-
   return (
     <section
       className={cn("py-12 md:py-16 lg:py-20", tone === "muted" ? "bg-muted" : "bg-background")}
@@ -73,35 +74,43 @@ export function TourSection({
       data-testid={`tour-section-${id}`}
     >
       <div className="container-custom">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-3xl mx-auto text-center mb-8 md:mb-10"
-        >
-          <span className="block h-1 w-12 rounded-full bg-accent mx-auto mb-4" aria-hidden="true" />
-          <h2
-            id={`${id}-heading`}
-            className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold [text-wrap:balance]"
+        <SectionHeading id={`${id}-heading`} title={title} description={description} highlights={highlights} />
+
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        ) : trips.length === 0 ? (
+          <div
+            className="max-w-xl mx-auto rounded-2xl border border-dashed border-border bg-card px-6 py-8 sm:py-10 text-center"
+            data-testid="tour-section-empty"
           >
-            {title}
-          </h2>
-          <p className="mt-3 text-base sm:text-lg text-muted-foreground [text-wrap:balance]">{description}</p>
-          {highlights && (
-            <p className="mt-2 text-sm sm:text-base italic text-primary [text-wrap:balance]">{highlights}</p>
-          )}
-        </motion.div>
+            <CalendarClock className="w-9 h-9 text-primary mx-auto mb-3" />
+            <p className="font-display text-lg sm:text-xl font-semibold mb-1">New departures coming soon</p>
+            <p className="text-sm sm:text-base text-muted-foreground mb-5">
+              We are finalising the next dates. Tell us you are interested and we will reach out first.
+            </p>
+            <Button asChild>
+              <Link to="/contact">
+                Enquire Now
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <>
+            <TourGrid trips={trips.slice(0, limit)} imageShape={imageShape} />
 
-        <TourGrid trips={trips.slice(0, limit)} imageShape={imageShape} />
-
-        <div className="mt-8 text-center">
-          <Button asChild variant="outline">
-            <Link to={route} aria-label={`View all ${title}`}>
-              View All
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </Link>
-          </Button>
-        </div>
+            <div className="mt-8 text-center">
+              <Button asChild variant="outline">
+                <Link to={route} aria-label={`View all ${title}`}>
+                  View All
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

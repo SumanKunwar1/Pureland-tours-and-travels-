@@ -13,7 +13,6 @@ import { PartnerWithUs } from "@/components/home/PartnerWithUs";
 import { WatchOurTrip } from "@/components/home/WatchOurTrip";
 import { InquirySection } from "@/components/home/InquirySection";
 import { GoogleReviewCta } from "@/components/home/GoogleReviewCta";
-import { VibeWithUs } from "@/components/home/VibeWithUs";
 import { Testimonials } from "@/components/home/Testimonials";
 import { FAQSection } from "@/components/home/FAQSection";
 import { BlogsSection } from "@/components/home/BlogsSection";
@@ -44,7 +43,6 @@ const Index = () => {
         <ServicesSection />
         <CorePartners />
         <PartnerWithUs />
-        <VibeWithUs />
         <WatchOurTrip />
         <InquirySection />
 
