@@ -21,6 +21,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { HeroCtaButton } from "@/components/home/HeroCtaButton";
 import { cn } from "@/lib/utils";
 import axiosInstance from "@/lib/axios"; // ✅ Import the configured axios instance
+import { compressImage, formatBytes, type CompressOptions } from "@/lib/image-compress";
 import {
   createEmptyCta,
   DEFAULT_CTA_BG,
@@ -44,6 +45,14 @@ interface HeroFormData {
   isActive: boolean;
 }
 
+// Uploads are shrunk to these limits in the browser. Together the two images
+// stay well under 1 MB once encoded, the default request limit of most
+// production web servers.
+const IMAGE_LIMITS: Record<ImageField, CompressOptions> = {
+  imageUrl: { maxWidth: 1920, maxHeight: 1920, maxBytes: 400 * 1024 },
+  mobileImageUrl: { maxWidth: 1080, maxHeight: 1350, maxBytes: 240 * 1024 },
+};
+
 // Quick picks next to the color pickers: brand green, amber, deep red, charcoal, white.
 const COLOR_PRESETS = ["#188558", "#F59E0B", "#B91C1C", "#1F2937", "#FFFFFF"];
 
@@ -63,6 +72,7 @@ export default function AdminHeroSection() {
   const [showModal, setShowModal] = useState(false);
   const [editingImage, setEditingImage] = useState<HeroImage | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [formData, setFormData] = useState<HeroFormData>({
     imageUrl: "",
     mobileImageUrl: "",
@@ -143,14 +153,14 @@ export default function AdminHeroSection() {
     setShowModal(true);
   };
 
-  const handleImageUpload = (field: ImageField) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (field: ImageField) => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
+      // Validate file size (max 20MB; the image is shrunk below before upload)
+      if (file.size > 20 * 1024 * 1024) {
         toast({
           title: "Error",
-          description: "Image size should be less than 5MB",
+          description: "Image size should be less than 20MB",
           variant: "destructive",
         });
         return;
@@ -166,17 +176,28 @@ export default function AdminHeroSection() {
         return;
       }
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setFormData((prev) => ({ ...prev, [field]: result }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        setIsProcessingImage(true);
+        // Resize and re-encode in the browser. Sent as-is, a full-size photo
+        // makes the save request too large and the server rejects it (413).
+        const compressed = await compressImage(file, IMAGE_LIMITS[field]);
+        setFormData((prev) => ({ ...prev, [field]: compressed.dataUrl }));
 
-      toast({
-        title: "Image Loaded",
-        description: "Image preview created. For production, implement cloud upload (Cloudinary/AWS S3).",
-      });
+        toast({
+          title: "Image ready",
+          description: `Optimised from ${formatBytes(file.size)} to ${formatBytes(compressed.bytes)} (${compressed.width} × ${compressed.height} px).`,
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "The image could not be processed",
+          variant: "destructive",
+        });
+      } finally {
+        setIsProcessingImage(false);
+        // Lets the same file be picked again after a failure.
+        e.target.value = "";
+      }
     }
   };
 
@@ -263,7 +284,15 @@ export default function AdminHeroSection() {
 
       // ✅ Use axios instance
       if (editingImage) {
-        await axiosInstance.patch(`/hero-images/${editingImage._id}`, payload);
+        // Send an image only when it was actually replaced. Re-sending the
+        // stored pictures on every small edit makes the request needlessly
+        // large, and is what the server was rejecting.
+        const { imageUrl, mobileImageUrl, ...changes } = payload;
+        const update: Partial<HeroFormData> = { ...changes };
+        if (imageUrl !== editingImage.imageUrl) update.imageUrl = imageUrl;
+        if (mobileImageUrl !== (editingImage.mobileImageUrl || "")) update.mobileImageUrl = mobileImageUrl;
+
+        await axiosInstance.patch(`/hero-images/${editingImage._id}`, update);
         toast({
           title: "Success",
           description: "Hero image updated successfully",
@@ -891,7 +920,7 @@ export default function AdminHeroSection() {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" className="flex-1" disabled={isSaving}>
+                  <Button type="submit" className="flex-1" disabled={isSaving || isProcessingImage}>
                     {isSaving ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />

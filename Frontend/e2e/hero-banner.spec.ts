@@ -229,8 +229,9 @@ test.describe("Admin hero banner editor", () => {
     await page.getByRole("button", { name: "Create", exact: true }).click();
     await expect(page.getByText("Hero image created successfully").first()).toBeVisible();
 
-    expect(created!.imageUrl).toMatch(/^data:image\/png;base64,/);
-    expect(created!.mobileImageUrl).toMatch(/^data:image\/png;base64,/);
+    // Uploads are re-encoded in the browser before they are sent.
+    expect(created!.imageUrl).toMatch(/^data:image\/(webp|jpeg);base64,/);
+    expect(created!.mobileImageUrl).toMatch(/^data:image\/(webp|jpeg);base64,/);
     expect(created!.title).toBe("Journeys to the Sacred Himalayas");
     expect(created!.subtitle).toBe("Pilgrimages, retreats and guided tours");
     expect(created!.ctas).toEqual([
@@ -285,6 +286,61 @@ test.describe("Admin hero banner editor", () => {
     await expect(page.getByText("Hero image updated successfully").first()).toBeVisible();
     expect(updated!.mobileImageUrl).toBe("");
     expect(updated!.ctas.map((cta) => cta.label)).toEqual(["Contact Us", "Plan My Journey"]);
+    // The untouched desktop image is not uploaded again.
+    expect(updated).not.toHaveProperty("imageUrl");
+  });
+
+  test("shrinks large photos so the save request stays under the server's size limit", async ({ page }) => {
+    let bodyBytes = 0;
+    let created = null as SavedBanner | null;
+    await openAdmin(page, [], {
+      "POST /hero-images": async (route, request) => {
+        bodyBytes = Buffer.byteLength(request.postData() ?? "");
+        created = request.postDataJSON();
+        await fulfillJson(route, { status: "success", data: { heroImage: { _id: "new", ...created } } }, 201);
+      },
+    });
+
+    // A detailed multi-megabyte picture, like a banner exported from a design tool.
+    const makePhoto = (width: number, height: number) =>
+      page.evaluate(
+        async ([w, h]) => {
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const context = canvas.getContext("2d")!;
+          for (let y = 0; y < h; y += 3) {
+            for (let x = 0; x < w; x += 3) {
+              context.fillStyle = `hsl(${(x / w) * 360 + (y / h) * 60}, 70%, ${45 + Math.random() * 6}%)`;
+              context.fillRect(x, y, 3, 3);
+            }
+          }
+          const blob: Blob = await new Promise((resolve) => canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.97));
+          const bytes = new Uint8Array(await blob.arrayBuffer());
+          let binary = "";
+          for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+          return btoa(binary);
+        },
+        [width, height]
+      );
+    const desktop = Buffer.from(await makePhoto(4000, 2250), "base64");
+    const mobile = Buffer.from(await makePhoto(2400, 3000), "base64");
+    expect(desktop.length + mobile.length).toBeGreaterThan(3 * 1024 * 1024);
+
+    await page.getByRole("button", { name: "Add Hero Image" }).first().click();
+    await page.getByLabel("Desktop banner image", { exact: true }).setInputFiles({ name: "desktop.jpg", mimeType: "image/jpeg", buffer: desktop });
+    await expect(page.getByText(/Optimised from .* MB to .* KB \(1920 × 1080 px\)/).first()).toBeVisible({ timeout: 30_000 });
+    await page.getByLabel("Mobile banner image", { exact: true }).setInputFiles({ name: "mobile.jpg", mimeType: "image/jpeg", buffer: mobile });
+    await expect(page.getByAltText("Mobile preview")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("button", { name: "Create", exact: true })).toBeEnabled({ timeout: 30_000 });
+
+    await page.getByRole("button", { name: "Create", exact: true }).click();
+    await expect(page.getByText("Hero image created successfully").first()).toBeVisible();
+
+    // 1 MB is the default request limit of the production web server.
+    expect(bodyBytes).toBeGreaterThan(0);
+    expect(bodyBytes).toBeLessThan(1024 * 1024);
+    expect(created!.imageUrl).toMatch(/^data:image\/(webp|jpeg);base64,/);
   });
 
   test("refuses a half-filled button or an unsafe link", async ({ page }) => {
