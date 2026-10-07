@@ -8,11 +8,11 @@ import {
 
 const faqs = [
   {
-    question: "What is Padmasambhava Trip?",
-    answer: "Padmasambhava Trip is a premier travel company specializing in pilgrimage tours, spiritual retreats, and transformative travel experiences. We curate journeys to sacred destinations across India and internationally, helping travelers find inner peace and meaningful connections.",
+    question: "What is Pure Land Tours & Travels Pvt. Ltd.?",
+    answer: "Pure Land Tours & Travels Pvt. Ltd. is a premier travel company specializing in pilgrimage tours, spiritual retreats, and transformative travel experiences. We curate journeys to sacred destinations across India and internationally, helping travelers find inner peace and meaningful connections.",
   },
   {
-    question: "Who can join Padmasambhava Trip trips?",
+    question: "Who can join Pure Land Tours & Travels Pvt. Ltd. trips?",
     answer: "Our trips are open to everyone! Whether you're a solo traveler, couple, or group of friends, we welcome all age groups and backgrounds. Our pilgrimage trips are especially suited for those seeking spiritual growth and cultural immersion.",
   },
   {
@@ -28,7 +28,7 @@ const faqs = [
     answer: "Our packages typically include accommodation, meals as specified, transportation, guided tours, entry fees to monuments and sacred sites, and travel insurance. Specific inclusions vary by trip and are clearly mentioned in each itinerary.",
   },
   {
-    question: "Is it safe to travel with Padmasambhava Trip?",
+    question: "Is it safe to travel with Pure Land Tours & Travels Pvt. Ltd.?",
     answer: "Safety is our top priority. All our trips are led by trained trip captains, we use verified accommodations and transportation, and we provide complimentary travel insurance. We also have 24/7 support available throughout your journey.",
   },
   {
@@ -40,8 +40,8 @@ const faqs = [
     answer: "We accept all major credit/debit cards, UPI, net banking, and offer zero-cost EMI options. You can also secure your spot by paying just 20% of the trip cost initially and complete the payment later.",
   },
   {
-    question: "How can I contact Padmasambhava Trip for help?",
-    answer: "You can reach us via email at info@padmasambhavatrip.com, call us at (+91) 9876543210, or message us on WhatsApp. Our team is available to assist you with any queries.",
+    question: "How can I contact Pure Land Tours & Travels Pvt. Ltd. for help?",
+    answer: "You can reach us via email at info@purelandtravels.com.np, call us at (+977) 97045 02011, or message us on WhatsApp. Our team is available to assist you with any queries.",
   },
 ];
 
