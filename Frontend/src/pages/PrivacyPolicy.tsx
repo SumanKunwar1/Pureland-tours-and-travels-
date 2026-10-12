@@ -47,6 +47,13 @@ const sections: LegalSection[] = [
     ],
   },
   {
+    id: "consent-to-communication",
+    title: "Consent to communication",
+    blocks: [
+      "We collect personal details like your name, email address, and phone number etc. By sharing your information, you authorize Pure Land Tours & Travels to contact you via SMS, RCS, WhatsApp, Email, and other communication channels. This consent overrides any NDNC/DND registration as per TRAI regulations.",
+    ],
+  },
+  {
     id: "sharing",
     title: "Who we share it with",
     blocks: [

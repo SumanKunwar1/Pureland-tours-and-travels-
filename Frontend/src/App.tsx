@@ -24,6 +24,7 @@ import SeasonalDeals from "./pages/SeasonalDeals";
 import CustomisedTrips from "./pages/CustomisedTrips";
 import Contact from "./pages/Contact";
 import AboutUs from "./pages/AboutUs";
+import OptIn from "./pages/OptIn";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CancellationPolicy from "./pages/CancellationPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
@@ -403,6 +404,7 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/cancellation" element={<CancellationPolicy />} />
             <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/opt-in" element={<OptIn />} />
             <Route path="/corporate" element={<Contact />} />
             <Route path="/agent-signup" element={<AgentSignup />} />
             <Route path="/agent/login" element={<AgentLogin />} />

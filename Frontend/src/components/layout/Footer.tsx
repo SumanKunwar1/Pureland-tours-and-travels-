@@ -22,6 +22,7 @@ const quickLinks = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Cancellation Policy", href: "/cancellation" },
   { label: "Terms & Conditions", href: "/terms" },
+  { label: "Opt-In for Updates", href: "/opt-in" },
   { label: "Tour Packages", href: "/tours" },
   { label: "Travel Services", href: "/services" },
 ];
