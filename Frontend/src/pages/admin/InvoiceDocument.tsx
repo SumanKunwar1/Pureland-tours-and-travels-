@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { invoiceService, type Invoice, type Payment } from "@/services/invoices";
 import { COMPANY, formatDocDate, formatMoney } from "@/lib/invoice";
 
-// The site's primary green (hsl 152 69% 31%).
-const GREEN = "#188653";
+// Company-specific details (colour, stamp, offices...) all live in COMPANY.
+const GREEN = COMPANY.brandColor;
 
 const styles = `
 .doc-page { width: 210mm; min-height: 297mm; margin: 0 auto; background: #fff; color: #1f2937;
@@ -58,7 +58,7 @@ function Header({ title, meta }: { title: string; meta: [string, string | undefi
   return (
     <div style={{ display: "flex", justifyContent: "space-between", gap: 24, paddingBottom: 10 }} className="doc-rule-bottom">
       <div>
-        <img src={COMPANY.logo} alt="" style={{ width: 64, height: "auto", marginBottom: 8 }} />
+        <img src={COMPANY.logo} alt="" style={{ width: COMPANY.logoWidth, height: "auto", marginBottom: 8 }} />
         <div style={{ color: GREEN, fontSize: "15pt", fontWeight: 700 }}>{COMPANY.name}</div>
         <div style={{ fontSize: "9pt", fontWeight: 700 }} className="doc-muted">{COMPANY.officeLabel}</div>
         <div style={{ fontSize: "9pt" }} className="doc-muted">
@@ -67,6 +67,12 @@ function Header({ title, meta }: { title: string; meta: [string, string | undefi
           {COMPANY.phone} · {COMPANY.email}
           <br />
           {COMPANY.website}
+          {COMPANY.state && (
+            <>
+              <br />
+              State: {COMPANY.state}
+            </>
+          )}
           {COMPANY.taxId && (
             <>
               <br />
@@ -99,8 +105,19 @@ function Signature() {
         <div>
           For <strong>{COMPANY.name}</strong>
         </div>
-        <div style={{ position: "relative", height: 90 }}>
-          <img src={COMPANY.signature} alt="" style={{ position: "absolute", left: 0, bottom: 4, width: 170 }} />
+        <div style={{ position: "relative", height: COMPANY.stamp ? 110 : 90 }}>
+          <img
+            src={COMPANY.signature}
+            alt=""
+            style={{ position: "absolute", left: 0, bottom: 4, width: COMPANY.stamp ? 160 : 170 }}
+          />
+          {COMPANY.stamp && (
+            <img
+              src={COMPANY.stamp}
+              alt=""
+              style={{ position: "absolute", right: 0, top: 14, width: 104, mixBlendMode: "multiply" }}
+            />
+          )}
         </div>
         <div style={{ borderTop: "1px solid #9ca3af", paddingTop: 4 }}>
           <strong>{COMPANY.signatory}</strong>
@@ -114,6 +131,7 @@ function Signature() {
 function Footer({ docLabel }: { docLabel: string }) {
   return (
     <div style={{ marginTop: "auto", paddingTop: 16, fontSize: "8pt" }} className="doc-muted">
+      {COMPANY.offices && <div style={{ textAlign: "center", marginBottom: 4 }}>Our offices: {COMPANY.offices}</div>}
       <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e5e7eb", paddingTop: 4 }}>
         <div>
           {COMPANY.name} · {COMPANY.phone} · {COMPANY.email}

@@ -8,6 +8,7 @@ import { Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/currency";
+import { BOOKING_CURRENCY } from "@/lib/invoice";
 import axiosInstance from "@/lib/axios";
 
 export interface PickedBooking {
@@ -146,7 +147,7 @@ export function BookingPicker({ onSelect }: { onSelect: (booking: PickedBooking)
                 </div>
                 <div className="truncate text-xs text-muted-foreground">
                   {booking.tripName} · {booking.travelers} pax
-                  {booking.selectedDate && ` · ${booking.selectedDate}`} · {formatPrice(booking.totalAmount || 0, "NPR")} ·{" "}
+                  {booking.selectedDate && ` · ${booking.selectedDate}`} · {formatPrice(booking.totalAmount || 0, BOOKING_CURRENCY)} ·{" "}
                   {booking.status}
                 </div>
                 <div className="truncate text-xs text-muted-foreground">

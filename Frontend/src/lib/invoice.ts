@@ -3,6 +3,8 @@
 // Company details and formatting shared by the admin invoice screens and the
 // printable invoice / receipt documents.
 
+// Optional lines (state, taxId, offices, stamp) are left out of the
+// documents when empty.
 export const COMPANY = {
   name: "Pure Land Tours & Travels Pvt. Ltd.",
   officeLabel: "Head Office",
@@ -10,13 +12,26 @@ export const COMPANY = {
   phone: "+977 970-4502011",
   email: "info@purelandtravels.com.np",
   website: "www.purelandtravels.com.np",
+  state: "",
   // Printed under the address when filled in, e.g. "PAN: 123456789".
   taxId: "",
+  // Footer line listing every office.
+  offices: "",
   signatory: "Malati Tamang",
   signatoryTitle: "Authorised Signatory",
+  // The site's primary green (hsl 152 69% 31%).
+  brandColor: "#188653",
   logo: "/documents/logo.png",
+  logoWidth: 64,
   signature: "/documents/signature.png",
+  stamp: "",
 };
+
+/** Website bookings are priced in this currency. */
+export const BOOKING_CURRENCY = "NPR" as const;
+
+/** Label for the invoice tax field. */
+export const TAX_LABEL = "Tax / VAT %";
 
 /** "USD 1,315.00" – the style used on invoices and receipts. */
 export const formatMoney = (amount: number, currency: string) =>

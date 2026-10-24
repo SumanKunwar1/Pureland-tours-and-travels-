@@ -29,7 +29,7 @@ import { BookingPicker, type PickedBooking } from "@/components/admin/BookingPic
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/currency";
 import axiosInstance from "@/lib/axios";
-import { formatDocDate, formatMoney, toDateInput } from "@/lib/invoice";
+import { BOOKING_CURRENCY, TAX_LABEL, formatDocDate, formatMoney, toDateInput } from "@/lib/invoice";
 import {
   invoiceService,
   INVOICE_CURRENCIES,
@@ -151,7 +151,7 @@ const formFromInvoice = (invoice: Invoice): InvoiceFormState => ({
 
 // Fills the client, trip and price from a booking, keeping what the admin
 // already typed for anything the booking doesn't have (address, notes, dates).
-// Website bookings are priced in NPR; the admin can switch currency and prices.
+// Website bookings are priced in BOOKING_CURRENCY; the admin can switch currency and prices.
 const formFromBooking = (booking: PickedBooking, base: InvoiceFormState = emptyInvoiceForm()): InvoiceFormState => {
   const travellers = Number(booking.travelers) || 1;
   const perPerson = booking.selectedPrice || (booking.totalAmount ? booking.totalAmount / travellers : 0);
@@ -159,7 +159,7 @@ const formFromBooking = (booking: PickedBooking, base: InvoiceFormState = emptyI
     ...base,
     booking: booking._id,
     bookingRef: booking.bookingId || "",
-    currency: "NPR",
+    currency: BOOKING_CURRENCY,
     client: { ...base.client, name: booking.customerName || "", phone: booking.phone || "", email: booking.email || "" },
     packageName: booking.tripName || "",
     travelDate: booking.selectedDate || "",
@@ -180,7 +180,7 @@ function BookingSummary({ booking }: { booking: PickedBooking }) {
     ["Travel date", booking.selectedDate],
     ["Pick-up location", booking.pickupLocation],
     ["Meditation required", booking.meditationRequired === undefined ? undefined : booking.meditationRequired ? "Yes" : "No"],
-    ["Website total", formatPrice(booking.totalAmount || 0, "NPR")],
+    ["Website total", formatPrice(booking.totalAmount || 0, BOOKING_CURRENCY)],
     ["Booked on", formatDocDate(booking.createdAt)],
     ["Status", booking.status],
   ];
@@ -421,7 +421,7 @@ function InvoiceFormDialog({
               <>
                 <BookingSummary booking={linked} />
                 <p className="text-xs text-muted-foreground">
-                  Website prices are in NPR. Change the currency and rates below if you bill in USD or INR.
+                  Website prices are in {BOOKING_CURRENCY}. Change the currency and rates below if you bill in another currency.
                 </p>
               </>
             ) : (
@@ -567,7 +567,7 @@ function InvoiceFormDialog({
               <FormField label={`Discount (${form.currency})`}>
                 <Input type="number" min={0} step="any" value={form.discount} onChange={(e) => setForm({ ...form, discount: e.target.value })} />
               </FormField>
-              <FormField label="Tax / VAT %">
+              <FormField label={TAX_LABEL}>
                 <Input type="number" min={0} max={100} step="any" value={form.taxPercent} onChange={(e) => setForm({ ...form, taxPercent: e.target.value })} />
               </FormField>
             </div>
