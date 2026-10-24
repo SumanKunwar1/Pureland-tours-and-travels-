@@ -20,6 +20,7 @@ import {
   ClipboardList,
   Eye,
   ExternalLink,
+  ReceiptText,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -702,6 +703,13 @@ export default function AdminBookings() {
                 </section>
 
                 <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-border">
+                  {/* Opens the booking's invoice, or starts one filled in from this booking. */}
+                  <Button asChild variant="outline" size="sm">
+                    <Link to={`/admin/invoices?booking=${viewing._id}`}>
+                      <ReceiptText />
+                      Invoice / Receipt
+                    </Link>
+                  </Button>
                   {statusActions(viewing, true)}
                   <Button
                     variant="ghost"
