@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import { catchAsync } from '../utils/catchAsync';
 import { AppError } from '../utils/appError';
-import Invoice from '../models/Invoice.model';
+import Invoice, { IInvoice, IPayment } from '../models/Invoice.model';
 import Booking from '../models/Booking.model';
 
 // Only these fields may be set from the admin form; totals and numbers are computed.
@@ -26,6 +26,27 @@ const pickInvoiceFields = (body: any) => {
     if (body[key] !== undefined) fields[key] = body[key] === '' ? undefined : body[key];
   }
   return fields;
+};
+
+// Links (or with an empty value, unlinks) a website booking. The booking ref
+// always comes from the booking itself, never typed in.
+const applyBookingLink = async (invoice: IInvoice, bookingId: unknown) => {
+  if (!bookingId) {
+    invoice.booking = undefined;
+    invoice.bookingRef = undefined;
+    return;
+  }
+  const booking = await Booking.findById(bookingId);
+  if (!booking) throw new AppError('Booking not found', 404);
+  invoice.booking = booking._id as mongoose.Types.ObjectId;
+  invoice.bookingRef = booking.bookingId;
+};
+
+// Worked out from the amounts so the admin never has to pick it.
+const paymentTypeFor = (invoice: IInvoice, amount: number): IPayment['paymentType'] => {
+  const clearsBalance = amount >= invoice.balance - 0.005;
+  if (invoice.payments.length === 0) return clearsBalance ? 'Full payment' : 'Advance payment';
+  return clearsBalance ? 'Final payment' : 'Partial payment';
 };
 
 // @desc    List invoices
@@ -82,18 +103,9 @@ export const getInvoice = catchAsync(async (req: Request, res: Response, next: N
 // @route   POST /api/v1/invoices
 // @access  Private (Admin)
 export const createInvoice = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const fields = pickInvoiceFields(req.body);
-
-  if (req.body.booking) {
-    const booking = await Booking.findById(req.body.booking);
-    if (!booking) return next(new AppError('Booking not found', 404));
-    fields.booking = booking._id;
-    fields.bookingRef = booking.bookingId;
-  } else if (req.body.bookingRef) {
-    fields.bookingRef = req.body.bookingRef;
-  }
-
-  const invoice = await Invoice.create(fields);
+  const invoice = new Invoice(pickInvoiceFields(req.body));
+  await applyBookingLink(invoice, req.body.booking);
+  await invoice.save();
 
   res.status(201).json({ status: 'success', data: { invoice } });
 });
@@ -106,7 +118,7 @@ export const updateInvoice = catchAsync(async (req: Request, res: Response, next
   if (!invoice) return next(new AppError('No invoice found with that ID', 404));
 
   invoice.set(pickInvoiceFields(req.body));
-  if (req.body.bookingRef !== undefined && !invoice.booking) invoice.bookingRef = req.body.bookingRef;
+  if (req.body.booking !== undefined) await applyBookingLink(invoice, req.body.booking);
   await invoice.save();
 
   res.status(200).json({ status: 'success', data: { invoice } });
@@ -146,7 +158,7 @@ export const addPayment = catchAsync(async (req: Request, res: Response, next: N
     paidBy: req.body.paidBy || invoice.client.name,
     method: req.body.method,
     transactionId: req.body.transactionId,
-    paymentType: req.body.paymentType,
+    paymentType: paymentTypeFor(invoice, amount),
     note: req.body.note,
   });
   await invoice.save();

@@ -82,7 +82,7 @@ export interface PaymentInput {
   paidBy: string;
   method: string;
   transactionId?: string;
-  paymentType: PaymentType;
+  // The payment type (full / advance / partial / final) is set by the server.
   note?: string;
 }
 

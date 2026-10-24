@@ -4,20 +4,18 @@
 // printable invoice / receipt documents.
 
 export const COMPANY = {
-  name: "Padmasambhava Trip Pvt Ltd",
+  name: "Pure Land Tours & Travels Pvt. Ltd.",
   officeLabel: "Head Office",
-  address: "Rohini, Kurseong, Darjeeling, West Bengal, India",
-  phone: "+91 73639 33945",
-  email: "info@padmasambhavatrip.com",
-  website: "www.padmasambhavatrip.com",
-  state: "West Bengal (19)",
-  offices:
-    "Head Office – Rohini, Kurseong, Darjeeling, West Bengal, India · Regional Office – Main Bazar, Paharganj, Delhi, India",
+  address: "Trinity Tower, Maharajgunj, Kathmandu, Nepal",
+  phone: "+977 970-4502011",
+  email: "info@purelandtravels.com.np",
+  website: "www.purelandtravels.com.np",
+  // Printed under the address when filled in, e.g. "PAN: 123456789".
+  taxId: "",
   signatory: "Malati Tamang",
   signatoryTitle: "Authorised Signatory",
   logo: "/documents/logo.png",
   signature: "/documents/signature.png",
-  stamp: "/documents/stamp.jpg",
 };
 
 /** "USD 1,315.00" – the style used on invoices and receipts. */

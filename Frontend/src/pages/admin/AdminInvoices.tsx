@@ -25,17 +25,17 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useToast } from "@/hooks/use-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { AdminPagination, ADMIN_PAGE_SIZE } from "@/components/admin/AdminPagination";
+import { BookingPicker, type PickedBooking } from "@/components/admin/BookingPicker";
 import { cn } from "@/lib/utils";
+import { formatPrice } from "@/lib/currency";
 import axiosInstance from "@/lib/axios";
 import { formatDocDate, formatMoney, toDateInput } from "@/lib/invoice";
 import {
   invoiceService,
   INVOICE_CURRENCIES,
   PAYMENT_METHODS,
-  PAYMENT_TYPES,
   type Invoice,
   type InvoiceCurrency,
-  type PaymentType,
 } from "@/services/invoices";
 
 const selectClassName =
@@ -59,6 +59,22 @@ function StatusPill({ invoice }: { invoice: Invoice }) {
 
 const openInNewTab = (path: string) => window.open(path, "_blank", "noopener");
 
+/** Suggestions for the payment method inputs (any other method can be typed). */
+const PaymentMethodOptions = () => (
+  <datalist id="payment-methods">
+    {PAYMENT_METHODS.map((m) => (
+      <option key={m} value={m} />
+    ))}
+  </datalist>
+);
+
+/** What the server will record the payment as, shown before saving. */
+const paymentTypeLabel = (invoice: Invoice, amount: number) => {
+  const clears = amount >= invoice.balance - 0.005;
+  if (invoice.payments.length === 0) return clears ? "Full payment" : "Advance payment";
+  return clears ? "Final payment" : "Partial payment";
+};
+
 /* ------------------------------------------------------------------ */
 /* Invoice form                                                        */
 /* ------------------------------------------------------------------ */
@@ -71,6 +87,7 @@ interface ItemRow {
 
 interface InvoiceFormState {
   booking?: string;
+  // Display only – always taken from the linked booking.
   bookingRef: string;
   issueDate: string;
   dueDate: string;
@@ -132,23 +149,62 @@ const formFromInvoice = (invoice: Invoice): InvoiceFormState => ({
   status: invoice.status,
 });
 
+// Fills the client, trip and price from a booking, keeping what the admin
+// already typed for anything the booking doesn't have (address, notes, dates).
 // Website bookings are priced in NPR; the admin can switch currency and prices.
-const formFromBooking = (booking: any): InvoiceFormState => {
-  const form = emptyInvoiceForm();
+const formFromBooking = (booking: PickedBooking, base: InvoiceFormState = emptyInvoiceForm()): InvoiceFormState => {
   const travellers = Number(booking.travelers) || 1;
   const perPerson = booking.selectedPrice || (booking.totalAmount ? booking.totalAmount / travellers : 0);
   return {
-    ...form,
+    ...base,
     booking: booking._id,
     bookingRef: booking.bookingId || "",
     currency: "NPR",
-    client: { ...form.client, name: booking.customerName || "", phone: booking.phone || "", email: booking.email || "" },
+    client: { ...base.client, name: booking.customerName || "", phone: booking.phone || "", email: booking.email || "" },
     packageName: booking.tripName || "",
     travelDate: booking.selectedDate || "",
     travellers: String(travellers),
     items: [{ description: booking.tripName || "Tour package", quantity: String(travellers), unitPrice: String(perPerson || "") }],
   };
 };
+
+/** Everything the customer filled in on the website, for the admin to check. */
+function BookingSummary({ booking }: { booking: PickedBooking }) {
+  const rows: [string, string | number | undefined][] = [
+    ["Name", booking.customerName],
+    ["Email", booking.email],
+    ["Phone", booking.phone],
+    ["WhatsApp", booking.whatsapp],
+    ["Trip", booking.tripName],
+    ["Travellers", booking.travelers],
+    ["Travel date", booking.selectedDate],
+    ["Pick-up location", booking.pickupLocation],
+    ["Meditation required", booking.meditationRequired === undefined ? undefined : booking.meditationRequired ? "Yes" : "No"],
+    ["Website total", formatPrice(booking.totalAmount || 0, "NPR")],
+    ["Booked on", formatDocDate(booking.createdAt)],
+    ["Status", booking.status],
+  ];
+  return (
+    <div className="rounded-lg border border-border bg-muted/40 p-3 text-sm">
+      <dl className="grid gap-x-4 gap-y-1.5 sm:grid-cols-2">
+        {rows
+          .filter(([, value]) => value !== undefined && value !== "")
+          .map(([label, value]) => (
+            <div key={label} className="flex gap-2 min-w-0">
+              <dt className="shrink-0 text-muted-foreground">{label}:</dt>
+              <dd className="font-medium break-words min-w-0">{value}</dd>
+            </div>
+          ))}
+      </dl>
+      {booking.message && (
+        <p className="mt-2 border-t border-border pt-2 whitespace-pre-wrap break-words">
+          <span className="text-muted-foreground">Message: </span>
+          {booking.message}
+        </p>
+      )}
+    </div>
+  );
+}
 
 const num = (value: string) => (value.trim() === "" ? 0 : Number(value));
 
@@ -168,26 +224,74 @@ function FormField({ label, children, className }: { label: string; children: Re
   );
 }
 
+const emptyPayNow = () => ({
+  enabled: false,
+  amount: "",
+  date: toDateInput(new Date()),
+  method: PAYMENT_METHODS[0],
+  transactionId: "",
+});
+
 function InvoiceFormDialog({
   open,
   initial,
+  initialBooking,
   editing,
   onClose,
   onSaved,
+  onOpenExisting,
 }: {
   open: boolean;
   initial: InvoiceFormState;
+  initialBooking?: PickedBooking | null;
   editing?: Invoice | null;
   onClose: () => void;
   onSaved: (invoice: Invoice) => void;
+  onOpenExisting: (invoice: Invoice) => void;
 }) {
   const { toast } = useToast();
   const [form, setForm] = useState(initial);
   const [saving, setSaving] = useState(false);
+  const [linked, setLinked] = useState<PickedBooking | null>(null);
+  const [picking, setPicking] = useState(false);
+  // Another invoice already made for the chosen booking.
+  const [duplicate, setDuplicate] = useState<Invoice | null>(null);
+  const [payNow, setPayNow] = useState(emptyPayNow);
 
   useEffect(() => {
-    if (open) setForm(initial);
-  }, [open, initial]);
+    if (!open) return;
+    setForm(initial);
+    setLinked(initialBooking || null);
+    setPicking(false);
+    setDuplicate(null);
+    setPayNow(emptyPayNow());
+    // Editing an invoice linked to a booking: load the booking to show its details.
+    if (initial.booking && !initialBooking) {
+      axiosInstance
+        .get(`/bookings/${initial.booking}`)
+        .then((response) => setLinked(response.data?.data?.booking || null))
+        .catch(() => setLinked(null));
+    }
+  }, [open, initial, initialBooking]);
+
+  const handlePickBooking = async (booking: PickedBooking) => {
+    setLinked(booking);
+    setPicking(false);
+    setForm((prev) => formFromBooking(booking, prev));
+    setDuplicate(null);
+    try {
+      const existing = await invoiceService.list({ booking: booking._id, limit: 5 });
+      setDuplicate(existing.invoices.find((invoice) => invoice._id !== editing?._id) || null);
+    } catch {
+      // The check is only a convenience.
+    }
+  };
+
+  const unlinkBooking = () => {
+    setLinked(null);
+    setDuplicate(null);
+    setForm((prev) => ({ ...prev, booking: undefined, bookingRef: "" }));
+  };
 
   const setClient = (key: keyof InvoiceFormState["client"], value: string) =>
     setForm((prev) => ({ ...prev, client: { ...prev.client, [key]: value } }));
@@ -212,9 +316,15 @@ function InvoiceFormDialog({
       return;
     }
 
+    const payNowAmount = num(payNow.amount || String(totals.total));
+    if (payNow.enabled && (!(payNowAmount > 0) || payNowAmount > totals.total + 0.005)) {
+      toast({ title: "Payment amount must be more than 0 and not more than the total", variant: "destructive" });
+      return;
+    }
+
     const payload = {
-      ...(editing ? {} : { booking: form.booking }),
-      bookingRef: form.bookingRef,
+      // An empty value unlinks the booking on the server.
+      booking: form.booking || "",
       issueDate: form.issueDate,
       dueDate: form.dueDate || undefined,
       currency: form.currency,
@@ -235,8 +345,29 @@ function InvoiceFormDialog({
 
     try {
       setSaving(true);
-      const saved = editing ? await invoiceService.update(editing._id, payload) : await invoiceService.create(payload);
-      toast({ title: editing ? "Invoice updated" : `Invoice ${saved.invoiceNumber} created` });
+      let saved = editing ? await invoiceService.update(editing._id, payload) : await invoiceService.create(payload);
+      if (!editing && payNow.enabled) {
+        try {
+          const result = await invoiceService.addPayment(saved._id, {
+            date: payNow.date,
+            amount: payNowAmount,
+            paidBy: form.client.name,
+            method: payNow.method,
+            transactionId: payNow.transactionId,
+          });
+          saved = result.invoice;
+          toast({ title: `Invoice ${saved.invoiceNumber} and receipt ${result.payment.receiptNumber} created` });
+        } catch (error: any) {
+          // The invoice exists; the payment can be recorded again from its details.
+          toast({
+            title: `Invoice ${saved.invoiceNumber} created, but the payment was not saved`,
+            description: error.response?.data?.message || "Use Record payment to add it.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({ title: editing ? "Invoice updated" : `Invoice ${saved.invoiceNumber} created` });
+      }
       onSaved(saved);
     } catch (error: any) {
       toast({
@@ -255,13 +386,60 @@ function InvoiceFormDialog({
         <DialogHeader>
           <DialogTitle>{editing ? `Edit ${editing.invoiceNumber}` : "New invoice"}</DialogTitle>
           <DialogDescription>
-            {form.booking
-              ? `Filled in from booking ${form.bookingRef}. Website prices are in NPR — change the currency and rates if you bill in USD or INR.`
-              : "The invoice number is given automatically when you save."}
+            {editing
+              ? "Invoice and receipt numbers never change once given."
+              : "Invoice and receipt numbers are given automatically when you save."}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <section className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Website booking {form.bookingRef && <span className="normal-case">· {form.bookingRef}</span>}
+              </h3>
+              {form.booking && !picking && (
+                <div className="flex gap-1">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setPicking(true)}>
+                    Change
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={unlinkBooking}>
+                    Remove link
+                  </Button>
+                </div>
+              )}
+            </div>
+            {!form.booking || picking ? (
+              <>
+                <BookingPicker onSelect={handlePickBooking} />
+                <p className="text-xs text-muted-foreground">
+                  Choose the booking to fill in the client and trip automatically, or leave this empty and type the
+                  details for bookings taken by phone or WhatsApp.
+                </p>
+              </>
+            ) : linked ? (
+              <>
+                <BookingSummary booking={linked} />
+                <p className="text-xs text-muted-foreground">
+                  Website prices are in NPR. Change the currency and rates below if you bill in USD or INR.
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">Linked to booking {form.bookingRef}.</p>
+            )}
+            {duplicate && (
+              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                <span className="flex-1">
+                  This booking already has invoice <strong>{duplicate.invoiceNumber}</strong>. Record further payments
+                  on that invoice instead of making a new one.
+                </span>
+                <Button type="button" size="sm" variant="outline" onClick={() => onOpenExisting(duplicate)}>
+                  Open {duplicate.invoiceNumber}
+                </Button>
+              </div>
+            )}
+          </section>
+
           <section className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Client</h3>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -297,14 +475,6 @@ function InvoiceFormDialog({
               </FormField>
               <FormField label="Travellers">
                 <Input type="number" min={0} value={form.travellers} onChange={(e) => setForm({ ...form, travellers: e.target.value })} />
-              </FormField>
-              <FormField label="Booking ref">
-                <Input
-                  value={form.bookingRef}
-                  onChange={(e) => setForm({ ...form, bookingRef: e.target.value })}
-                  disabled={Boolean(form.booking)}
-                  placeholder="Optional"
-                />
               </FormField>
               <FormField label="Invoice date">
                 <Input type="date" value={form.issueDate} onChange={(e) => setForm({ ...form, issueDate: e.target.value })} required />
@@ -397,7 +567,7 @@ function InvoiceFormDialog({
               <FormField label={`Discount (${form.currency})`}>
                 <Input type="number" min={0} step="any" value={form.discount} onChange={(e) => setForm({ ...form, discount: e.target.value })} />
               </FormField>
-              <FormField label="Tax / GST %">
+              <FormField label="Tax / VAT %">
                 <Input type="number" min={0} max={100} step="any" value={form.taxPercent} onChange={(e) => setForm({ ...form, taxPercent: e.target.value })} />
               </FormField>
             </div>
@@ -423,6 +593,57 @@ function InvoiceFormDialog({
           <FormField label="Notes & payment terms (printed on the invoice)">
             <Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
           </FormField>
+
+          {!editing && (
+            <section className="space-y-3 rounded-lg border border-border p-3">
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4"
+                  checked={payNow.enabled}
+                  onChange={(e) => setPayNow({ ...payNow, enabled: e.target.checked })}
+                />
+                <span className="text-sm font-medium">Payment already received – create the receipt now</span>
+              </label>
+              {payNow.enabled && (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <FormField label={`Amount received (${form.currency})`}>
+                    <Input
+                      type="number"
+                      min={0.01}
+                      step="any"
+                      placeholder={String(totals.total)}
+                      value={payNow.amount}
+                      onChange={(e) => setPayNow({ ...payNow, amount: e.target.value })}
+                    />
+                  </FormField>
+                  <FormField label="Payment date">
+                    <Input type="date" value={payNow.date} onChange={(e) => setPayNow({ ...payNow, date: e.target.value })} required />
+                  </FormField>
+                  <FormField label="Method">
+                    <Input
+                      list="payment-methods"
+                      value={payNow.method}
+                      onChange={(e) => setPayNow({ ...payNow, method: e.target.value })}
+                      required
+                    />
+                  </FormField>
+                  <FormField label="Bank / card transaction ID">
+                    <Input
+                      value={payNow.transactionId}
+                      onChange={(e) => setPayNow({ ...payNow, transactionId: e.target.value })}
+                      placeholder="From the bank or payment slip"
+                    />
+                  </FormField>
+                  <p className="text-xs text-muted-foreground sm:col-span-2">
+                    Leave the amount empty to receive the full total. Paid by is the client name; the payment type
+                    (full / advance) is set automatically.
+                  </p>
+                </div>
+              )}
+            </section>
+          )}
+          <PaymentMethodOptions />
 
           <div className="flex justify-end gap-2 border-t border-border pt-4">
             <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
@@ -460,7 +681,6 @@ function PaymentDialog({
     paidBy: "",
     method: PAYMENT_METHODS[0],
     transactionId: "",
-    paymentType: "Full payment" as PaymentType,
     note: "",
   });
 
@@ -470,9 +690,9 @@ function PaymentDialog({
       date: toDateInput(new Date()),
       amount: String(invoice.balance),
       paidBy: invoice.client.name,
-      method: PAYMENT_METHODS[0],
+      // Reuse the method from the last payment, e.g. the advance and the balance by wire.
+      method: invoice.payments[invoice.payments.length - 1]?.method || PAYMENT_METHODS[0],
       transactionId: "",
-      paymentType: invoice.payments.length === 0 ? "Full payment" : "Final payment",
       note: "",
     });
   }, [invoice]);
@@ -533,27 +753,20 @@ function PaymentDialog({
                     onChange={(e) => setForm({ ...form, method: e.target.value })}
                     required
                   />
-                  <datalist id="payment-methods">
-                    {PAYMENT_METHODS.map((m) => (
-                      <option key={m} value={m} />
-                    ))}
-                  </datalist>
+                  <PaymentMethodOptions />
                 </FormField>
-                <FormField label="Transaction ID">
-                  <Input value={form.transactionId} onChange={(e) => setForm({ ...form, transactionId: e.target.value })} />
-                </FormField>
-                <FormField label="Payment type">
-                  <select
-                    className={selectClassName}
-                    value={form.paymentType}
-                    onChange={(e) => setForm({ ...form, paymentType: e.target.value as PaymentType })}
-                  >
-                    {PAYMENT_TYPES.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
+                <FormField label="Bank / card transaction ID" className="sm:col-span-2">
+                  <Input
+                    value={form.transactionId}
+                    onChange={(e) => setForm({ ...form, transactionId: e.target.value })}
+                    placeholder="From the bank or payment slip"
+                  />
                 </FormField>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Recorded as <strong>{paymentTypeLabel(invoice, Number(form.amount) || 0)}</strong> · receipt number is
+                given automatically.
+              </p>
               <FormField label="Note (optional, printed on the receipt)">
                 <Input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
               </FormField>
@@ -591,6 +804,7 @@ export default function AdminInvoices() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [formInitial, setFormInitial] = useState<InvoiceFormState>(emptyInvoiceForm);
+  const [formBooking, setFormBooking] = useState<PickedBooking | null>(null);
   const [editing, setEditing] = useState<Invoice | null>(null);
   const [paying, setPaying] = useState<Invoice | null>(null);
   const [viewing, setViewing] = useState<Invoice | null>(null);
@@ -621,9 +835,9 @@ export default function AdminInvoices() {
           return;
         }
         const response = await axiosInstance.get(`/bookings/${bookingId}`);
-        const booking = response.data?.data?.booking;
+        const booking = response.data?.data?.booking as PickedBooking | undefined;
         if (!booking) throw new Error("Booking not found");
-        openCreate(formFromBooking(booking));
+        openCreate(formFromBooking(booking), booking);
       } catch (error: any) {
         toast({
           title: "Could not load booking",
@@ -654,9 +868,10 @@ export default function AdminInvoices() {
     }
   };
 
-  const openCreate = (initial: InvoiceFormState = emptyInvoiceForm()) => {
+  const openCreate = (initial: InvoiceFormState = emptyInvoiceForm(), booking: PickedBooking | null = null) => {
     setEditing(null);
     setFormInitial(initial);
+    setFormBooking(booking);
     setFormOpen(true);
   };
 
@@ -664,6 +879,7 @@ export default function AdminInvoices() {
     setViewing(null);
     setEditing(invoice);
     setFormInitial(formFromInvoice(invoice));
+    setFormBooking(null);
     setFormOpen(true);
   };
 
@@ -808,8 +1024,13 @@ export default function AdminInvoices() {
       <InvoiceFormDialog
         open={formOpen}
         initial={formInitial}
+        initialBooking={formBooking}
         editing={editing}
         onClose={() => setFormOpen(false)}
+        onOpenExisting={(invoice) => {
+          setFormOpen(false);
+          setViewing(invoice);
+        }}
         onSaved={(invoice) => {
           setFormOpen(false);
           replaceInvoice(invoice);
