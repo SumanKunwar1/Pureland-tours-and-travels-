@@ -39,6 +39,9 @@ interface Booking {
   email: string;
   phone: string;
   message?: string;
+  whatsapp?: string;
+  pickupLocation?: string;
+  meditationRequired?: boolean;
   tripName: string;
   // Populated by the API; null when the trip has since been deleted.
   tripId?: { _id: string } | string | null;
@@ -623,12 +626,12 @@ export default function AdminBookings() {
                     </Button>
                     <Button asChild variant="outline" size="sm">
                       <a
-                        href={`https://wa.me/${dialable(viewing.phone).replace("+", "")}`}
+                        href={`https://wa.me/${dialable(viewing.whatsapp || viewing.phone).replace("+", "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         <MessageCircle />
-                        WhatsApp
+                        {viewing.whatsapp ? `WhatsApp ${viewing.whatsapp}` : "WhatsApp"}
                       </a>
                     </Button>
                     <Button asChild variant="outline" size="sm">
@@ -672,6 +675,18 @@ export default function AdminBookings() {
                       <dt className="text-muted-foreground">Total amount</dt>
                       <dd className="font-semibold tabular-nums">{formatAmount(viewing.totalAmount)}</dd>
                     </div>
+                    {viewing.pickupLocation && (
+                      <div>
+                        <dt className="text-muted-foreground">Pick-up location</dt>
+                        <dd className="font-medium break-words">{viewing.pickupLocation}</dd>
+                      </div>
+                    )}
+                    {viewing.meditationRequired !== undefined && (
+                      <div>
+                        <dt className="text-muted-foreground">Meditation required</dt>
+                        <dd className="font-medium">{viewing.meditationRequired ? "Yes" : "No"}</dd>
+                      </div>
+                    )}
                   </dl>
                 </section>
 

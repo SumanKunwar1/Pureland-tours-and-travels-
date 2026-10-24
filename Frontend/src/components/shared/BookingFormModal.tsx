@@ -21,7 +21,19 @@ interface BookingFormModalProps {
   /** The trip's manual USD / INR prices, so the total shown matches the trip card. */
   priceUSD?: number;
   priceINR?: number;
+  /** Set per trip in admin: also ask for WhatsApp, pick-up location and meditation. */
+  showRetreatFields?: boolean;
 }
+
+const emptyForm = {
+  name: "",
+  email: "",
+  phone: "",
+  whatsapp: "",
+  pickupLocation: "",
+  meditationRequired: "",
+  message: "",
+};
 
 export function BookingFormModal({ 
   isOpen, 
@@ -34,18 +46,26 @@ export function BookingFormModal({
   totalAmount,
   priceUSD,
   priceINR,
+  showRetreatFields = false,
 }: BookingFormModalProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    message: "",
-  });
+  const [formData, setFormData] = useState(emptyForm);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // The submit button sits outside the <form>, so browser validation never runs.
+    const missing = !formData.name || !formData.email || !formData.phone ||
+      (showRetreatFields && (!formData.pickupLocation || !formData.meditationRequired));
+    if (missing) {
+      toast({
+        title: "Missing details",
+        description: "Please fill in all fields marked with *",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (!tripId || !tripName) {
       toast({
@@ -66,6 +86,11 @@ export function BookingFormModal({
         email: formData.email,
         phone: formData.phone,
         message: formData.message,
+        ...(showRetreatFields && {
+          whatsapp: formData.whatsapp,
+          pickupLocation: formData.pickupLocation,
+          meditationRequired: formData.meditationRequired === "yes",
+        }),
         travelers,
         selectedDate,
         selectedPrice,
@@ -78,7 +103,7 @@ export function BookingFormModal({
       });
 
       onClose();
-      setFormData({ name: "", email: "", phone: "", message: "" });
+      setFormData(emptyForm);
     } catch (error: any) {
       console.error("Booking error:", error);
       toast({
@@ -159,6 +184,48 @@ export function BookingFormModal({
                       disabled={isSubmitting}
                     />
                   </div>
+                  {showRetreatFields && (
+                    <>
+                      <div>
+                        <Input
+                          type="tel"
+                          placeholder="WhatsApp Number"
+                          value={formData.whatsapp}
+                          onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div>
+                        <Input
+                          placeholder="Pick-up Location *"
+                          value={formData.pickupLocation}
+                          onChange={(e) => setFormData({ ...formData, pickupLocation: e.target.value })}
+                          required
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <fieldset disabled={isSubmitting}>
+                        <legend className="text-sm font-medium mb-2">Meditation Required? *</legend>
+                        <div className="flex gap-3">
+                          {(["yes", "no"] as const).map((option) => (
+                            <label
+                              key={option}
+                              className="flex flex-1 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5"
+                            >
+                              <input
+                                type="radio"
+                                name="meditationRequired"
+                                value={option}
+                                checked={formData.meditationRequired === option}
+                                onChange={(e) => setFormData({ ...formData, meditationRequired: e.target.value })}
+                              />
+                              {option === "yes" ? "Yes" : "No"}
+                            </label>
+                          ))}
+                        </div>
+                      </fieldset>
+                    </>
+                  )}
                   <div>
                     <Textarea
                       placeholder="Any special requests or questions?"
@@ -173,7 +240,9 @@ export function BookingFormModal({
                   {totalAmount && (
                     <div className="bg-muted/50 rounded-lg p-4 space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Travelers:</span>
+                        <span className="text-muted-foreground">
+                          {showRetreatFields ? "Total Adults:" : "Travelers:"}
+                        </span>
                         <span className="font-medium">{travelers}</span>
                       </div>
                       {selectedDate && (

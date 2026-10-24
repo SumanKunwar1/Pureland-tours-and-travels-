@@ -46,6 +46,8 @@ export interface ITrip extends Document {
   dates: ITripDate[];
   tags: string;
   hasGoodies: boolean;
+  // Booking form also asks for WhatsApp, pick-up location and meditation preference.
+  showRetreatForm: boolean;
   bookings: number;
   createdAt: Date;
   updatedAt: Date;
@@ -208,6 +210,10 @@ const tripSchema = new Schema<ITrip>(
       default: '',
     },
     hasGoodies: {
+      type: Boolean,
+      default: false,
+    },
+    showRetreatForm: {
       type: Boolean,
       default: false,
     },
